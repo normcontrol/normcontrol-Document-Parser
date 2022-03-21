@@ -42,7 +42,7 @@ class DocumentParser():
                     style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return styles
 
-        # Получение стилей по умолчанию
+    # Получение стилей по умолчанию
     def get_styles_default_style(self):
         doc = load(self.filePath)
         stylesDict = {}
@@ -92,7 +92,7 @@ class DocumentParser():
                             style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         print(stylesDict)
 
-        # Получение параметов текста из автоматических стилей
+    # Получение параметов текста из автоматических стилей
     def get_styles_automatic_styles_text(self):
         doc = load(self.filePath)
         styles = {}
@@ -136,7 +136,7 @@ class DocumentParser():
 
 
 
-        # Получение конкретного стиля
+    # Получение конкретного стиля
     def get_style(self, stylename):
         doc = load(self.filePath)
         style = {}
@@ -150,7 +150,7 @@ class DocumentParser():
                             style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return style
 
-        # Получение конкретного стиля по умолчанию
+    # Получение конкретного стиля по умолчанию
     def get_style_default(self, stylefamily):
         doc = load(self.filePath)
         style = {}
@@ -165,7 +165,7 @@ class DocumentParser():
         return style
 
     # Получение конкретного стиля автоматического
-    def get_style_automatic(self, stylename):
+    def get_style_automatic_by_name(self, stylename):
         doc = load(self.filePath)
         style = {}
         for ast in doc.automaticstyles.childNodes:
@@ -177,7 +177,19 @@ class DocumentParser():
                         style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return style
 
-
+    # Получение характеристик текста
+    def get_text_style_by_name(self, textname):
+        doc = load(self.filePath)
+        text_styles = {}
+        for ast in doc.automaticstyles.childNodes:
+            if ast.qname[1] == "style":
+                if ast.getAttribute("name") == textname:
+                    for k in ast.attributes.keys():
+                        text_styles[k[1]] = ast.attributes[k]
+                    for n in ast.childNodes:
+                        for k in n.attributes.keys():
+                            text_styles[n.qname[1] + "/" + k[1]] = n.attributes[k]
+        return text_styles
 
 
 
@@ -200,16 +212,35 @@ def odf_dump_nodes(start_node, level=0):
 
 if __name__ == '__main__':
     doc = DocumentParser('dipbac.odt')
+    print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
-    doc.all_odt_table()
+    print("-----------------------------------------\n")
+
+    print("Получение таблиц заголовка:\n")
+    table_doc = DocumentParser('tabl1.odt')
+    table_doc.all_odt_table()
+    print("-----------------------------------------\n")
+
+    print("Получение узлов:\n")
     doc2 = load('dipbac.odt')
     print(odf_dump_nodes(doc2.text))
+    print("-----------------------------------------\n")
+
+    print("Получение стилей:\n")
     doc.get_styles_default_style()
+    print("-------------------------------------------")
     doc.get_styles_style()
+    print("-------------------------------------------")
     doc.get_styles_text()
+    print("-------------------------------------------")
     doc.get_styles_automatic_styles_text()
-    doc.get_styles_tree()
+    # doc.get_styles_tree()
     print(doc.get_style("Заголовок1"))
+    print("-----------------------------------------\n")
     print(doc.get_style_default('table'))
-    print(doc.get_style_automatic('P1'))
+    print("-----------------------------------------\n")
+    print(doc.get_style_automatic_by_name('P105'))
+    print("-----------------------------------------\n")
+    print(doc.get_text_style_by_name('T13'))
+    print("-------------------------------------------")
