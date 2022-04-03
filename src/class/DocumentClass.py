@@ -22,7 +22,6 @@ class Class:
                     s = s + attribute + "\": \"" + str(getattr(p,attribute)) + "\",\""
         l = len(s)
         s = s[:l - 2] + "}}]"
-        #print(s)
         jsonText = json.loads(s)
         return jsonText
 
