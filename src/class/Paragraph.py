@@ -1,7 +1,10 @@
 class Paragraph:
 
-    def __init__(self, alignment, indent, mrgrg, mrglf, lineSpacing, mrgtop, mrgbtm, fontName, bold, italics,
-                 underlining,subText, superText, textSize, colorText):
+    def __init__(self, text, alignment, indent, mrgrg, mrglf, lineSpacing, mrgtop, mrgbtm, fontName, bold, italics,
+                 underlining,subText, superText, textSize, colorText,
+                 keepLinesTogether, keepWithNext, outlineLevel, pageBreakBefore,
+                 noSpaceBetweenParagraphsOfSameStyle):
+        self.__text = text
         self.__alignment = alignment
         self.__indent = indent
         self.__mrgrg = mrgrg
@@ -17,10 +20,35 @@ class Paragraph:
         self.__superText = superText
         self.__textSize = textSize
         self.__colorText = colorText
+        ## Нужны дополнительные исследования классификатора
+        self.__keepLinesTogether = keepLinesTogether
+        self.__keepWithNext= keepWithNext
+        self.__outlineLevel = outlineLevel
+        self.__pageBreakBefore = pageBreakBefore
+        self.__noSpaceBetweenParagraphsOfSameStyle = noSpaceBetweenParagraphsOfSameStyle
+    @property
+    def text(self):
+        return self.__text
 
     @property
-    def alignment(self):
-        return self.__alignment
+    def keepLinesTogether(self):
+        return self.__keepLinesTogether
+
+    @property
+    def outlineLevel(self):
+        return self.__outlineLevel
+
+    @property
+    def pageBreakBefore(self):
+        return self.__pageBreakBefore
+
+    @property
+    def noSpaceBetweenParagraphsOfSameStyle(self):
+        return self.__noSpaceBetweenParagraphsOfSameStyle
+
+    @property
+    def keepWithNext(self):
+        return self.__keepWithNext
 
     @property
     def indent(self):

@@ -4,6 +4,8 @@ from odf.style import Style, TextProperties
 from odf import text
 from odf.table import Table
 from odf.text import H, P, Span
+from guppy import hpy
+import timing
 
 from src.styles import Auto
 from src.styles import Default
@@ -380,6 +382,9 @@ def odf_dump_nodes(start_node, level=0):
     return
 
 if __name__ == '__main__':
+    h = hpy()
+    h1 = h.heap()
+
     doc = DocumentParser('dipbac.odt')
     print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
@@ -427,3 +432,7 @@ if __name__ == '__main__':
 
     print("-------------------------------------------\n")
     print(doc.get_style_base3("Текстнатитульнойстранице", "text-align", const.DEFAULT_PARAM["text-align"]))
+
+    h2 = h.heap()
+    print(h2)
+    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
