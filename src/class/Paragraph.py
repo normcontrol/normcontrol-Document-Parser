@@ -20,12 +20,13 @@ class Paragraph:
         self.__superText = superText
         self.__textSize = textSize
         self.__colorText = colorText
+        self.__pageBreakBefore = pageBreakBefore # имеет значение
         ## Нужны дополнительные исследования классификатора
         self.__keepLinesTogether = keepLinesTogether
-        self.__keepWithNext= keepWithNext
+        self.__keepWithNext = keepWithNext
         self.__outlineLevel = outlineLevel
-        self.__pageBreakBefore = pageBreakBefore
         self.__noSpaceBetweenParagraphsOfSameStyle = noSpaceBetweenParagraphsOfSameStyle
+
     @property
     def text(self):
         return self.__text
