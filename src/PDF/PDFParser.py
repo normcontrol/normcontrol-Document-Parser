@@ -11,7 +11,7 @@ class PDFParser:
     def getLine(self, path = "test.pdf"):
         with pdfplumber.open(path) as pdf:
             self.document = Class(owner=pdf.metadata.get('Author'), time=pdf.metadata.get('CreationDate'))
-            for pages in pdf.pages:
+            for numberofpage,pages in enumerate(pdf.pages):
                 y0 = None
                 text = ""
                 lines = []
@@ -32,7 +32,7 @@ class PDFParser:
                             size = char.get('size')
                     else:
                         if i != 0:
-                            lines.append(Line(x0,y0,x1,y1,text,fontname,size,nochangeFontName,nochangeSize))
+                            lines.append(Line(x0,y0,x1,y1,text,fontname,size,nochangeFontName,nochangeSize,numberofpage+1))
                         text = ""
                         text = text + char.get('text')
                         y0 = char.get('y0')
@@ -41,7 +41,7 @@ class PDFParser:
                         size = char.get('size')
                         nochangeFontName = True
                         nochangeSize = True
-                lines.append(Line(x0, y0, x1, y1, text,fontname,size,nochangeFontName,nochangeSize))
+                lines.append(Line(x0, y0, x1, y1, text,fontname,size,nochangeFontName,nochangeSize,numberofpage+1))
         print(lines)
         return lines
 
@@ -75,7 +75,7 @@ class PDFParser:
                     j= j+1
                 if len(paragraphline.lines)>1:
                     mean = mean/len(paragraphline.lines)
-                if lines[i-1].x0 >= lines[i].x0 and abs(spaces[i]-1 - mean < 1 or mean == 0):
+                if lines[i-1].x0 >= lines[i].x0 and ((abs(spaces[i]-1 - mean < 1 or mean == 0)) or lines[i-1].page != lines[i].page):
                     paragraphline.lines.append(lines[i])
                     paragraphline.spaces.append(spaces[i])
                 else:
