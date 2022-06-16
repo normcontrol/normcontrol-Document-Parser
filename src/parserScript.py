@@ -11,7 +11,7 @@ from src.styles import Auto
 from src.styles import Default
 from src.styles import Style
 from src import const
-
+from src.tableParser import TableParser
 
 
 class DocumentParser():
@@ -417,10 +417,12 @@ if __name__ == '__main__':
     print("-----------------------------------------\n")
     print(doc.get_style_automatic_by_name('P105'))
     print("-----------------------------------------\n")
-    print(doc.get_text_style_by_name('T13'))
+    print(doc.get_text_style_by_name('T150'))
     print("-------------------------------------------\n")
     print("Получение конкретных характеристик:")
     print(doc.get_paragraph_alignment('P1'))
+    print("-------------------------------------------\n")
+    print(doc.get_style_base_auto('P1'))
     print("-------------------------------------------\n")
     print(doc.get_style_base_auto2('P1'))
     print("-------------------------------------------\n")
