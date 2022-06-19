@@ -26,7 +26,10 @@ class Class:
         return jsonText
 
     def createJsonToClassificator(self):
-        listNeedAttribute = { "alignment", "indent", "mrgrg", "mrglf", "lineSpacing", "mrgtop", "mrgbtm", "bold", "italics",
+     #   listNeedAttribute = { "alignment", "indent", "mrgrg", "mrglf", "lineSpacing", "mrgtop", "mrgbtm", "bold", "italics",
+     #            "keepLinesTogether", "keepWithNext", "outlineLevel", "pageBreakBefore",
+     #            "noSpaceBetweenParagraphsOfSameStyle"} # будет убрано ,"alignment", "indent", "mrgrg", "mrglf", "lineSpacing", "mrgtop", "mrgbtm"
+        listNeedAttribute = {"bold", "italics",
                  "keepLinesTogether", "keepWithNext", "outlineLevel", "pageBreakBefore",
                  "noSpaceBetweenParagraphsOfSameStyle"}
         s ="[{"
@@ -55,7 +58,6 @@ class Class:
         l = len(s)
         s = s[:l-2] + "}}}]"
         print(s)
-        print(s[480:510])
         jsonText = json.loads(s)
         return jsonText
 
@@ -77,7 +79,7 @@ class Class:
         return text[len(text)-1]
 
     def getfirstkey(self, text):
-        return text[0]
+        return text.split(' ')[0]
 
     def getprevEl(self,text):
         return False

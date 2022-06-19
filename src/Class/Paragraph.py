@@ -1,9 +1,9 @@
 class Paragraph:
 
-    def __init__(self, text, alignment, indent, mrgrg, mrglf, lineSpacing, mrgtop, mrgbtm, fontName, bold, italics,
-                 underlining,subText, superText, textSize, colorText,
-                 keepLinesTogether, keepWithNext, outlineLevel, pageBreakBefore,
-                 noSpaceBetweenParagraphsOfSameStyle):
+    def __init__(self, text, indent, lineSpacing, fontName, textSize, nochangeFontName, nochangeTextSize, alignment = None, mrgrg = None, mrglf  = None, mrgtop  = None, mrgbtm  = None, bold = False, italics = False,
+                 underlining = False ,subText = False , superText = False , colorText = "White",
+                 keepLinesTogether = False, keepWithNext = False, outlineLevel = None, pageBreakBefore = False,
+                 noSpaceBetweenParagraphsOfSameStyle = False):
         self.__text = text
         self.__alignment = alignment
         self.__indent = indent
@@ -20,12 +20,15 @@ class Paragraph:
         self.__superText = superText
         self.__textSize = textSize
         self.__colorText = colorText
+        self.__pageBreakBefore = pageBreakBefore # имеет значение
         ## Нужны дополнительные исследования классификатора
         self.__keepLinesTogether = keepLinesTogether
-        self.__keepWithNext= keepWithNext
+        self.__keepWithNext = keepWithNext
         self.__outlineLevel = outlineLevel
-        self.__pageBreakBefore = pageBreakBefore
         self.__noSpaceBetweenParagraphsOfSameStyle = noSpaceBetweenParagraphsOfSameStyle
+        self.nochangeFontName = nochangeFontName
+        self.nochangeTextSize = nochangeTextSize
+
     @property
     def text(self):
         return self.__text
