@@ -71,7 +71,7 @@ def get_paragraph_params(style, paramname):
                     return n.attributes[k]
 
 # --------------Таблицы
-# Получение свойств таблиц из обычных стилей.
+# Получение свойств таблиц из обычных стилей
 def get_styles_table(self):
     doc = load(self.filePath)
     stylesDict = {}
@@ -115,6 +115,46 @@ def get_columnTable_param(style, paramname):
 def get_cellTable_param(style, paramname):
     for n in style.childNodes:
         if n.qname[1] == "table-cell-properties":
+            for k in n.attributes.keys():
+                if k[1] == paramname:
+                    return n.attributes[k]
+
+# --------------Списки
+# Получение свойств списков из обычных стилей
+def get_styles_list(self):
+    doc = load(self.filePath)
+    stylesDict = {}
+    for ast in doc.styles.childNodes:
+        if ast.qname[1] == "style":
+            name = ast.getAttribute('name')
+            style = {}
+            stylesDict[name] = style
+            for n in ast.childNodes: #needbpoint
+                if "list" in n.qname[1]:
+                    for k in n.attributes.keys():
+                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+    return stylesDict
+
+# Получение свойств текста списков из обычных стилей
+def get_styles_listText(self):
+    doc = load(self.filePath)
+    stylesDict = {}
+    for ast in doc.styles.childNodes:
+        if ast.qname[1] == "style":
+            name = ast.getAttribute('name')
+            style = {}
+            if 'Абзацсписка' in name or 'WW' in name or 'LF' in name:
+                stylesDict[name] = style
+                for n in ast.childNodes:
+                    if n.qname[1] == "text-properties":
+                        for k in n.attributes.keys():
+                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+    return stylesDict
+
+# Получение параметров стиля списка
+def get_list_param(style, paramname):
+    for n in style.childNodes:
+        if  "list" in n.qname[1] or "text" in n.qname[1]:
             for k in n.attributes.keys():
                 if k[1] == paramname:
                     return n.attributes[k]
