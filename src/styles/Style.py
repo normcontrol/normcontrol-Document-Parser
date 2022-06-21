@@ -158,3 +158,79 @@ def get_list_param(style, paramname):
             for k in n.attributes.keys():
                 if k[1] == paramname:
                     return n.attributes[k]
+
+# --------------Изображения
+# Получение данных о frame изображения
+def get_styles_image_frame(self):
+    doc = load(self.filePath)
+    stylesDict = {}
+    help = list(doc.element_dict.keys())
+    token = ''
+    for i in help:
+        if i[1] == 'frame':
+            token = i
+
+    objs = doc.element_dict.get(token)
+    for ast in objs:
+        if ast.qname[1] == "frame":
+            name = ast.getAttribute('name')
+            style = {}
+            for i in ast.attributes.keys():
+                style[ast.qname[1] + "/" + i[1]] = ast.attributes[i]
+            for n in ast.childNodes:
+                for k in n.attributes.keys():
+                    style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+            stylesDict[name] = style
+    return stylesDict
+
+# Получение данных изображения
+def get_styles_image(self):
+    doc = load(self.filePath)
+    stylesDict = {}
+    help = list(doc.element_dict.keys())
+    token = ''
+    for i in help:
+        if i[1] == 'image':
+            token = i
+
+    objs = doc.element_dict.get(token)
+    for ast in objs:
+        if ast.qname[1] == "image":
+            name = ast.getAttribute('href')
+            style = {}
+            for n in ast.attributes.keys():
+                style[n] = ast.attributes[n]
+            stylesDict[name] = style
+    return stylesDict
+
+# Получение параметра frame
+def get_frame_param(filePath, stylename, paramname):
+    doc = load(filePath)
+    help = list(doc.element_dict.keys())
+    token = ''
+    for i in help:
+        if i[1] == 'frame':
+            token = i
+
+    objs = doc.element_dict.get(token)
+    for ast in objs:
+        if stylename in ast.getAttribute('name'):
+            for i in ast.attributes.keys():
+                if paramname in i:
+                    return ast.attributes[i]
+
+# Получение параметра image
+def get_image_param(filePath, stylename, paramname):
+    doc = load(filePath)
+    help = list(doc.element_dict.keys())
+    token = ''
+    for i in help:
+        if i[1] == 'image':
+            token = i
+
+    objs = doc.element_dict.get(token)
+    for ast in objs:
+        if stylename in ast.getAttribute('href'):
+            for i in ast.attributes.keys():
+                if paramname in i:
+                    return ast.attributes[i]
