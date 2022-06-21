@@ -336,6 +336,7 @@ class DocumentParser():
             for k in style.attributes.keys():
                 if k[1] == "parent-style-name":
                     default = doc.has_style_param(default, style.attributes[k], paramname, propertytype)
+                    break
         else:
             default = paramname
         return default
@@ -348,6 +349,7 @@ class DocumentParser():
             for k in style.attributes.keys():
                 if k[1] == "parent-style-name":
                    default = doc.has_style_param(default, style.attributes[k], paramname, propertytype)
+                   break
             default = doc.has_default_param(default, style.getAttribute("family"), paramname, propertytype)
         else:
             default = param
@@ -370,6 +372,7 @@ class DocumentParser():
                 if k[1] == "parent-style-name":
                    default = \
                        doc.has_style_param_without_recursion2(default, style.attributes[k], paramname, propertytype)
+                   break
         else:
             default = param
         return default
