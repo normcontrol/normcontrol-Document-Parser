@@ -71,9 +71,10 @@ def get_style_by_name(filePath, stylename):
         if ast.getAttribute("name") == stylename:
             return ast
 
-def get_paragraph_params(ast, paramname):
+#"paragraph-properties"
+def get_paragraph_params(ast, paramname, propertytype):
     for n in ast.childNodes:
-        if n.qname[1] == "paragraph-properties":
+        if n.qname[1] == propertytype:
             for k in n.attributes.keys():
                 if k[1] == paramname:
                    return n.attributes[k]
