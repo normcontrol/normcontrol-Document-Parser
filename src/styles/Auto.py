@@ -89,7 +89,8 @@ def get_styles_automatic_styles_table(self):
         style = {}
         styles[name] = style
         for n in ast.childNodes:
-            if n.qname[1] == "table-properties" or n.qname[1] == "table-column-properties" or n.qname[1] == "table-row-properties" or n.qname[1] == "table-cell-properties":
+            if n.qname[1] == "table-properties" or n.qname[1] == "table-column-properties" \
+                    or n.qname[1] == "table-row-properties" or n.qname[1] == "table-cell-properties":
                 for k in n.attributes.keys():
                     style[n.qname[1] + "/" + k[1]] = n.attributes[k]
     return styles
