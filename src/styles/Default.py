@@ -44,9 +44,9 @@ def get_style_new(filePath,family):
                 return ast
 
 # Получение параметров
-def get_paragraph_params(style, paramname):
+def get_paragraph_params(style, paramname, propertytype):
     for n in style.childNodes:
-        if n.qname[1] == "paragraph-properties":
+        if n.qname[1] == propertytype:
             for k in n.attributes.keys():
                 if k[1] == paramname:
                     return n.attributes[k]

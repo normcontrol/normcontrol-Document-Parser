@@ -71,13 +71,57 @@ def get_style_by_name(filePath, stylename):
         if ast.getAttribute("name") == stylename:
             return ast
 
-def get_paragraph_params(ast, paramname):
+#"paragraph-properties"
+def get_paragraph_params(ast, paramname, propertytype):
     for n in ast.childNodes:
-        if n.qname[1] == "paragraph-properties":
+        if n.qname[1] == propertytype:
             for k in n.attributes.keys():
                 if k[1] == paramname:
                    return n.attributes[k]
 
+# --------------Таблицы
+# Получение параметов колонок, ячеек, столбцов и строк таблиц из автоматических стилей
+def get_styles_automatic_styles_table(self):
+    doc = load(self.filePath)
+    styles = {}
+    for ast in doc.automaticstyles.childNodes:
+        name = ast.getAttribute('name')
+        style = {}
+        styles[name] = style
+        for n in ast.childNodes:
+            if n.qname[1] == "table-properties" or n.qname[1] == "table-column-properties" \
+                    or n.qname[1] == "table-row-properties" or n.qname[1] == "table-cell-properties":
+                for k in n.attributes.keys():
+                    style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+    return styles
 
+# --------------Списки
+# Получение параметов списков из автоматических стилей
+def get_styles_automatic_styles_list(self):
+    doc = load(self.filePath)
+    styles = {}
+    for ast in doc.automaticstyles.childNodes:
+        name = ast.getAttribute('name')
+        style = {}
+        for n in ast.childNodes:
+            if "list-level" in n.qname[1]:
+                styles[name] = style
+                for k in n.attributes.keys():
+                    style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+    return styles
 
-
+# Получение свойств текста списков из обычных стилей
+def get_styles_automatic_listsText(self):
+    doc = load(self.filePath)
+    stylesDict = {}
+    for ast in doc.automaticstyles.childNodes:
+        if ast.qname[1] == "style":
+            name = ast.getAttribute('name')
+            style = {}
+            if 'Абзацсписка' in name or 'WW' in name or 'LF' in name:
+                stylesDict[name] = style
+                for n in ast.childNodes:
+                    if n.qname[1] == "text-properties":
+                        for k in n.attributes.keys():
+                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+    return stylesDict

@@ -1,4 +1,10 @@
-DEFAULT_PARAM={}
+DEFAULT_PARAM = {}
+TABLE_PARAM = {}
+ROW_PARAM = {}
+COLUMN_PARAM = {}
+CELL_PARAM = {}
+
+# Text Parameters
 DEFAULT_PARAM["text-align"] = "start" #p
 DEFAULT_PARAM["text-indent"] = "0in"  #p
 DEFAULT_PARAM["margin-right"] = "0in" #page-layout-properties
@@ -22,4 +28,7 @@ DEFAULT_PARAM["font-size"] = 11
 DEFAULT_PARAM["color"] = "#000000"
 DEFAULT_PARAM["hyphenate"] = "true" #micr
 
-
+# Table Parameters
+# Table Row Parameters
+# Table Column Parameters
+# Table Cell Parameters
