@@ -1,7 +1,9 @@
-class PDFTable:
-    def __init__(self,x0,y0,x1,y1, cells):
-        self.x0 = x0
-        self.y0 = y0
-        self.x1 = x1
-        self.y1 = y1
-        self.cells = cells
+from pdfplumber.table import TableFinder
+
+
+class PDFTable():
+    def __init__(self, table):
+        self.table = table
+        self.text = []
+    def addText(self, text):
+        self.text.append(text)
