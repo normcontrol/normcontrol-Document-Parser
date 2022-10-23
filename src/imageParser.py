@@ -8,7 +8,7 @@ from src.styles import Auto
 from src.styles import Default
 from src.styles import Style
 
-class ListParser():
+class ImageParser():
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
 
-    doc = ListParser('listsimages.odt')
+    doc = ImageParser('listsimages.odt')
     print("-----------------------------------------\n")
     print("Получение стилей image & frame:\n")
     print(Style.get_styles_image(doc))
