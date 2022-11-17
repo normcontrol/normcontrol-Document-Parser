@@ -46,11 +46,14 @@ def upload_file():
             space = pdfParser.getSpace(lines)
             pdfParser.getParagraph(lines, space, listOfTable)
             json = pdfParser.document.createJsonToDB()
-            response = app.response_class(
-                response=json,
-                status=200,
-                mimetype='application/json'
-            )
+            # response = app.response_class(
+            #     response=json,
+            #     status=200,
+            #     mimetype='application/json'
+            # )
+            import requests
+            url = 'http://localhost:8001/clasify'
+            x = requests.post(url, json=json)
             return json
     return "Bad"
 

@@ -1,10 +1,22 @@
+import re
+
+
 class Paragraph:
 
-    def __init__(self, text, indent, lineSpacing, fontName, textSize, nochangeFontName, nochangeTextSize, alignment = None, mrgrg = None, mrglf  = None, mrgtop  = None, mrgbtm  = None, bold = False, italics = False,
-                 underlining = False ,subText = False , superText = False , colorText = "White",
-                 keepLinesTogether = False, keepWithNext = False, outlineLevel = None, pageBreakBefore = False,
-                 noSpaceBetweenParagraphsOfSameStyle = False):
+    def __init__(self, text, indent, lineSpacing, fontName, textSize, nochangeFontName, nochangeTextSize, alignment = None, mrgrg = None, mrglf  = None, mrgtop  = None, mrgbtm  = None, bold = None, italics = None,
+                 underlining = None ,subText = None , superText = None , colorText = "White",
+                 keepLinesTogether = None, keepWithNext = None, outlineLevel = None,
+                 noSpaceBetweenParagraphsOfSameStyle = None, pageBreakBefore = None):
         self.__text = text
+        self.countOfSpSbl = Paragraph.getCountOfSpSbl(text)
+        self.countSbl = Paragraph.getCountSbl(text)
+        self.lowercase = Paragraph.getlowercase(text)
+        self.uppercase = Paragraph.getuppercase(text)
+        self.lastSbl = Paragraph.getlastSbl(text)
+        self.firstkey = None  #Paragraph.getfirstkey(text)
+        self.prevEl = None
+        self.curEl = None
+        self.nexEl = None
         self.__alignment = alignment
         self.__indent = indent
         self.__mrgrg = mrgrg
@@ -29,6 +41,35 @@ class Paragraph:
         self.nochangeFontName = nochangeFontName
         self.nochangeTextSize = nochangeTextSize
 
+
+    @classmethod
+    def getCountOfSpSbl(cls,text):
+        return len(re.findall("[,.!?;:\'\"«»~]", text))
+    @classmethod
+    def getCountSbl(cls,text):
+        return len(text)
+    @classmethod
+    def getlowercase(cls,text):
+        return True if text.islower() else False
+    @classmethod
+    def getuppercase(cls,text):
+        return True if text.isupper() else False
+    @classmethod
+    def getlastSbl(cls,text):
+        return text[len(text)-2]
+    @classmethod
+    def getfirstkey(cls,text):
+        return text.split(' ')[0]
+    @classmethod
+    def getprevEl(cls,text):
+        return False
+    @classmethod
+    def getcurEl(cls,text):
+        return False
+    @classmethod
+    def getnextEl(cls,text):
+        return False
+
     @property
     def text(self):
         return self.__text
@@ -41,9 +82,6 @@ class Paragraph:
     def outlineLevel(self):
         return self.__outlineLevel
 
-    @property
-    def pageBreakBefore(self):
-        return self.__pageBreakBefore
 
     @property
     def noSpaceBetweenParagraphsOfSameStyle(self):

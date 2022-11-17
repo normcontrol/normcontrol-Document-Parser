@@ -1,6 +1,9 @@
 import json
 import re
 
+from src.PDF.Table import PDFTable
+
+
 class Class:
     def __init__(self, owner, time):
         self.__owner = owner
@@ -9,25 +12,41 @@ class Class:
 
     def addParagraph(self, id, paragraph):
         self.content[id] = paragraph
+    ## Пункт в сантиметры
+    @classmethod
+    def ptToSm(cls, value):
+        return value/28.346
+    ## Дюйм в сантиметры
+    @classmethod
+    def dmToSm(cls,value):
+        return value * 2.54
 
     def createJsonToDB(self):
+        listOfAttr = ["countOfSpSbl","countSbl","lowercase","uppercase","lastSbl","firstkey","prevEl","curEl","nexEl","bold","italics","keepLinesTogether","keepWithNext", "outlineLevel", "pageBreakBefore"]
         s ="{"
         for attribute in dir(self):
             if attribute == "time" or attribute == "owner":
                 s = s + "\"" + attribute + "\": \"" + str(getattr(self,attribute)) + "\", "
-        s = s + "\"paragraphs\": [{"
+        s = s + "\"paragraphs\": {"
         for i, p in self.content.items():
-            s = s + "\"" + str(i) + "\": [{\""
-            for attribute in dir(p):
-                if not attribute.startswith('_'):
-                    s = s + attribute + "\": \"" + str(getattr(p,attribute)) + "\",\""
-            l = len(s)
-            s = s[:l - 2] + "}], "
+            if p.__class__ != PDFTable :
+                s = s + "\"" + str(i) + "\": {\""
+                for attribute in dir(p):
+                    if not attribute.startswith('_') and attribute in listOfAttr:
+                        s = s + attribute + "\": \"" + str(getattr(p,attribute)) + "\",\""
+                l = len(s)
+                s = s[:l - 2] + "}, "
         l = len(s)
-        s = s[:l - 2] + "}]}"
+        s = s[:l - 2] + "}}"
         jsonText = json.loads(s)
         return jsonText
 
+    def requestToClasify(self, jsonText):
+        import requests
+        response = requests.get("http://api.open-notify.org/astros.json", params={
+            "jsonText":jsonText
+        })
+        return response
     # def createJsonToClassificator(self):
     #  #   listNeedAttribute = { "alignment", "indent", "mrgrg", "mrglf", "lineSpacing", "mrgtop", "mrgbtm", "bold", "italics",
     #  #            "keepLinesTogether", "keepWithNext", "outlineLevel", "pageBreakBefore",
@@ -65,34 +84,6 @@ class Class:
     #     jsonText = json.loads(s)
     #     return jsonText
 
-    def getCountOfSpSbl(self,text):
-        return len(re.findall("[,.!?;:\'\"«»~]", text))
-
-    def getCountword(self,text):
-        return len(text.split(' '))
-    def getCountSbl(self,text):
-        return len(text)
-
-    def getlowercase(self,text):
-        return True if text.islower() else False
-
-    def getuppercase(self, text):
-        return True if text.isupper() else False
-
-    def getlastSbl(self, text):
-        return text[len(text)-1]
-
-    def getfirstkey(self, text):
-        return text.split(' ')[0]
-
-    def getprevEl(self,text):
-        return False
-
-    def getcurEl(self, text):
-        return False
-
-    def getnextEl(self,text):
-        return False
 
     @property
     def content(self):

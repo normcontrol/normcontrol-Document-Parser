@@ -66,7 +66,7 @@ class PDFParser:
             if i != len(lines) - 1 and (lines[i].y0 - lines[i + 1].y1>0):
                 space.append(lines[i].y0 - lines[i + 1].y1)
             else:
-                space.append(9.12)
+                space.append(0)
             i = i + 1
         return space
     def addParagraphInDocumentWithAttribute(self, paragraphline,id):
@@ -152,7 +152,7 @@ class PDFParser:
         text = ""
         for line in paragraphLine.lines:
             text = text + line.text
-        paragraph = Paragraph(text=text, indent=paragraphLine.indent, lineSpacing=paragraphLine.lineSpacing,
+        paragraph = Paragraph(text=text, indent=Class.ptToSm(paragraphLine.indent)-3, lineSpacing=Class.ptToSm(paragraphLine.lineSpacing),
                               fontName=paragraphLine.fontName, textSize=paragraphLine.textSize,
                               nochangeTextSize=paragraphLine.nochangeTextSize,
                               nochangeFontName=paragraphLine.nochangeFontName)
