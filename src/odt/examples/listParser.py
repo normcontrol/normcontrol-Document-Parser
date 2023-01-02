@@ -1,12 +1,7 @@
-from odf.opendocument import load
-from odf.style import Style
-from odf.table import Table
 from guppy import hpy
-import timing
 
-from src.styles import Auto
-from src.styles import Default
-from src.styles import Style
+from src.odt.styles import Style, Auto, Default
+
 
 class ListParser():
     def __init__(self, file):
@@ -17,7 +12,7 @@ if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
 
-    doc = ListParser('listsimages.odt')
+    doc = ListParser('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt')
     print("Получение текста и автоматических стилей:\n")
     print(Auto.get_styles(doc))
     print("-----------------------------------------\n")
@@ -42,10 +37,12 @@ if __name__ == '__main__':
     print(Auto.get_style_automatic_by_name(doc, 'LFO16'))
     print("----------------------lists-------------------\n")
     print("Получение конкретных характеристик:")
-    ast = Auto.get_style_by_name('listsimages.odt', 'LFO2')
+    ast = Auto.get_style_by_name('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/'
+                                 'documents/listsimages.odt', 'LFO2')
     print(Style.get_list_param(ast, 'num-letter-sync'))
 
-    ast = Style.get_style_new('listsimages.odt', 'WW_CharLFO17LVL9')
+    ast = Style.get_style_new('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/'
+                              'documents/listsimages.odt', 'WW_CharLFO17LVL9')
     print(Style.get_list_param(ast, 'font-size'))
     print("-------------------------------------------\n")
 

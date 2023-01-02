@@ -1,17 +1,11 @@
 from odf.opendocument import load
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, TextProperties
-from odf import text
+from odf.style import Style
 from odf.table import Table
-from odf.text import H, P, Span
+from odf.text import P
 from guppy import hpy
-import timing
 
-from src.styles import Auto
-from src.styles import Default
-from src.styles import Style
-from src import const
-from src.tableParser import TableParser
+from src.odt.styles import Style, Auto, Default
+from src.odt.helpers import const
 
 
 class DocumentParser():
@@ -330,7 +324,7 @@ class DocumentParser():
 
      #проверка наличия в автоматическом стиле
     def has_auto_param(self,stylename, paramname, default, propertytype):
-        style = Auto.get_style_by_name(self.filePath,stylename)
+        style = Auto.get_style_by_name(self.filePath, stylename)
         param = Auto.get_paragraph_params(style, paramname, propertytype)
         if param is None:
             for k in style.attributes.keys():
@@ -357,8 +351,8 @@ class DocumentParser():
 
     #проверка наличия в стиле по умолчанию
     def has_default_param(self, stylepar, family, paramname, propertytype):
-        style = Default.get_style_new(self.filePath,family)
-        param = Default.get_paragraph_params(style,paramname, propertytype)
+        style = Default.get_style_new(self.filePath, family)
+        param = Default.get_paragraph_params(style, paramname, propertytype)
         if param is not None:
             stylepar = param
         return stylepar
@@ -421,7 +415,7 @@ def get_nodes(start_node, level=0):
 if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
-    doc = DocumentParser('dipbac.odt')
+    doc = DocumentParser('../documents/dipbac.odt')
     '''print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
@@ -476,7 +470,7 @@ if __name__ == '__main__':
     print(doc.isauto('P12', "text-align", "paragraph-properties"))
     doc2 = load('dipbac.odt')
     print(get_nodes(doc2.text))
-    print(doc.has_style_param( const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
+    print(doc.has_style_param(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",
                                                  "paragraph-properties"))
     h2 = h.heap()

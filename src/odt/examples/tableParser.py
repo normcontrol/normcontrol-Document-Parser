@@ -1,13 +1,9 @@
 from odf.opendocument import load
-from odf.style import Style
 from odf.table import Table
 from guppy import hpy
-import timing
 
-from src.styles import Auto
-from src.styles import Default
-from src.styles import Style
-from src import const
+from src.odt.styles import Style, Auto, Default
+
 
 class TableParser():
     def __init__(self, file):
@@ -25,7 +21,7 @@ if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
 
-    doc = TableParser('tabl1.odt')
+    doc = TableParser('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/tabl1.odt')
     print("Получение текста и автоматических стилей:\n")
     print(Auto.get_styles(doc))
     print("-----------------------------------------\n")
@@ -46,13 +42,13 @@ if __name__ == '__main__':
     print(Auto.get_text_style_by_name(doc, 'TableCell599'))
     print("-------------------------------------------\n")
     print("Получение конкретных характеристик:")
-    ast = Auto.get_style_by_name('tabl1.odt', 'TableCell395')
+    ast = Auto.get_style_by_name('../documents/tabl1.odt', 'TableCell395')
     print(Style.get_cellTable_param(ast, 'border'))
 
-    ast = Auto.get_style_by_name('tabl1.odt', 'TableRow623')
+    ast = Auto.get_style_by_name('../documents/tabl1.odt', 'TableRow623')
     print(Style.get_rowTable_param(ast, 'use-optimal-row-height'))
 
-    ast = Auto.get_style_by_name('tabl1.odt', 'TableColumn6')
+    ast = Auto.get_style_by_name('../documents/tabl1.odt', 'TableColumn6')
     print(Style.get_columnTable_param(ast, 'column-width'))
     print("-------------------------------------------\n")
 
