@@ -5,7 +5,7 @@ COLUMN_PARAM = {}
 CELL_PARAM = {}
 
 # Text Parameters
-DEFAULT_PARAM["text-align"] = "start" #p
+DEFAULT_PARAM["text-align"] = "start_default" #p
 DEFAULT_PARAM["text-indent"] = "0in"  #p
 DEFAULT_PARAM["margin-right"] = "0in" #page-layout-properties
 DEFAULT_PARAM["margin-left"] = "0in"  #p

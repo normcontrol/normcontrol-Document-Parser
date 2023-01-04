@@ -318,61 +318,64 @@ class DocumentParser():
                         return style'''
 
     #определить автоматический стиль или редактора
-    def isauto(self,stylename, paramname, propertytype):
-        default = const.DEFAULT_PARAM[paramname]
-        if (stylename[1].isdigit()):
-            return doc.has_auto_param(stylename, paramname, default, propertytype)
+    def isauto(self, stylename, paramname, propertytype, default):
+        style = Auto.get_style_by_name(self.filePath, stylename)
+        if style is None:
+            return self.has_style_param(default, stylename, paramname, propertytype)
         else:
-            if (stylename[2].isdigit()):
-                return doc.has_auto_param(stylename, paramname, default, propertytype)
-            else:
-                return doc.has_style_param(default, stylename, paramname, propertytype)
+            return self.has_auto_param(style, paramname, default, propertytype)
 
      #проверка наличия в автоматическом стиле
-    def has_auto_param(self,stylename, paramname, default, propertytype):
-        style = Auto.get_style_by_name(self.filePath,stylename)
+    def has_auto_param(self, style, paramname, default, propertytype):
         param = Auto.get_paragraph_params(style, paramname, propertytype)
         if param is None:
             for k in style.attributes.keys():
                 if k[1] == "parent-style-name":
-                    default = doc.has_style_param(default, style.attributes[k], paramname, propertytype)
+                    default = self.has_style_param(default, style.attributes[k], paramname, propertytype)
                     break
-        else:
-            default = paramname
-        return default
-
-    #проверка наличия в стиле редактора
-    def has_style_param(self, default, stylename, paramname, propertytype):
-        style = Style.get_style_new(self.filePath,stylename)
-        param = Style.get_paragraph_params(style,paramname, propertytype)
-        if param is None:
-            for k in style.attributes.keys():
-                if k[1] == "parent-style-name":
-                   default = doc.has_style_param(default, style.attributes[k], paramname, propertytype)
-                   break
-            default = doc.has_default_param(default, style.getAttribute("family"), paramname, propertytype)
         else:
             default = param
         return default
 
-    #проверка наличия в стиле по умолчанию
+        # проверка наличия в стиле редактора
+
+    def has_style_param(self, default, stylename, paramname, propertytype):
+        style = Style.get_style_new(self.filePath, stylename)
+        param = Style.get_paragraph_params(style, paramname, propertytype)
+        if param is None:
+            flag = 0
+            for k in style.attributes.keys():
+                if k[1] == "parent-style-name":
+                    default = self.has_style_param(default, style.attributes[k], paramname, propertytype)
+                    flag = 1
+                    break
+            if flag == 0:
+                default = self.has_default_param(default, style.getAttribute("family"), paramname, propertytype)
+        else:
+            default = param
+        return default
+
+        # проверка наличия в стиле по умолчанию
+
     def has_default_param(self, stylepar, family, paramname, propertytype):
-        style = Default.get_style_new(self.filePath,family)
-        param = Default.get_paragraph_params(style,paramname, propertytype)
-        if param is not None:
-            stylepar = param
+        style = Default.get_style_new(self.filePath, family)
+        if style is not None:
+            param = Default.get_paragraph_params(style, paramname, propertytype)
+            if param is not None:
+                stylepar = param
         return stylepar
 
-#проверка наличия в стиле редактора
-    def has_style_param_without_recursion1(self, default, stylename, paramname,propertytype):
-        style = Style.get_style_new(self.filePath,stylename)
-        param = Style.get_paragraph_params(style,paramname, propertytype)
+        # проверка наличия в стиле редактора
+
+    def has_style_param_without_recursion1(self, default, stylename, paramname, propertytype):
+        style = Style.get_style_new(self.filePath, stylename)
+        param = Style.get_paragraph_params(style, paramname, propertytype)
         if param is None:
             for k in style.attributes.keys():
                 if k[1] == "parent-style-name":
-                   default = \
-                       doc.has_style_param_without_recursion2(default, style.attributes[k], paramname, propertytype)
-                   break
+                    default = \
+                        doc.has_style_param_without_recursion2(default, style.attributes[k], paramname, propertytype)
+                    break
         else:
             default = param
         return default
@@ -418,11 +421,45 @@ def get_nodes(start_node, level=0):
             get_nodes(n, level+1)
     return
 
+#узлы со стилями и род блоками
+def get_nodes_with_style(start_node, global_style_name,level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), " род стиль ", global_style_name)
+                global_style_name = start_node.attributes[k]
+        for n in start_node.childNodes:
+            get_nodes_with_style(n, global_style_name, level + 1)
+    return
+
+#узлы с прохождением по всем стилям
+def get_nodes_with_style_full(start_node, global_style_name, doc, level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                default = const.DEFAULT_PARAM["text-align"]
+                print("из проверки ребенка " + start_node.attributes[k])
+                par_detail = doc.isauto(start_node.attributes[k], "text-align", "paragraph-properties", default)
+                if par_detail == default:
+                    if global_style_name != "":
+                        par_detail = doc.isauto(global_style_name, "text-align", "paragraph-properties", default)
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail)
+                global_style_name = start_node.attributes[k]
+        for n in start_node.childNodes:
+            get_nodes_with_style_full(n, global_style_name, doc, level + 1)
+    return
+
 if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
     doc = DocumentParser('dipbac.odt')
-    '''print("Получение текста и автоматических стилей:\n")
+    doc2 = load('dipbac.odt')
+    print(get_nodes_with_style_full(doc2.text,"", doc))
+    print("-----------------------------------------\n")
+    '''
+    print(doc.isauto("Названиеработы", "text-align", "paragraph-properties"))print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
     print(Auto.get_styles(doc))
@@ -471,14 +508,14 @@ if __name__ == '__main__':
     print("-------------------------------------------\n")
 
     
-   '''
+  
     print(doc.isauto("Текстнатитульнойстранице", "text-align","paragraph-properties"))
     print(doc.isauto('P12', "text-align", "paragraph-properties"))
     doc2 = load('dipbac.odt')
     print(get_nodes(doc2.text))
     print(doc.has_style_param( const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",
-                                                 "paragraph-properties"))
+                                                 "paragraph-properties")) '''
     h2 = h.heap()
     print(h2)
     print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
