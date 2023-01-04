@@ -19,7 +19,7 @@ class DrawFrame:
 
     @property
     def frame_style_name(self):
-        return self.frame_style_name
+        return self._frame_style_name
 
     @frame_style_name.setter
     def frame_style_name(self, value):
@@ -27,7 +27,7 @@ class DrawFrame:
 
     @property
     def frame_name(self):
-        return self.frame_name
+        return self._frame_name
 
     @frame_name.setter
     def frame_name(self, value):
@@ -35,7 +35,7 @@ class DrawFrame:
 
     @property
     def frame_anchor_type(self):
-        return self.frame_anchor_type
+        return self._frame_anchor_type
 
     @frame_anchor_type.setter
     def frame_anchor_type(self, value):
@@ -43,7 +43,7 @@ class DrawFrame:
 
     @property
     def frame_x(self):
-        return self.frame_x
+        return self._frame_x
 
     @frame_x.setter
     def frame_x(self, value):
@@ -51,7 +51,7 @@ class DrawFrame:
 
     @property
     def frame_y(self):
-        return self.frame_y
+        return self._frame_y
 
     @frame_y.setter
     def frame_y(self, value):
@@ -59,7 +59,7 @@ class DrawFrame:
 
     @property
     def frame_width(self):
-        return self.frame_width
+        return self._frame_width
 
     @frame_width.setter
     def frame_width(self, value):
@@ -67,7 +67,7 @@ class DrawFrame:
 
     @property
     def frame_height(self):
-        return self.frame_height
+        return self._frame_height
 
     @frame_height.setter
     def frame_height(self, value):
@@ -75,7 +75,7 @@ class DrawFrame:
 
     @property
     def frame_rel_width(self):
-        return self.frame_rel_width
+        return self._frame_rel_width
 
     @frame_rel_width.setter
     def frame_rel_width(self, value):
@@ -83,7 +83,7 @@ class DrawFrame:
 
     @property
     def frame_rel_height(self):
-        return self.frame_rel_height
+        return self._frame_rel_height
 
     @frame_rel_height.setter
     def frame_rel_height(self, value):
@@ -91,7 +91,7 @@ class DrawFrame:
 
     @property
     def image_href(self):
-        return self.image_href
+        return self._image_href
 
     @image_href.setter
     def image_href(self, value):
@@ -99,7 +99,7 @@ class DrawFrame:
 
     @property
     def image_type(self):
-        return self.image_type
+        return self._image_type
 
     @image_type.setter
     def image_type(self, value):
@@ -107,7 +107,7 @@ class DrawFrame:
 
     @property
     def image_show(self):
-        return self.image_show
+        return self._image_show
 
     @image_show.setter
     def image_show(self, value):
@@ -115,7 +115,7 @@ class DrawFrame:
 
     @property
     def image_actuate(self):
-        return self.image_actuate
+        return self._image_actuate
 
     @image_actuate.setter
     def image_actuate(self, value):

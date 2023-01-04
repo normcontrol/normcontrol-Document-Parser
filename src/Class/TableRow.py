@@ -9,7 +9,7 @@ class TableRow:
 
     @property
     def row_name(self):
-        return self.row_name
+        return self._row_name
 
     @row_name.setter
     def row_name(self, value):
@@ -17,7 +17,7 @@ class TableRow:
 
     @property
     def row_family(self):
-        return self.row_family
+        return self._row_family
 
     @row_family.setter
     def row_family(self, value):
@@ -25,7 +25,7 @@ class TableRow:
 
     @property
     def row_properties_min_row_height(self):
-        return self.row_properties_min_row_height
+        return self._row_properties_min_row_height
 
     @row_properties_min_row_height.setter
     def row_properties_min_row_height(self, value):
@@ -33,7 +33,7 @@ class TableRow:
 
     @property
     def row_properties_use_optimal_row_height(self):
-        return self.row_properties_use_optimal_row_height
+        return self._row_properties_use_optimal_row_height
 
     @row_properties_use_optimal_row_height.setter
     def row_properties_use_optimal_row_height(self, value):

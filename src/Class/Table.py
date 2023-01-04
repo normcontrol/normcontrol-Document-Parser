@@ -12,7 +12,7 @@ class Table:
 
     @property
     def table_name(self):
-        return self.table_name
+        return self._table_name
 
     @table_name.setter
     def table_name(self, value):
@@ -20,7 +20,7 @@ class Table:
 
     @property
     def table_family(self):
-        return self.table_family
+        return self._table_family
 
     @table_family.setter
     def table_family(self, value):
@@ -28,7 +28,7 @@ class Table:
 
     @property
     def table_master_page_name(self):
-        return self.table_master_page_name
+        return self._table_master_page_name
 
     @table_master_page_name.setter
     def table_master_page_name(self, value):
@@ -36,7 +36,7 @@ class Table:
 
     @property
     def table_properties_width(self):
-        return self.table_properties_width
+        return self._table_properties_width
 
     @table_properties_width.setter
     def table_properties_width(self, value):
@@ -44,7 +44,7 @@ class Table:
 
     @property
     def table_properties_margin_left(self):
-        return self.table_properties_margin_left
+        return self._table_properties_margin_left
 
     @table_properties_margin_left.setter
     def table_properties_margin_left(self, value):
@@ -52,4 +52,8 @@ class Table:
 
     @property
     def table_properties_align(self):
-        return self.table_properties_align
+        return self._table_properties_align
+
+    @table_properties_align.setter
+    def table_properties_align(self, value):
+        self._table_properties_align = value

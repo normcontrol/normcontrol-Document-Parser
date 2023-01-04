@@ -15,7 +15,7 @@ class TableCell:
 
     @property
     def cell_name(self):
-        return self.cell_name
+        return self._cell_name
 
     @cell_name.setter
     def cell_name(self, value):
@@ -23,7 +23,7 @@ class TableCell:
 
     @property
     def cell_family(self):
-        return self.cell_family
+        return self._cell_family
 
     @cell_family.setter
     def cell_family(self, value):
@@ -31,7 +31,7 @@ class TableCell:
 
     @property
     def cell_properties_border(self):
-        return self.cell_properties_border
+        return self._cell_properties_border
 
     @cell_properties_border.setter
     def cell_properties_border(self, value):
@@ -39,7 +39,7 @@ class TableCell:
 
     @property
     def cell_properties_writing_mode(self):
-        return self.cell_properties_writing_mode
+        return self._cell_properties_writing_mode
 
     @cell_properties_writing_mode.setter
     def cell_properties_writing_mode(self, value):
@@ -47,7 +47,7 @@ class TableCell:
 
     @property
     def cell_properties_padding_top(self):
-        return self.cell_properties_padding_top
+        return self._cell_properties_padding_top
 
     @cell_properties_padding_top.setter
     def cell_properties_padding_top(self, value):
@@ -55,7 +55,7 @@ class TableCell:
 
     @property
     def cell_properties_padding_left(self):
-        return self.cell_properties_padding_left
+        return self._cell_properties_padding_left
 
     @cell_properties_padding_left.setter
     def cell_properties_padding_left(self, value):
@@ -63,7 +63,7 @@ class TableCell:
 
     @property
     def cell_properties_padding_bottom(self):
-        return self.cell_properties_padding_bottom
+        return self._cell_properties_padding_bottom
 
     @cell_properties_padding_bottom.setter
     def cell_properties_padding_bottom(self, value):
@@ -71,7 +71,7 @@ class TableCell:
 
     @property
     def cell_properties_padding_right(self):
-        return self.cell_properties_padding_right
+        return self._cell_properties_padding_right
 
     @cell_properties_padding_right.setter
     def cell_properties_padding_right(self, value):

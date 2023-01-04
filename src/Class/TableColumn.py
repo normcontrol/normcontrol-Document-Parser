@@ -10,7 +10,7 @@ class TableColumn:
 
     @property
     def column_name(self):
-        return self.column_name
+        return self._column_name
 
     @column_name.setter
     def column_name(self, value):
@@ -18,7 +18,7 @@ class TableColumn:
 
     @property
     def column_family(self):
-        return self.column_family
+        return self._column_family
 
     @column_family.setter
     def column_family(self, value):
@@ -26,7 +26,7 @@ class TableColumn:
 
     @property
     def column_properties_column_width(self):
-        return self.column_properties_column_width
+        return self._column_properties_column_width
 
     @column_properties_column_width.setter
     def column_properties_column_width(self, value):
@@ -34,7 +34,7 @@ class TableColumn:
 
     @property
     def column_properties_use_optimal_column_width(self):
-        return self.column_properties_use_optimal_column_width
+        return self._column_properties_use_optimal_column_width
 
     @column_properties_use_optimal_column_width.setter
     def column_properties_use_optimal_column_width(self, value):
