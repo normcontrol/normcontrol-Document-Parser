@@ -1,21 +1,40 @@
-# Draw frame class for ODT document
-
 class DrawFrame:
+    """
+    Description: Draw frame class for ODT document.
+
+    Parameters:
+        _frame_style_name - attribute specifies the style of current frame,
+        _frame_name - attribute specifies the name of current frame,
+        _frame_anchor_type - attribute specifies how a frame is bound to a text document,
+        _frame_x - attribute specifies the position of the frame on the X axis,
+        _frame_y - attribute specifies the position of the frame on the Y axis,
+        _frame_width - attribute specifies the width of the frame,
+        _frame_height - attribute specifies the height of the frame,
+        _frame_rel_width - attribute specifies height of a drawing object as a relative value within a frame,
+        _frame_rel_height - attribute specifies the width of a drawing object as a relative value within a frame,
+        _image_href - attribute specifies the location of an embedded object,
+        _image_type - attribute always has the value simple in OpenDocument document instances,
+        _image_show - attribute is used to communicate the desired presentation of the ending resource on traversal
+            from the starting resource,
+        _image_actuate - attribute is used to communicate the desired timing of traversal from the starting resource
+            to the ending resource.
+    """
+
     def __init__(self, frame_style_name, frame_name, frame_anchor_type, frame_x, frame_y, frame_width, frame_height,
                  frame_rel_width, frame_rel_height, image_href, image_type, image_show, image_actuate):
-        self.frame_style_name = frame_style_name
-        self.frame_name = frame_name
-        self.frame_anchor_type = frame_anchor_type
-        self.frame_x = frame_x
-        self.frame_y = frame_y
-        self.frame_width = frame_width
-        self.frame_height = frame_height
-        self.frame_rel_width = frame_rel_width
-        self.frame_rel_height = frame_rel_height
-        self.image_href = image_href
-        self.image_type = image_type
-        self.image_show = image_show
-        self.image_actuate = image_actuate
+        self._frame_style_name = frame_style_name
+        self._frame_name = frame_name
+        self._frame_anchor_type = frame_anchor_type
+        self._frame_x = frame_x
+        self._frame_y = frame_y
+        self._frame_width = frame_width
+        self._frame_height = frame_height
+        self._frame_rel_width = frame_rel_width
+        self._frame_rel_height = frame_rel_height
+        self._image_href = image_href
+        self._image_type = image_type
+        self._image_show = image_show
+        self._image_actuate = image_actuate
 
     @property
     def frame_style_name(self):
