@@ -3,12 +3,21 @@ from odf.style import Style
 from odf.table import Table
 from odf.text import P
 from guppy import hpy
-
 from src.odt.styles import Style, Auto, Default
 from src.odt.helpers import const
+import os
 
+def create_path(abs_path, rel_path):
+    script_dir = str.split(abs_path, '/')
+    path = ''
+    ind = 0
+    while ind < len(script_dir) - 2:
+        path += script_dir[ind]
+        path += '/'
+        ind += 1
+    return path + rel_path
 
-class DocumentParser():
+class DocumentParser:
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
@@ -415,7 +424,10 @@ def get_nodes(start_node, level=0):
 if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
-    doc = DocumentParser('../documents/dipbac.odt')
+
+    script_path = os.path.abspath(__file__)
+    rel_path = "documents/dipbac.odt"
+    doc = DocumentParser(create_path(script_path, rel_path))
     '''print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
@@ -468,7 +480,7 @@ if __name__ == '__main__':
    '''
     print(doc.isauto("Текстнатитульнойстранице", "text-align","paragraph-properties"))
     print(doc.isauto('P12', "text-align", "paragraph-properties"))
-    doc2 = load('dipbac.odt')
+    doc2 = load(create_path(script_path, rel_path))
     print(get_nodes(doc2.text))
     print(doc.has_style_param(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",

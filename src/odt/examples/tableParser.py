@@ -1,11 +1,20 @@
 from odf.opendocument import load
 from odf.table import Table
 from guppy import hpy
-
 from src.odt.styles import Style, Auto, Default
+import os
 
+def create_path(abs_path, rel_path):
+    script_dir = str.split(abs_path, '/')
+    path = ''
+    ind = 0
+    while ind < len(script_dir) - 2:
+        path += script_dir[ind]
+        path += '/'
+        ind += 1
+    return path + rel_path
 
-class TableParser():
+class TableParser:
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
@@ -17,11 +26,15 @@ class TableParser():
             self.fileText.append(table)
             print(table)
 
+
+
 if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
+    script_path = os.path.abspath(__file__)
+    rel_path = "documents/tabl1.odt"
 
-    doc = TableParser('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/tabl1.odt')
+    doc = TableParser(create_path(script_path, rel_path))
     print("Получение текста и автоматических стилей:\n")
     print(Auto.get_styles(doc))
     print("-----------------------------------------\n")

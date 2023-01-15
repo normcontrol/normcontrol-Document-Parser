@@ -1,9 +1,18 @@
 from guppy import hpy
-
 from src.odt.styles import Style
+import os
 
+def create_path(abs_path, rel_path):
+    script_dir = str.split(abs_path, '/')
+    path = ''
+    ind = 0
+    while ind < len(script_dir) - 2:
+        path += script_dir[ind]
+        path += '/'
+        ind += 1
+    return path + rel_path
 
-class ImageParser():
+class ImageParser:
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
@@ -12,7 +21,9 @@ if __name__ == '__main__':
     h = hpy()
     h1 = h.heap()
 
-    doc = ImageParser('/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt')
+    script_path = os.path.abspath(__file__)
+    rel_path = "documents/listsimages.odt"
+    doc = ImageParser(create_path(script_path, rel_path))
     print("-----------------------------------------\n")
     print("Получение стилей image & frame:\n")
     print(Style.get_styles_image(doc))
