@@ -592,14 +592,17 @@ if __name__ == '__main__':
     print("-------------------------------------------\n")
 
 
-   '''
     print(doc.isauto("Текстнатитульнойстранице", "text-align", "paragraph-properties"))
     print(doc.isauto('P12', "text-align", "paragraph-properties"))
-    doc2 = load(create_path(script_path, rel_path))
     print(get_nodes(doc2.text))
     print(doc.has_style_param(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",
                                                  "paragraph-properties"))
+   '''
+    doc2 = load(create_path(script_path, rel_path))
+
+
+    print(get_nodes_with_style_full(doc2.text, "", doc))
     h2 = h.heap()
     print(h2)
     print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
