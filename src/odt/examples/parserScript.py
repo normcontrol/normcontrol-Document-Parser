@@ -1,22 +1,25 @@
-from array import array
-
 from odf.opendocument import load
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, TextProperties
-from odf import text
+from odf.style import Style
 from odf.table import Table
-from odf.text import H, P, Span
+from odf.text import P
 from guppy import hpy
-import timing
-
-from src.styles import Auto
-from src.styles import Default
-from src.styles import Style
-from src import const
-from src.tableParser import TableParser
+from src.odt.styles import Style, Auto, Default
+from src.odt.helpers import const
+import os
 
 
-class DocumentParser():
+def create_path(abs_path, rel_path):
+    script_dir = str.split(abs_path, '/')
+    path = ''
+    ind = 0
+    while ind < len(script_dir) - 2:
+        path += script_dir[ind]
+        path += '/'
+        ind += 1
+    return path + rel_path
+
+
+class DocumentParser:
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
@@ -34,7 +37,6 @@ class DocumentParser():
         for table in doc.getElementsByType(Table):
             self.fileText.append(table)
             print(table)
-
 
     # Получение стилей автоматических
     def get_styles_automatic_styles(self):
@@ -70,7 +72,7 @@ class DocumentParser():
                         style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return stylesDict
 
-     # Получение стилей
+    # Получение стилей
     def get_styles_style(self):
         doc = load(self.filePath)
         stylesDict = {}
@@ -87,7 +89,7 @@ class DocumentParser():
                         style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return stylesDict
 
-     # Получение свойств текста из обычных стилей
+    # Получение свойств текста из обычных стилей
     def get_styles_text(self):
         doc = load(self.filePath)
         stylesDict = {}
@@ -119,14 +121,12 @@ class DocumentParser():
                         style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         print(styles)
 
-
-
     # Дерево
     def get_styles_tree(self):
         stylesDef = doc.get_styles_default_style()
         styles = doc.get_styles_style()
         stylesAuto = doc.get_styles_automatic_styles()
-        stylesTree={}
+        stylesTree = {}
 
         for sD in stylesDef:
             style = {}
@@ -142,10 +142,8 @@ class DocumentParser():
         for sA in stylesAuto:
             styleA = doc.get_style_automatic(sA)
             style = {}
-            #доделать
+            # доделать
         return stylesTree
-
-
 
     # Получение конкретного стиля
     def get_style(self, stylename):
@@ -202,8 +200,8 @@ class DocumentParser():
                             text_styles[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return text_styles
 
-#отсюда не переносила
-        # Получение параметов текста из стилей
+    # отсюда не переносила
+    # Получение параметов текста из стилей
     def get_styles_paragraph_alignment(self):
         doc = load(self.filePath)
         stylesDict = {}
@@ -220,7 +218,7 @@ class DocumentParser():
                                 style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         print(stylesDict)
 
-    def get_paragraph_alignment(self,stylename):
+    def get_paragraph_alignment(self, stylename):
         doc1 = load(self.filePath)
         style = {}
         flag = 0
@@ -232,14 +230,14 @@ class DocumentParser():
                     if n.qname[1] == "paragraph-properties":
                         for k in n.attributes.keys():
                             if k[1] == "text-align":
-                                flag=1
+                                flag = 1
                                 style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-                    if flag==0:
+                    if flag == 0:
                         parent = style["parent-style-name"]
                         print(doc.get_style(parent))
 
-    #параметры параграфа втоматического стиля конкретного
-    def get_paragraph_properties_auto(self,stylename):
+    # параметры параграфа втоматического стиля конкретного
+    def get_paragraph_properties_auto(self, stylename):
         doc1 = load(self.filePath)
         style = {}
         for ast in doc1.automaticstyles.childNodes:
@@ -251,6 +249,7 @@ class DocumentParser():
                         for k in n.attributes.keys():
                             style[n.qname[1] + "/" + k[1]] = n.attributes[k]
         return style
+
     '''#получение первого родителя стиля
     def get_style_base_auto(self,stylename):
         doc1 = load(self.filePath)
@@ -319,7 +318,7 @@ class DocumentParser():
                                     doc.get_parent_auto(flag+1, style, ast.attributes[k])
                         return style'''
 
-    #определить автоматический стиль или редактора
+    # определить автоматический стиль или редактора
     def isauto(self, stylename, paramname, propertytype, default):
         style = Auto.get_style_by_name(self.filePath, stylename)
         if style is None:
@@ -327,7 +326,7 @@ class DocumentParser():
         else:
             return self.has_auto_param(style, paramname, default, propertytype)
 
-     #проверка наличия в автоматическом стиле
+    # проверка наличия в автоматическом стиле
     def has_auto_param(self, style, paramname, default, propertytype):
         param = Auto.get_paragraph_params(style, paramname, propertytype)
         if param is None:
@@ -383,8 +382,8 @@ class DocumentParser():
         return default
 
     def has_style_param_without_recursion2(self, default, stylename, paramname, propertytype):
-        style = Style.get_style_new(self.filePath,stylename)
-        param = Style.get_paragraph_params(style,paramname, propertytype)
+        style = Style.get_style_new(self.filePath, stylename)
+        param = Style.get_paragraph_params(style, paramname, propertytype)
         if param is None:
             default = doc.has_default_param(default, style.getAttribute("family"), paramname, propertytype)
         else:
@@ -392,39 +391,41 @@ class DocumentParser():
         return default
 
 
-
-
 # Функция описывающая узел (фрагмент текста) и его атрибуты
 def odf_dump_nodes(start_node, level=0):
-    if start_node.nodeType==3:
+    if start_node.nodeType == 3:
         # text node
-        print("  "*level, "NODE:", start_node.nodeType, ":(text):", str(start_node))
+        print("  " * level, "NODE:", start_node.nodeType, ":(text):", str(start_node))
     else:
         # element node
-        attrs= []
+        attrs = []
         for k in start_node.attributes.keys():
-            attrs.append( k[1] + ':' + start_node.attributes[k]  )
-        print("  "*level, "NODE:", start_node.nodeType, ":", start_node.qname[1], " ATTR:(", ",".join(attrs), ") ", str(start_node))
+            attrs.append(k[1] + ':' + start_node.attributes[k])
+        print("  " * level, "NODE:", start_node.nodeType, ":", start_node.qname[1], " ATTR:(", ",".join(attrs), ") ",
+              str(start_node))
 
         for n in start_node.childNodes:
-            odf_dump_nodes(n, level+1)
+            odf_dump_nodes(n, level + 1)
     return
 
-    #Для сдачи
+    # Для сдачи
     # Функция описывающая узел (фрагмент текста) и его атрибуты
+
+
 def get_nodes(start_node, level=0):
-    if start_node.nodeType==1:
-        attrs= []
+    if start_node.nodeType == 1:
+        attrs = []
         for k in start_node.attributes.keys():
-            attrs.append( k[1] + ':' + start_node.attributes[k]  )
-        print("  "*level, "Узел:", start_node.qname[1], " Аттрибуты:(", ",".join(attrs), ") ", str(start_node))
+            attrs.append(k[1] + ':' + start_node.attributes[k])
+        print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", ",".join(attrs), ") ", str(start_node))
 
         for n in start_node.childNodes:
-            get_nodes(n, level+1)
+            get_nodes(n, level + 1)
     return
 
-#узлы со стилями и род блоками
-def get_nodes_with_style(start_node, global_style_name,level=0):
+
+# узлы со стилями и род блоками
+def get_nodes_with_style(start_node, global_style_name, level=0):
     if start_node.nodeType == 1:
         for k in start_node.attributes.keys():
             if (k[1] == "style-name"):
@@ -435,7 +436,8 @@ def get_nodes_with_style(start_node, global_style_name,level=0):
             get_nodes_with_style(n, global_style_name, level + 1)
     return
 
-#узлы с прохождением по всем стилям
+
+# узлы с прохождением по всем стилям
 def get_nodes_with_style_full(start_node, global_style_name, doc, level=0):
     if start_node.nodeType == 1:
         for k in start_node.attributes.keys():
@@ -451,14 +453,15 @@ def get_nodes_with_style_full(start_node, global_style_name, doc, level=0):
                     if global_style_name != "":
                         par_detail2 = doc.isauto(global_style_name, "font-name", "text-properties", default2)
                 print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
-                      ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail2,par_detail )
+                      ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail2, par_detail)
                 global_style_name = start_node.attributes[k]
         for n in start_node.childNodes:
             get_nodes_with_style_full(n, global_style_name, doc, level + 1)
     return
 
-#узлы с прохождением по всем стилям
-def get_nodes_with_style_full3(start_node, global_style_name,global_style_name2, doc, level=0):
+
+# узлы с прохождением по всем стилям
+def get_nodes_with_style_full3(start_node, global_style_name, global_style_name2, doc, level=0):
     if start_node.nodeType == 1:
         for k in start_node.attributes.keys():
             if (k[1] == "style-name"):
@@ -471,14 +474,15 @@ def get_nodes_with_style_full3(start_node, global_style_name,global_style_name2,
                 if par_detail2 == default2:
                     par_detail2 = global_style_name2
                 print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
-                      ") ", str(start_node),  "параметр ", par_detail, par_detail2)
+                      ") ", str(start_node), "параметр ", par_detail, par_detail2)
                 global_style_name = par_detail
                 global_style_name2 = par_detail2
         for n in start_node.childNodes:
             get_nodes_with_style_full3(n, global_style_name, global_style_name2, doc, level + 1)
     return
 
-#узлы с прохождением по всем стилям
+
+# узлы с прохождением по всем стилям
 def get_nodes_with_style_full2(start_node, list, doc, level=0):
     if start_node.nodeType == 1:
         for k in start_node.attributes.keys():
@@ -496,7 +500,8 @@ def get_nodes_with_style_full2(start_node, list, doc, level=0):
             get_nodes_with_style_full2(n, list, doc, level + 1)
     return
 
-#узлы с прохождением по всем стилям
+
+# узлы с прохождением по всем стилям
 def get_nodes_with_style_full4(start_node, list, doc, level=0):
     if start_node.nodeType == 1:
         for k in start_node.attributes.keys():
@@ -513,19 +518,20 @@ def get_nodes_with_style_full4(start_node, list, doc, level=0):
             get_nodes_with_style_full4(n, list, doc, level + 1)
     return
 
+
 if __name__ == '__main__':
-    doc = DocumentParser('dipbac.odt')
-    doc2 = load('dipbac.odt')
-    list = {}
-    list["text-align"] = "def"
-    list["style"] = "def"
     h = hpy()
     h1 = h.heap()
+
+    script_path = os.path.abspath(__file__)
+    rel_path = "documents/dipbac.odt"
+    doc = DocumentParser(create_path(script_path, rel_path))
+    '''
     print(get_nodes_with_style_full3(doc2.text,"1","2", doc))
     h2 = h.heap()
     print(h2)
     print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
-    ''' print(doc.isauto("Текстнатитульнойстранице", "text-align", "paragraph-properties", ""))
+    print(doc.isauto("Текстнатитульнойстранице", "text-align", "paragraph-properties", ""))
     print("-----------------------------------------\n")
     print(get_nodes_with_style_full3(doc2.text,"ar", doc))print(get_nodes_with_style_full(doc2.text,"", doc))
 
@@ -535,6 +541,9 @@ if __name__ == '__main__':
     print("-----------------------------------------\n")
     
     print(doc.isauto("Названиеработы", "text-align", "paragraph-properties"))print("Получение текста и автоматических стилей:\n")
+    doc.all_odt_text()
+    
+    print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
     print(Auto.get_styles(doc))
@@ -582,15 +591,15 @@ if __name__ == '__main__':
 
     print("-------------------------------------------\n")
 
-    
-  
-    print(doc.isauto("Текстнатитульнойстранице", "text-align","paragraph-properties"))
+
+   '''
+    print(doc.isauto("Текстнатитульнойстранице", "text-align", "paragraph-properties"))
     print(doc.isauto('P12', "text-align", "paragraph-properties"))
-    doc2 = load('dipbac.odt')
+    doc2 = load(create_path(script_path, rel_path))
     print(get_nodes(doc2.text))
-    print(doc.has_style_param( const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
+    print(doc.has_style_param(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",
-                                                 "paragraph-properties")) '''
+                                                 "paragraph-properties"))
     h2 = h.heap()
     print(h2)
     print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
