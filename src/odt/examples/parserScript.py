@@ -1,3 +1,5 @@
+from array import array
+
 from odf.opendocument import load
 from odf.opendocument import OpenDocumentText
 from odf.style import Style, TextProperties
@@ -439,26 +441,99 @@ def get_nodes_with_style_full(start_node, global_style_name, doc, level=0):
         for k in start_node.attributes.keys():
             if (k[1] == "style-name"):
                 default = const.DEFAULT_PARAM["text-align"]
-                print("из проверки ребенка " + start_node.attributes[k])
                 par_detail = doc.isauto(start_node.attributes[k], "text-align", "paragraph-properties", default)
                 if par_detail == default:
                     if global_style_name != "":
                         par_detail = doc.isauto(global_style_name, "text-align", "paragraph-properties", default)
+                default2 = const.DEFAULT_PARAM["font-name"]
+                par_detail2 = doc.isauto(start_node.attributes[k], "font-name", "text-properties", default2)
+                if par_detail2 == default2:
+                    if global_style_name != "":
+                        par_detail2 = doc.isauto(global_style_name, "font-name", "text-properties", default2)
                 print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
-                      ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail)
+                      ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail2,par_detail )
                 global_style_name = start_node.attributes[k]
         for n in start_node.childNodes:
             get_nodes_with_style_full(n, global_style_name, doc, level + 1)
     return
 
+#узлы с прохождением по всем стилям
+def get_nodes_with_style_full3(start_node, global_style_name,global_style_name2, doc, level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                default = const.DEFAULT_PARAM["text-align"]
+                par_detail = doc.isauto(start_node.attributes[k], "text-align", "paragraph-properties", default)
+                if par_detail == default:
+                    par_detail = global_style_name
+                default2 = const.DEFAULT_PARAM["text-align"]
+                par_detail2 = doc.isauto(start_node.attributes[k], "font-name", "text-properties", default2)
+                if par_detail2 == default2:
+                    par_detail2 = global_style_name2
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node),  "параметр ", par_detail, par_detail2)
+                global_style_name = par_detail
+                global_style_name2 = par_detail2
+        for n in start_node.childNodes:
+            get_nodes_with_style_full3(n, global_style_name, global_style_name2, doc, level + 1)
+    return
+
+#узлы с прохождением по всем стилям
+def get_nodes_with_style_full2(start_node, list, doc, level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                default = const.DEFAULT_PARAM["text-align"]
+                par_detail = doc.isauto(start_node.attributes[k], "text-align", "paragraph-properties", default)
+                if par_detail == default:
+                    par_detail = list["text-align"]
+                else:
+                    list["text-align"] = par_detail
+                    list["style"] = start_node.attributes[k]
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), "параметр ", par_detail, " стиль ", list["style"])
+        for n in start_node.childNodes:
+            get_nodes_with_style_full2(n, list, doc, level + 1)
+    return
+
+#узлы с прохождением по всем стилям
+def get_nodes_with_style_full4(start_node, list, doc, level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                default = const.DEFAULT_PARAM["text-align"]
+                par_detail = doc.isauto(start_node.attributes[k], "text-align", "paragraph-properties", default)
+                if par_detail == default:
+                    par_detail = list[0]
+                else:
+                    list[0] = par_detail
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), "параметр ", par_detail)
+        for n in start_node.childNodes:
+            get_nodes_with_style_full4(n, list, doc, level + 1)
+    return
+
 if __name__ == '__main__':
-    h = hpy()
-    h1 = h.heap()
     doc = DocumentParser('dipbac.odt')
     doc2 = load('dipbac.odt')
+    list = {}
+    list["text-align"] = "def"
+    list["style"] = "def"
+    h = hpy()
+    h1 = h.heap()
+    print(get_nodes_with_style_full3(doc2.text,"1","2", doc))
+    h2 = h.heap()
+    print(h2)
+    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
+    ''' print(doc.isauto("Текстнатитульнойстранице", "text-align", "paragraph-properties", ""))
+    print("-----------------------------------------\n")
+    print(get_nodes_with_style_full3(doc2.text,"ar", doc))print(get_nodes_with_style_full(doc2.text,"", doc))
+
+    print("-----------------------------------------\n")
+    print(get_nodes(doc2.text))
     print(get_nodes_with_style_full(doc2.text,"", doc))
     print("-----------------------------------------\n")
-    '''
+    
     print(doc.isauto("Названиеработы", "text-align", "paragraph-properties"))print("Получение текста и автоматических стилей:\n")
     doc.all_odt_text()
     print(doc.get_styles_automatic_styles())
