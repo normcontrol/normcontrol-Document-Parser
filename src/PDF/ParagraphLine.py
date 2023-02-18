@@ -1,10 +1,10 @@
-class ParagraphLine:
+class Pdfparagraph:
     def __init__(self):
         self.lines = []
         self.indent = 0
         self.spaces = []
-        self.lineSpacing = 0
-        self.fontName = None
-        self.textSize = 0
-        self.nochangeFontName = True
-        self.nochangeTextSize = True
+        self.line_spacing = 0
+        self.fontname = None
+        self.text_size = 0
+        self.no_change_font_name = True
+        self.no_change_text_size = True
