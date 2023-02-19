@@ -45,52 +45,55 @@ class PDFParser:
     """
 
     def __init__(self, path):
-        self.__path = path
-        self.__pdf = pdfplumber.open(path)
-        self.__document = Class(owner=self.pdf.metadata.get('Author'), time=self.pdf.metadata.get('CreationDate'))
-        self.__lines = []
-        self.__list_of_table = []
+        self.path = path
+        self.pdf = pdfplumber.open(path)
+        self.document = Class(owner=self.pdf.metadata.get('Author'), time=self.pdf.metadata.get('CreationDate'))
+        self.lines = []
+        self.list_of_table = []
 
     @property
     def path(self):
-        return self.__path
+        return self._path
 
     @path.setter
+    def path(self, path):
+        self._path = path
+    @path.setter
     def prevEl(self, path):
-        self.__path = path
+        self._path = path
 
 
     @property
     def pdf(self):
-        return self.__pdf
+        return self._pdf
 
     @pdf.setter
     def pdf(self, pdf):
-        self.__pdf = pdf
+        self._pdf = pdf
 
     @property
     def document(self):
-        return self.__document
+        return self._document
 
     @document.setter
     def document(self, document):
-        self.__document = document
+        self._document = document
 
     @property
     def lines(self):
-        return self.__lines
+        return self._lines
 
     @lines.setter
     def lines(self, lines):
-        self.__lines = lines
+        self._lines = lines
 
     @property
     def list_of_table(self):
-        return self.__list_of_table
+        return self._list_of_table
 
     @list_of_table.setter
     def list_of_table(self, list_of_table):
-        self.__list_of_table = list_of_table
+        self._list_of_table = list_of_table
 
     def getLinesAndTables(self):
 
@@ -344,3 +347,5 @@ class PDFParser:
         self.addParagraphInDocumentWithAttribute(pdfparagraph, paragraph_id)
         paragraph_id = paragraph_id + 1
         return paragraph_id, removed_tables, list_of_table
+
+
