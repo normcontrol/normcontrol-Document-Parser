@@ -2,145 +2,160 @@ import re
 class Paragraph:
     """
 
-Parameters:
+    Parameters:
 
-----------
-        __text  - attribute specifies paragraph text
-        __countOfSpSbl  - attribute specifies number of special characters in a paragraph
-        __countSbl - attribute specifies number of characters in a paragraph
-        __lowercase - attribute specifies lowercase text in the entire paragraph
-        __uppercase - attribute specifies uppercase text in the entire paragraph
-        __lastSbl - attribute specifies last paragraph character
-        __firstkey - attribute specifies first paragraph character
-        __prevEl - attribute specifies the class of the previous structural element
-        __curEl - attribute specifies the class of the current structural element
-        __nexEl - attribute specifies the class of the next structural element
-        __alignment - attribute specifies text alignment
-        __indent - attribute specifies indent from the red line
-        __mrgrg - attribute specifies indent from the right side of the page
-        __mrglf - attribute specifies indent from the left side of the page
-        __lineSpacing - attribute specifies paragraph line spacing
-        __mrgtop - attribute specifies attribute specifies indent from the top side of the page
-        __mrgbtm - attribute specifies attribute specifies indent from the bottom side of the page
-        __fontName - attribute specifies paragraph font
-        __bold - attribute specifies paragraph text boldness
-        __italics - attribute specifies paragraph text italics
-        __underlining - attribute specifies paragraph text underlining
-        __subText - attribute specifies
-        __superText - attribute specifies
-        __textSize - attribute specifies text size
-        __colorText - attribute specifies text color
-        __pageBreakBefore - attribute specifies start of a new page
-        __keepLinesTogether - attribute specifies keeping the line style together
-        __keepWithNext - attribute specifies keeping paragraphs together
-        __outlineLevel - attribute specifies paragraph type
-        __noSpaceBetweenParagraphsOfSameStyle - attribute specifies no extra space between paragraphs of the same style
-        __nochangeFontName - attribute specifies no change in text font inside a paragraph
-        __nochangeTextSize - attribute specifies no change in text size inside a paragraph
+    ----------
+            _text  - attribute specifies paragraph text
+            _countn_of_sp_sbl  - attribute specifies number of special characters in a paragraph
+            _count_sbl - attribute specifies number of characters in a paragraph
+            _lowercase - attribute specifies lowercase text in the entire paragraph
+            _uppercase - attribute specifies uppercase text in the entire paragraph
+            _last_sbl - attribute specifies last paragraph character
+            _firstkey - attribute specifies first paragraph character
+            _prev_el - attribute specifies the class of the previous structural element
+            _cur_el - attribute specifies the class of the current structural element
+            _next_el - attribute specifies the class of the next structural element
+            _alignment - attribute specifies text alignment
+            _indent - attribute specifies indent from the red line
+            _mrgrg - attribute specifies indent from the right side of the page
+            _mrglf - attribute specifies indent from the left side of the page
+            _line_spasing - attribute specifies paragraph line spacing
+            _mrgtop - attribute specifies attribute specifies indent from the top side of the page
+            _mrgbtm - attribute specifies attribute specifies indent from the bottom side of the page
+            _font_name - attribute specifies paragraph font
+            _bold - attribute specifies paragraph text boldness
+            _italics - attribute specifies paragraph text italics
+            _underlining - attribute specifies paragraph text underlining
+            _sub_text - attribute specifies
+            _super_text - attribute specifies
+            _text_size - attribute specifies text size
+            _color_text - attribute specifies text color
+            _page_breake_before - attribute specifies start of a new page
+            _keep_lines_together - attribute specifies keeping the line style together
+            _keep_with_next - attribute specifies keeping paragraphs together
+            _outline_level - attribute specifies paragraph type
+            _no_space_between_paragraphs_of_same_style - attribute specifies no extra space between paragraphs of the same style
+            _no_change_fontname - attribute specifies no change in text font inside a paragraph
+            _no_change_text_size - attribute specifies no change in text size inside a paragraph
 
-Methods
+    Methods
 
-----------
+    ----------
 
-    getCountOfSpSbl(cls, text)
-        Counts and returns the number of special characters in a text
+            get_countn_of_sp_sbl(cls, text)
+                Counts and returns the number of special characters in a text
 
-    getCountSbl(cls, text)
-        Counts and returns the number of all characters in a text
+            get_count_sbl(cls, text)
+                Counts and returns the number of all characters in a text
 
-    getlowercase(cls, text)
-        Calculates whether the entire paragraph is lowercase
+            get_lowercase(cls, text)
+                Calculates whether the entire paragraph is lowercase
 
-    getuppercase(cls, text)
-        Calculates whether the entire paragraph is uppercase
+            get_uppercase(cls, text)
+                Calculates whether the entire paragraph is uppercase
 
-    getlastSbl(cls, text)
-        Calculates the last character of a paragraph
+            get_last_sbl(cls, text)
+                Calculates the last character of a paragraph
 
-    getfirstkey(cls, text)
-        Calculates the type of the first character of a paragraph
+            get_firstkey(cls, text)
+                Calculates the type of the first character of a paragraph
 
     """
-    def __init__(self, text, indent, lineSpacing, fontName, textSize, nochangeFontName, nochangeTextSize,
+    def __init__(self, text, indent, line_spasing, font_name, text_size, no_change_fontname, no_change_text_size,
                  alignment=None, mrgrg=None, mrglf=None, mrgtop=None, mrgbtm=None, bold=None, italics=None,
-                 underlining=None, subText=None, superText=None, colorText="White",
-                 keepLinesTogether=None, keepWithNext=None, outlineLevel=None,
-                 noSpaceBetweenParagraphsOfSameStyle=None, pageBreakBefore=None):
-        self.__text = text
-        self.__countOfSpSbl = Paragraph.getCountOfSpSbl(text)
-        self.__countSbl = Paragraph.getCountSbl(text)
-        self.__lowercase = Paragraph.getlowercase(text)
-        self.__uppercase = Paragraph.getuppercase(text)
-        self.__lastSbl = Paragraph.getlastSbl(text)
-        self.__firstkey = Paragraph.getfirstkey(text)
-        self.__prevEl = None
-        self.__curEl = None
-        self.__nexEl = None
-        self.__alignment = alignment
-        self.__indent = indent
-        self.__mrgrg = mrgrg
-        self.__mrglf = mrglf
-        self.__lineSpacing = lineSpacing
-        self.__mrgtop = mrgtop
-        self.__mrgbtm = mrgbtm
-        self.__fontName = fontName
-        self.__bold = bold
-        self.__italics = italics
-        self.__underlining = underlining
-        self.__subText = subText
-        self.__superText = superText
-        self.__textSize = textSize
-        self.__colorText = colorText
-        self.__pageBreakBefore = pageBreakBefore
-        self.__keepLinesTogether = keepLinesTogether
-        self.__keepWithNext = keepWithNext
-        self.__outlineLevel = outlineLevel
-        self.__noSpaceBetweenParagraphsOfSameStyle = noSpaceBetweenParagraphsOfSameStyle
-        self.__nochangeFontName = nochangeFontName
-        self.__nochangeTextSize = nochangeTextSize
+                 underlining=None, sub_text=None, super_text=None, color_text="White",
+                 keep_lines_together=None, keep_with_next=None, outline_level=None,
+                 no_space_between_paragraphs_of_same_style=None, page_breake_before=None):
+        self._text = text
+        self._countn_of_sp_sbl = Paragraph.get_countn_of_sp_sbl(text)
+        self._count_sbl = Paragraph.get_count_sbl(text)
+        self._lowercase = Paragraph.get_lowercase(text)
+        self._uppercase = Paragraph.get_uppercase(text)
+        self._last_sbl = Paragraph.get_last_sbl(text)
+        self._firstkey = Paragraph.get_firstkey(text)
+        self._prev_el = None
+        self._cur_el = None
+        self._next_el = None
+        self._alignment = alignment
+        self._indent = indent
+        self._mrgrg = mrgrg
+        self._mrglf = mrglf
+        self._line_spasing = line_spasing
+        self._mrgtop = mrgtop
+        self._mrgbtm = mrgbtm
+        self._font_name = font_name
+        self._bold = bold
+        self._italics = italics
+        self._underlining = underlining
+        self._sub_text = sub_text
+        self._super_text = super_text
+        self._text_size = text_size
+        self._color_text = color_text
+        self._page_breake_before = page_breake_before
+        self._keep_lines_together = keep_lines_together
+        self._keep_with_next = keep_with_next
+        self._outline_level = outline_level
+        self._no_space_between_paragraphs_of_same_style = no_space_between_paragraphs_of_same_style
+        self._no_change_fontname = no_change_fontname
+        self._no_change_text_size = no_change_text_size
 
     @classmethod
-    def getCountOfSpSbl(cls, text):
+    def get_countn_of_sp_sbl(cls, text):
         """
 
-        :param text:
-        :return:
+        Counts and returns the number of special characters in a text
+
+        :param text: Paragraph text
+        :return: The number of special characters in the text, such as dots and commas
+
         """
         return len(re.findall("[,.!?;:\'\"«»~]", text))
 
     @classmethod
-    def getCountSbl(cls, text):
+    def get_count_sbl(cls, text):
         """
 
-        :param text:
-        :return:
+        Counts and returns the number of all characters in a text
+
+        :param text: Paragraph text
+        :return: The number of all characters in the text
+
         """
         return len(text)
 
     @classmethod
-    def getlowercase(cls, text):
+    def get_lowercase(cls, text):
         """
 
-        :param text:
-        :return:
+        Calculates whether the entire paragraph is lowercase
+
+        :param text: Paragraph text
+        :return: True if all text is in lowercase
+
         """
         return True if text.islower() else False
 
     @classmethod
-    def getuppercase(cls, text):
+    def get_uppercase(cls, text):
         """
 
-        :param text:
-        :return:
+        Calculates whether the entire paragraph is uppercase
+
+        :param text: Paragraph text
+        :return: True if all text is in uppercase
+
         """
         return True if text.isupper() else False
 
     @classmethod
-    def getlastSbl(cls, text):
+    def get_last_sbl(cls, text):
         """
 
-        :param text:
-        :return:
+        Calculates the last character of a paragraph
+
+        :param text: Paragraph text
+        :return: The last character of a paragraph
+
         """
         try:
             if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
@@ -151,11 +166,13 @@ Methods
             return None
 
     @classmethod
-    def getfirstkey(cls, text):
+    def get_firstkey(cls, text):
         """
 
-        :param text:
-        :return:
+        Calculates the type of the first character of a paragraph
+
+        :param text: Paragraph text
+        :return: The type of the first character of a paragraph
 
         """
         import re
@@ -177,260 +194,252 @@ Methods
                         else:
                             return ''
 
-
-
-
-
-
-
-
-
-
     @property
-    def prevEl(self):
-        return self.__prevEl
+    def prev_el(self):
+        return self._prev_el
 
-    @prevEl.setter
-    def prevEl(self, prevEl):
-            self.__prevEl = prevEl
+    @prev_el.setter
+    def prev_el(self, prev_el):
+        self._prev_el = prev_el
     @property
-    def curEl(self):
-        return self.__curEl
+    def cur_el(self):
+        return self._cur_el
 
-    @curEl.setter
-    def curEl(self, curEl):
-            self.__curEl = curEl
+    @cur_el.setter
+    def cur_el(self, cur_el):
+        self._cur_el = cur_el
     @property
     def nextEl(self):
-        return self.__nextEl
+        return self._nextEl
 
     @nextEl.setter
-    def fontName(self, nextEl):
-            self.__nextEl = nextEl
+    def font_name(self, nextEl):
+        self._nextEl = nextEl
     @property
     def text(self):
-        return self.__text
+        return self._text
 
     @text.setter
     def text(self, text):
-            self.__text= text
+        self._text = text
     @property
-    def keepLinesTogether(self):
-        return self.__keepLinesTogether
+    def keep_lines_together(self):
+        return self._keep_lines_together
 
-    @keepLinesTogether.setter
-    def keepLinesTogether(self, keepLinesTogether):
-            self.__keepLinesTogether = keepLinesTogether
+    @keep_lines_together.setter
+    def keep_lines_together(self, keep_lines_together):
+        self._keep_lines_together = keep_lines_together
     @property
-    def outlineLevel(self):
-        return self.__outlineLevel
+    def outline_level(self):
+        return self._outline_level
 
-    @outlineLevel.setter
-    def outlineLevel(self, outlineLevel):
-            self.__outlineLevel = outlineLevel
+    @outline_level.setter
+    def outline_level(self, outline_level):
+        self._outline_level = outline_level
+
     @property
-    def noSpaceBetweenParagraphsOfSameStyle(self):
-        return self.__noSpaceBetweenParagraphsOfSameStyle
+    def no_space_between_paragraphs_of_same_style(self):
+        return self._no_space_between_paragraphs_of_same_style
 
-    @noSpaceBetweenParagraphsOfSameStyle.setter
-    def noSpaceBetweenParagraphsOfSameStyle(self, noSpaceBetweenParagraphsOfSameStyle):
-            self.__noSpaceBetweenParagraphsOfSameStyle = noSpaceBetweenParagraphsOfSameStyle
+    @no_space_between_paragraphs_of_same_style.setter
+    def no_space_between_paragraphs_of_same_style(self, no_space_between_paragraphs_of_same_style):
+        self._no_space_between_paragraphs_of_same_style = no_space_between_paragraphs_of_same_style
     @property
-    def keepWithNext(self):
-        return self.__keepWithNext
+    def keep_with_next(self):
+        return self._keep_with_next
 
-    @keepWithNext.setter
-    def keepWithNext(self, keepWithNext):
-            self.__keepWithNext = keepWithNext
+    @keep_with_next.setter
+    def keep_with_next(self, keep_with_next):
+        self._keep_with_next = keep_with_next
     @property
     def indent(self):
-        return self.__indent
+        return self._indent
 
     @indent.setter
     def indent(self, indent):
-            self.__indent = indent
+            self._indent = indent
     @property
     def mrgrg(self):
-        return self.__mrgrg
+        return self._mrgrg
 
     @mrgrg.setter
     def mrgrg(self, mrgrg):
-            self.__mrgrg = mrgrg
+            self._mrgrg = mrgrg
     @property
     def mrglf(self):
-        return self.__mrglf
+        return self._mrglf
 
     @mrglf.setter
     def mrglf(self, mrglf):
-            self.__mrglf = mrglf
+            self._mrglf = mrglf
     @property
     def mrgtop(self):
-        return self.__mrgtop
+        return self._mrgtop
 
     @mrgtop.setter
     def mrgtop(self, mrgtop):
-            self.__mrgtop = mrgtop
+            self._mrgtop = mrgtop
     @property
     def mrgbtm(self):
-        return self.__mrgbtm
+        return self._mrgbtm
 
     @mrgbtm.setter
     def mrgbtm(self, mrgbtm):
-            self.__mrgbtm = mrgbtm
+            self._mrgbtm = mrgbtm
     @property
-    def fontName(self):
-        return self.__fontName
+    def font_name(self):
+        return self._font_name
 
-    @fontName.setter
-    def fontName(self, fontName):
-            self.__fontName= fontName
-
-    @property
-    def colorText(self):
-        return self.__colorText
-
-    @colorText.setter
-    def colorText(self, colorText):
-            self.__colorText= colorText
+    @font_name.setter
+    def font_name(self, font_name):
+            self._font_name= font_name
 
     @property
-    def lineSpacing(self):
-        return self.__lineSpacing
+    def color_text(self):
+        return self._color_text
 
-    @lineSpacing.setter
-    def lineSpacing(self, value):
+    @color_text.setter
+    def color_text(self, color_text):
+            self._color_text= color_text
+
+    @property
+    def line_spasing(self):
+        return self._line_spasing
+
+    @line_spasing.setter
+    def line_spasing(self, value):
         if value >= 0:
-            self.__lineSpacing = value
+            self._line_spasing = value
         else:
             raise ValueError
 
     @property
     def bold(self):
-        return self.__bold
+        return self._bold
 
     @bold.setter
     def bold(self, b):
         if b is True or b is False:
-            self.__bold = b
+            self._bold = b
         else:
             raise ValueError
 
     @property
     def italics(self):
-        return self.__italics
+        return self._italics
 
     @italics.setter
     def italics(self, i):
         if i is True or i is False:
-            self.__italics = i
+            self._italics = i
         else:
             raise ValueError
 
     @property
     def underlining(self):
-        return self.__underlining
+        return self._underlining
 
     @underlining.setter
-    def underlining(self, u):
-        if u is True or u is False:
-            self.__underlining = u
+    def underlining(self, underlining):
+        if underlining is True or underlining is False:
+            self._underlining = underlining
         else:
             raise ValueError
 
     @property
-    def subText(self):
-        return self.__subText
+    def sub_text(self):
+        return self._sub_text
 
-    @subText.setter
-    def subText(self, s):
+    @sub_text.setter
+    def sub_text(self, s):
         if s is True or s is False:
-            self.__subText = s
+            self._sub_text = s
         else:
             raise ValueError
 
     @property
-    def superText(self):
-        return self.__superText
+    def super_text(self):
+        return self._super_text
 
-    @superText.setter
-    def superText(self, s):
+    @super_text.setter
+    def super_text(self, s):
         if s is True or s is False:
-            self.__superText = s
+            self._super_text = s
         else:
             raise ValueError
 
     @property
-    def textSize(self):
-        return self.__textSize
+    def text_size(self):
+        return self._text_size
 
-    @textSize.setter
-    def textSize(self, s):
+    @text_size.setter
+    def text_size(self, s):
         if s >= 8:
-            self.__textSize = s
+            self._text_size = s
         else:
             raise ValueError
 
     @property
-    def countOfSpSbl(self):
-        return self.__countOfSpSbl
+    def countn_of_sp_sbl(self):
+        return self._countn_of_sp_sbl
 
-    @countOfSpSbl.setter
-    def countOfSpSbl(self, countOfSpSbl):
-        self.__countOfSpSbl = countOfSpSbl
+    @countn_of_sp_sbl.setter
+    def countn_of_sp_sbl(self, countn_of_sp_sbl):
+        self._countn_of_sp_sbl = countn_of_sp_sbl
 
     @property
-    def countSbl(self):
-        return self.__countSbl
+    def count_sbl(self):
+        return self._count_sbl
 
-    @countSbl.setter
-    def countSbl(self, countSbl):
-        self.__countSbl = countSbl
+    @count_sbl.setter
+    def count_sbl(self, count_sbl):
+        self._count_sbl = count_sbl
     @property
     def lowercase(self):
-        return self.__lowercase
+        return self._lowercase
 
     @lowercase.setter
     def lowercase(self, lowercase):
-        self.__lowercase = lowercase
+        self._lowercase = lowercase
     @property
     def uppercase(self):
-        return self.__uppercase
+        return self._uppercase
 
     @uppercase.setter
     def uppercase(self, uppercase):
-        self.__uppercase = uppercase
+        self._uppercase = uppercase
     @property
-    def lastSbl(self):
-        return self.__lastSbl
+    def last_sbl(self):
+        return self._last_sbl
 
-    @lastSbl.setter
-    def lastSbl(self, lastSbl):
-        self.__lastSbl = lastSbl
+    @last_sbl.setter
+    def last_sbl(self, last_sbl):
+        self._last_sbl = last_sbl
     @property
     def firstkey(self):
-        return self.__firstkey
+        return self._firstkey
 
     @firstkey.setter
     def firstkey(self, firstkey):
-        self.__firstkey = firstkey
+        self._firstkey = firstkey
     @property
-    def prevEl(self):
-        return self.__prevEl
+    def prev_el(self):
+        return self._prev_el
 
-    @prevEl.setter
-    def prevEl(self, prevEl):
-        self.__prevEl = prevEl
+    @prev_el.setter
+    def prev_el(self, prev_el):
+        self._prev_el = prev_el
     @property
-    def curEl(self):
-        return self.__curEl
+    def cur_el(self):
+        return self._cur_el
 
-    @curEl.setter
-    def curEl(self, curEl):
-        self.__curEl = curEl
+    @cur_el.setter
+    def cur_el(self, cur_el):
+        self._cur_el = cur_el
     @property
-    def nexEl(self):
-        return self.__nexEl
+    def next_el(self):
+        return self._next_el
 
-    @nexEl.setter
-    def nexEl(self, nexEl):
-        self.__nexEl = nexEl
+    @next_el.setter
+    def next_el(self, next_el):
+        self._next_el = next_el

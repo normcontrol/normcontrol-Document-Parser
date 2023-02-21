@@ -18,22 +18,22 @@ Parameters:
 Methods
 
 ----------
-    addContent(id, paragraph)
+    add_content(id, paragraph)
         Adds a paragraph to the content list
     
-    ptToSm(value)
+    pt_to_sm(value)
         Converts topographical points to centimeters
     
-    dmToSm(value)
+    dm_to_sm(value)
         Converts inches to centimeters
     
-    createJsonToClasifier(listOfAttr)
+    create_json_to_clasifier(listOfAttr)
         Creates and returns a json string, which will later be sent to the classifier
     
-    requestToClasify(jsonText, api =)
+    request_to_clasify(jsonText, api =)
         Sends a request to the classification module
     
-    writeCSV(path):
+    write_CSV(path):
         Generates csv file based on content
     
 """
@@ -43,7 +43,7 @@ class Class:
         self.__time = time
         self.__content = {}
 
-    def addContent(self, paragraph_id, paragraph):
+    def add_content(self, paragraph_id, paragraph):
         """
 
         Adds a paragraph to the content list
@@ -55,7 +55,7 @@ class Class:
         self.content[paragraph_id] = paragraph
     ## Пункт в сантиметры
     @classmethod
-    def ptToSm(cls, value):
+    def pt_to_sm(cls, value):
         """
 
         Converts topographical points to centimeters
@@ -68,7 +68,7 @@ class Class:
         return value/28.346
     ## Дюйм в сантиметры
     @classmethod
-    def dmToSm(cls, value):
+    def dm_to_sm(cls, value):
         """
 
         Converts inches to centimeters
@@ -80,18 +80,18 @@ class Class:
         """
         return value * 2.54
 
-    def createJsonToClasifier(self, listOfAttr = ["countOfSpSbl","countSbl","lowercase","uppercase","lastSbl",
-                                                  "firstkey","prevEl","curEl","nexEl","bold","italics",
-                                                  "keepLinesTogether","keepWithNext", "outlineLevel",
-                                                  "pageBreakBefore"]
+    def create_json_to_clasifier(self, list_of_attr = ["countn_of_sp_sbl","count_sbl","lowercase","uppercase","last_sbl",
+                                                  "firstkey","prev_el","cur_el","next_el","bold","italics",
+                                                  "keep_lines_together","keep_with_next", "outline_level",
+                                                  "page_breake_before"]
                               ):
         """
 
         Creates and returns a json string, which will later be sent to the classifier
 
-        :param listOfAttr: List of attributes included in json string
+        :param list_of_attr: List of attributes included in json string
 
-        :return jsonText: Generated Json string
+        :return json_text: Generated Json string
 
         """
 
@@ -104,22 +104,22 @@ class Class:
             if p.__class__ != PDFTable :
                 s = s + "\"" + str(i) + "\": {\""
                 for attribute in dir(p):
-                    if not attribute.startswith('_') and attribute in listOfAttr:
+                    if not attribute.startswith('_') and attribute in list_of_attr:
                         s = s + attribute + "\": \"" + str(getattr(p,attribute)) + "\",\""
                 l = len(s)
                 s = s[:l - 2] + "}, "
         l = len(s)
         s = s[:l - 2] + "}}"
-        jsonText = json.loads(s)
-        return jsonText
+        json_text = json.loads(s)
+        return json_text
 
     @classmethod
-    def requestToClasify(cls, jsonText, api = "http://127.0.0.1:8001/clasify"):
+    def request_to_clasify(cls, json_text, api = "http://127.0.0.1:8001/clasify"):
         """
 
         Sends a request to the classification module
 
-        :param jsonText: The json string to send
+        :param json_text: The json string to send
         :param api: API where the request is sent
 
         :return response: Response received from the API
@@ -127,10 +127,10 @@ class Class:
         """
 
         import requests
-        response = requests.post(api, json= jsonText)
+        response = requests.post(api, json= json_text)
         return response
 
-    def writeCSV(self, path = 'pdftocsv.csv'):
+    def write_CSV(self, path = 'pdftocsv.csv'):
 
         """
 
@@ -143,16 +143,16 @@ class Class:
         import csv
         with open(path, 'w', newline='', encoding="utf-8") as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(["text","countOfSpSbl","countSbl","uppercase", "lowercase","fontName","lastSbl",
-                                 "firstkey","indent","lineSpacing","textSize"])
+            filewriter.writerow(["text","countn_of_sp_sbl","count_sbl","uppercase", "lowercase","font_name","last_sbl",
+                                 "firstkey","indent","line_spasing","text_size"])
             for key in self.content.keys():
                 if type(self.content.get(key))!= PDFTable:
-                    filewriter.writerow([self.content.get(key).text, self.content.get(key).countOfSpSbl ,
-                                         self.content.get(key).countSbl,self.content.get(key).uppercase,
-                                         self.content.get(key).lowercase, self.content.get(key).fontName,
-                                         self.content.get(key).lastSbl,self.content.get(key).firstkey,
-                                         self.content.get(key).indent, self.content.get(key).lineSpacing,
-                                         self.content.get(key).textSize])
+                    filewriter.writerow([self.content.get(key).text, self.content.get(key).countn_of_sp_sbl,
+                                         self.content.get(key).count_sbl,self.content.get(key).uppercase,
+                                         self.content.get(key).lowercase, self.content.get(key).font_name,
+                                         self.content.get(key).last_sbl,self.content.get(key).firstkey,
+                                         self.content.get(key).indent, self.content.get(key).line_spasing,
+                                         self.content.get(key).text_size])
                 else:
                     filewriter.writerow([self.content.get(key).text])
 

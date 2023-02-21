@@ -1,4 +1,4 @@
-class Pdfparagraph:
+class PdfParagraph:
 
     """
     Description: A class is a pdf paragraph and its attributes
