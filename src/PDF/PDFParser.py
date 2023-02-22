@@ -3,7 +3,7 @@ import pdfplumber
 from src.Class.DocumentClass import  DocumentClass
 from src.Class.Paragraph import Paragraph
 from src.PDF.Line import Line
-from src.PDF.ParagraphLine import PdfParagraph
+from src.PDF.PdfParagraph import PdfParagraph
 from src.PDF.Table import PDFTable
 
 
