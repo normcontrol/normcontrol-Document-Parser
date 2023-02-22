@@ -59,10 +59,6 @@ class PDFParser:
     def path(self, path):
         self._path = path
 
-    @path.setter
-    def prevEl(self, path):
-        self._path = path
-
     @property
     def pdf(self):
         return self._pdf
@@ -334,7 +330,6 @@ class PDFParser:
             list_of_table: The list of tables that have not yet been added has been added to the list of structural elements
 
         """
-        insert_table = False
         # Checking that this paragraph is tabular and this table has already been added
         for remove_table in removed_tables:
             if (remove_table.table.page.bbox[3] - remove_table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
