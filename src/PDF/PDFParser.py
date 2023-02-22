@@ -1,6 +1,6 @@
 import re
 import pdfplumber
-from src.Class.DocumentClass import Class
+from src.Class.DocumentClass import  DocumentClass
 from src.Class.Paragraph import Paragraph
 from src.PDF.Line import Line
 from src.PDF.ParagraphLine import PdfParagraph
@@ -24,22 +24,22 @@ class PDFParser:
     Methods
     ----------
 
-        getLineAndTables(self):
+        get_line_and_tables(self):
             Extracts all pdf document objects using the pdfplumber library and forms rows and tables based on them
 
-        getSpace(lines):
+        get_space(lines):
             Based on the properties of the document lines, generates a line spacing for each line
 
-        addParagraphInDocumentWithAttribute(self, paragraph_line, paragraph_id):
+        add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
             Adds a paragraph object containing its properties and attributes to the list of structural elements of the document
 
-        getParagraph(self, lines, spaces, list_of_table):
+        get_paragraph(self, lines, spaces, list_of_table):
             Forms paragraphs of the document based on lines, line spacing and tables
 
-        getStandartParagraph(paragraph_line):
+        get_standart_paragraph(pdf_paragraph):
             Converts the resulting paragraph and its attributes into a unified view
 
-        deleteDublicatesAndAddParagraph(self, paragraph_line, mean, removed_tables, i, paragraph_id, lines, spaces, list_of_table):
+        delete_dublicates(self, pdf_paragraph, removed_tables, list_of_table):
             Removes duplicate table text lines, forms their properties and adds them to the paragraph object
 
     """
@@ -47,7 +47,7 @@ class PDFParser:
     def __init__(self, path):
         self.path = path
         self.pdf = pdfplumber.open(path)
-        self.document = Class(owner=self.pdf.metadata.get('Author'), time=self.pdf.metadata.get('CreationDate'))
+        self.document = DocumentClass(owner=self.pdf.metadata.get('Author'), time=self.pdf.metadata.get('CreationDate'))
         self.lines = []
         self.list_of_table = []
 
@@ -310,8 +310,8 @@ class PDFParser:
         text = ""
         for line in pdf_paragraph.lines:
             text = text + line.text
-        paragraph = Paragraph(text=text, indent=round(Class.pt_to_sm(pdf_paragraph.indent) - 3, 2),
-                              line_spasing=round(Class.pt_to_sm(pdf_paragraph.line_spacing), 2),
+        paragraph = Paragraph(text=text, indent=round(DocumentClass.pt_to_sm(pdf_paragraph.indent) - 3, 2),
+                              line_spasing=round(DocumentClass.pt_to_sm(pdf_paragraph.line_spacing), 2),
                               font_name=pdf_paragraph.fontname, text_size=round(pdf_paragraph.text_size),
                               no_change_text_size=pdf_paragraph.no_change_text_size,
                               no_change_fontname=pdf_paragraph.no_change_font_name)
@@ -328,6 +328,8 @@ class PDFParser:
             removed_tables: The list of already added to the list of structural elements of tables
             list_of_table: The list of tables that have not yet been added has been added to the list of structural elements
         :return
+            table: If a table is found, it returns the object representing it to add
+            pdf_paragraph: If there are no duplicates of the table text, returns the paragraph passed as a parameter
             removed_tables: The list of already added to the list of structural elements of tables
             list_of_table: The list of tables that have not yet been added has been added to the list of structural elements
 

@@ -11,7 +11,7 @@ class Paragraph:
             _lowercase - attribute specifies lowercase text in the entire paragraph
             _uppercase - attribute specifies uppercase text in the entire paragraph
             _last_sbl - attribute specifies last paragraph character
-            _firstkey - attribute specifies first paragraph character
+            _first_key - attribute specifies first paragraph character
             _prev_el - attribute specifies the class of the previous structural element
             _cur_el - attribute specifies the class of the current structural element
             _next_el - attribute specifies the class of the next structural element
@@ -57,7 +57,7 @@ class Paragraph:
             get_last_sbl(cls, text)
                 Calculates the last character of a paragraph
 
-            get_firstkey(cls, text)
+            get_first_key(cls, text)
                 Calculates the type of the first character of a paragraph
 
     """
@@ -72,7 +72,7 @@ class Paragraph:
         self._lowercase = Paragraph.get_lowercase(text)
         self._uppercase = Paragraph.get_uppercase(text)
         self._last_sbl = Paragraph.get_last_sbl(text)
-        self._firstkey = Paragraph.get_firstkey(text)
+        self._first_key = Paragraph.get_first_key(text)
         self._prev_el = None
         self._cur_el = None
         self._next_el = None
@@ -166,7 +166,7 @@ class Paragraph:
             return None
 
     @classmethod
-    def get_firstkey(cls, text):
+    def get_first_key(cls, text):
         """
 
         Calculates the type of the first character of a paragraph
@@ -209,12 +209,12 @@ class Paragraph:
     def cur_el(self, cur_el):
         self._cur_el = cur_el
     @property
-    def nextEl(self):
-        return self._nextEl
+    def next_el(self):
+        return self._next_el
 
-    @nextEl.setter
-    def font_name(self, nextEl):
-        self._nextEl = nextEl
+    @next_el.setter
+    def font_name(self, next_el):
+        self._next_el = next_el
     @property
     def text(self):
         return self._text
@@ -416,12 +416,12 @@ class Paragraph:
     def last_sbl(self, last_sbl):
         self._last_sbl = last_sbl
     @property
-    def firstkey(self):
-        return self._firstkey
+    def first_key(self):
+        return self._first_key
 
-    @firstkey.setter
-    def firstkey(self, firstkey):
-        self._firstkey = firstkey
+    @first_key.setter
+    def first_key(self, first_key):
+        self._first_key = first_key
     @property
     def prev_el(self):
         return self._prev_el

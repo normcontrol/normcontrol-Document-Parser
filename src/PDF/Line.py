@@ -12,14 +12,14 @@ class Line:
         text: The attribute describes line text
         fontname: The attribute describes line Font
         size: The attribute describes line size
-        nochangeFontName: Attribute describing that the font of the string has not changed
-        nochangeSize: Attribute describing that the size of the string has not changed
+        no_change_font_name: Attribute describing that the font of the string has not changed
+        no_change_text_size: Attribute describing that the size of the string has not changed
         page: The attribute describes the page on which the line is located
         chars: The attribute list of characters that make up the string
 
     """
 
-    def __init__(self,x0,y0,x1,y1,text,fontname,size,nochangeFontName,nochangeSize,page,chars):
+    def __init__(self,x0,y0,x1,y1,text,fontname,size,no_change_font_name,no_change_text_size,page,chars):
         self.x0 = x0
         self.x1 = x1
         self.y0 = y0
@@ -27,8 +27,8 @@ class Line:
         self.text = text
         self.fontname = fontname
         self.size = size
-        self.nochangeFontName = nochangeFontName
-        self.nochangeSize = nochangeSize
+        self.no_change_font_name = no_change_font_name
+        self.no_change_text_size = no_change_text_size
         self.page = page
         self.chars = chars
 
@@ -65,12 +65,12 @@ class Line:
         return self._size
 
     @property
-    def nochangeFontName(self):
-        return self._nochangeFontName
+    def no_change_font_name(self):
+        return self._no_change_font_name
 
     @property
-    def nochangeSize(self):
-        return self._nochangeSize
+    def no_change_text_size(self):
+        return self._no_change_text_size
 
     @property
     def page(self):
@@ -104,13 +104,13 @@ class Line:
     def size(self, value):
         self._size = value
 
-    @nochangeFontName.setter
-    def nochangeFontName(self, value):
-        self._nochangeFontName = value
+    @no_change_font_name.setter
+    def no_change_font_name(self, value):
+        self._no_change_font_name = value
 
-    @nochangeSize.setter
-    def nochangeSize(self, value):
-        self._nochangeSize = value
+    @no_change_text_size.setter
+    def no_change_text_size(self, value):
+        self._no_change_text_size = value
 
     @page.setter
     def page(self, value):

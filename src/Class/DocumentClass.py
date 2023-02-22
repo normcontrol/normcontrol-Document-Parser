@@ -4,40 +4,40 @@ import re
 from src.Class.Table import Table
 from src.PDF.Table import PDFTable
 
-"""
-Description: a unified class representing a text document, its properties and content
+class DocumentClass:
+    """
+    Description: a unified class representing a text document, its properties and content
 
-Parameters:
+    Parameters:
 
-----------
-    __owner - attribute specifies the owner of a document,
-    __time - attribute specifies document creation time,
-    __content - attribute specifies the conten of a document
-    
-    
-Methods
+    ----------
+        __owner - attribute specifies the owner of a document,
+        __time - attribute specifies document creation time,
+        __content - attribute specifies the conten of a document
 
-----------
-    add_content(id, paragraph)
-        Adds a paragraph to the content list
-    
-    pt_to_sm(value)
-        Converts topographical points to centimeters
-    
-    dm_to_sm(value)
-        Converts inches to centimeters
-    
-    create_json_to_clasifier(listOfAttr)
-        Creates and returns a json string, which will later be sent to the classifier
-    
-    request_to_clasify(jsonText, api =)
-        Sends a request to the classification module
-    
-    write_CSV(path):
-        Generates csv file based on content
-    
-"""
-class Class:
+
+    Methods
+
+    ----------
+        add_content(id, paragraph)
+            Adds a paragraph to the content list
+
+        pt_to_sm(value)
+            Converts topographical points to centimeters
+
+        dm_to_sm(value)
+            Converts inches to centimeters
+
+        create_json_to_clasifier(listOfAttr)
+            Creates and returns a json string, which will later be sent to the classifier
+
+        request_to_clasify(jsonText, api =)
+            Sends a request to the classification module
+
+        write_CSV(path):
+            Generates csv file based on content
+
+    """
     def __init__(self, owner, time):
         self.__owner = owner
         self.__time = time
