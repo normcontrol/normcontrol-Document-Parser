@@ -1,10 +1,28 @@
-import re
+"""DOCX Paragraph module
 
-from docx import Document
+The module allows you to download a docx file and convert the properties of paragraphs to a single view
+
+This script requires that `lxml`, `typing` , `python-docx` to be installed within the Python
+environment you are running this script in.
+
+This file can also be imported as a module and contains the following public
+functions:
+
+    * get_all_paragraphs_in_standard: list Paragraph in standard
+    * get_standard_paragraph(self, paragraph): A method that return standard paragraph
+"""
+import re
+from typing import Union
+
 from lxml import etree
 
-from src.docx._temp.Paragraph import Paragraph
+import docx.text.paragraph
+from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.styles.style import BaseStyle
+
 from src.docx.helpers.EnumFill import EnumFill
+from src.docx.temp.Paragraph import Paragraph
 
 
 class DocxParagraph:
@@ -21,9 +39,12 @@ class DocxParagraph:
          get_standard_paragraph(self, paragraph): A method that return standard paragraph
          get_font_size(self, paragraph): int
          get_font_style_for_attr: list Find style.font attr_name  in any paren or child elements
-         get_paragraph_format_style_for_attr: int | float Find paragraph_format.* attr, like first_line_indent, line_spacing  in parent Styles if None
-         is_style_append_text(cls, paragraph, style_name: str): A method  check text is bold | italic | underline
-         is_change_font_name(cls, paragraph): A method that chek changed font style in each paragraph
+         get_paragraph_format_style_for_attr: int | float
+            Find paragraph_format.* attr, like first_line_indent, line_spacing
+            in parent Styles if None
+         _is_style_append_text(cls, paragraph, style_name: str):
+            A method  check text is bold | italic | underline
+         _is_change_font_name(cls, paragraph): A method chek changed font style in each paragraph
          get_all_paragraphs_in_standard(cls): Get all paragraph in standard format as list
     """
 
@@ -48,10 +69,8 @@ class DocxParagraph:
             list_paragraphs.append(self.get_standard_paragraph(paragraph))
         return list_paragraphs
 
-    def get_standard_paragraph(self, paragraph):
+    def get_standard_paragraph(self, paragraph: docx.text.paragraph.Paragraph):
         """
-        This is a function that uses the `docx` package.
-        This is a function that uses the `Paragraph` package.
         Make paragraph in standard format
 
         :param paragraph: docx.Paragraph
@@ -60,24 +79,31 @@ class DocxParagraph:
 
         return Paragraph(
             text=paragraph.text,
-            indent=self.get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
-            lineSpacing=self.get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-            fontName=self.get_font_style_for_attr(paragraph, "name"),
-            textSize=self.get_font_size(paragraph),
-            nochangeFontName=self.is_change_font_name(paragraph),
-            nochangeTextSize=self.is_change_text_size(paragraph),
-            alignment=paragraph.alignment,
-            mrgrg=paragraph.paragraph_format.right_indent,
-            mrglf=paragraph.paragraph_format.left_indent,
-            bold=self.is_style_append_text(paragraph, "bold"),
-            italics=self.is_style_append_text(paragraph, "italic"),
-            underlining=self.is_style_append_text(paragraph, "underline"),
+            indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
+            lineSpacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            fontName=self._get_font_style_for_attr(paragraph, "name"),
+            textSize=self._get_font_size(paragraph),
+            nochangeFontName=self._is_change_font_name(paragraph),
+            nochangeTextSize=self._is_change_text_size(paragraph),
+            alignment=DocxParagraph.get_alignment_enum(self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
+            mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+            mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
+            mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+            mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+            bold=self._is_style_append_text(paragraph, "bold"),
+            italics=self._is_style_append_text(paragraph, "italic"),
+            underlining=self._is_style_append_text(paragraph, "underline"),
+            subText=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+            superText=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+            colorText=self._get_font_style_color(paragraph),
             keepLinesTogether=paragraph.paragraph_format.keep_together,
             keepWithNext=paragraph.paragraph_format.keep_with_next,
-            outlineLevel=paragraph.style.font.outline
+            outlineLevel=paragraph.style.font.outline,
+            # noSpaceBetweenParagraphsOfSameStyle = None,
+            pageBreakBefore=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before")
         )
 
-    def get_font_size(self, paragraph):
+    def _get_font_size(self, paragraph: docx.text.paragraph.Paragraph):
         """
         Get font size from paragraph
         because sometime paragraph.style.font.size.pt in not correct
@@ -93,10 +119,48 @@ class DocxParagraph:
                 fonts_sizes.append(font_size.pt)
         if len(fonts_sizes) == 0 and p_font_style is not None:
             return p_font_style
-        else:
-            return round(sum(fonts_sizes) / len(fonts_sizes))
+        return round(sum(fonts_sizes) / len(fonts_sizes))
 
-    def get_font_style_for_attr(self, paragraph, attr_name: str):
+    @staticmethod
+    def rgb_to_hex(rgb: tuple):
+        """
+        Function get RGB param as tuple
+
+        :return: str Hex-code
+        """
+        r, g, b = rgb
+        return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+    def _get_font_style_color(self, paragraph: docx.text.paragraph.Paragraph) -> dict:
+        """
+        Function get all colors of paragraph in hex
+
+        :param paragraph: docx.Paragraph
+        :return: dict of hex color with max value {'#000000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000000'}
+        """
+
+        values = list()
+        for run in paragraph.runs:
+            if run.font.color.rgb is not None:
+                value = {"count": len(run.text), "color": DocxParagraph.rgb_to_hex(run.font.color.rgb)}
+            else:
+                style = self.styles[paragraph.style.name]
+                if style.font.color.rgb is not None:
+                    value = {"count": len(run.text), "color": DocxParagraph.rgb_to_hex(style.font.color.rgb)}
+                else:
+                    value = {"count": len(run.text), "color": "#000000"}
+            values.append(value)
+        sums_by_color = {}
+        for item in values:
+            if item['color'] in sums_by_color:
+                sums_by_color[item['color']] += item['count']
+            else:
+                sums_by_color[item['color']] = item['count']
+        max_color = max(sums_by_color, key=lambda k: sums_by_color[k])
+        sums_by_color['max'] = max_color
+        return sums_by_color
+
+    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str) -> list:
         """
         Find style.font attr_name  in any paren or child elements
 
@@ -104,25 +168,26 @@ class DocxParagraph:
         :param paragraph: docx.Paragraph
         :return: list Names of attr_name values
         """
-        fonts = set()
+
+        attrs_values = set()
         attr = getattr(paragraph.style.font, attr_name)
         for run in paragraph.runs:
             if getattr(run.font, attr_name) is not None:
-                fonts.add(getattr(run.font, attr_name))
+                attrs_values.add(getattr(run.font, attr_name))
         if attr is not None:
-            fonts.add(attr)
+            attrs_values.add(attr)
         else:
             style = self.styles[getattr(paragraph.style, attr_name)]
             # if font.name is None try find in parents
             while getattr(style.font, attr_name) is None:
                 style = style.base_style
-            fonts.add(getattr(style.font, attr_name))
-        return list(fonts)
+            attrs_values.add(getattr(style.font, attr_name))
+        return list(attrs_values)
 
-    @classmethod
-    def get_paragraph_format_style_for_attr(cls, paragraph, attr_name: str):
+    def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str,
+                                             msg: str = "pt") -> Union[int, float]:
         """
-        Find  | first_line_indent | line_spacing | in parent Styles if None
+        Find paragraph_format attr value
 
         !!!! IMPORTANT !!!!!
         paragraph.paragraph_format. first_line_indent return 35.4
@@ -136,21 +201,53 @@ class DocxParagraph:
 
         :param attr_name: str name of paragraph_format attr
         :param paragraph: docx.Paragraph
-        :return: int  in pt | float
+        :param msg: str "pt" | "cm"
+        :return: int | pt | float
         """
-        attr_paragraph = getattr(paragraph.paragraph_format, attr_name)
-        if attr_paragraph is not None:
-            return attr_paragraph if type(attr_paragraph) is float else attr_paragraph.pt
-        attr = getattr(paragraph.style.paragraph_format, attr_name)
-        if attr is None:
-            current = paragraph.style
-            while getattr(current.paragraph_format, attr_name) is None:
-                current = current.base_style
-            attr = getattr(current.paragraph_format, attr_name)
-        return attr if type(attr) is float else attr.pt
 
-    @classmethod
-    def is_style_append_text(cls, paragraph, style_name: str):
+        attr = self._get_paragraph_format_in_hierarchy(paragraph, attr_name)
+        if attr is None:
+            return 0
+        return attr if isinstance(attr, float) else getattr(attr, msg)
+
+    def __get_style_in_hierarchy(self, paragraph) -> BaseStyle:
+        """
+        Find style in hierarchy
+
+        :param paragraph: docx.Paragraph
+        :return: BaseStyle
+        """
+        style = paragraph.style
+        while style.name is None:
+            style = style.base_style
+        return self.styles[style.name]
+
+    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str) -> list:
+        """
+        Find docx.text.run.Font attributes
+        """
+        values = list()
+        for run in paragraph.runs:
+            if getattr(run.font, attr_name) is True:
+                values.append({"count": len(run.text), "type": attr_name})
+        return values
+
+    def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
+        """
+        Find paragraph.paragraph_format attributes
+
+        :return: value attribute
+        """
+        attr = getattr(paragraph.paragraph_format, attr_name)
+        if attr is None:
+            style = self.__get_style_in_hierarchy(paragraph)
+            while style:
+                if getattr(style.paragraph_format, attr_name) is not None:
+                    return getattr(style.paragraph_format, attr_name)
+                style = style.base_style
+        return attr
+
+    def _is_style_append_text(self, paragraph: docx.text.paragraph.Paragraph, style_name: str) -> EnumFill:
         """
         Checks if the text is bold | italic | underline
         This is a function that uses the `docx` package.
@@ -168,7 +265,7 @@ class DocxParagraph:
 
         # if all paragraph  in one style
         if len(list_styles) == 1:
-            return EnumFill.NO_APPLY if list_styles[0] is None else EnumFill.APPLY_TO_ALL_ELEMENTS
+            return EnumFill.APPLY_TO_ALL_ELEMENTS if list_styles[0] else EnumFill.NO_APPLY
         # if paragraph bold have mix of True|False|None
         elif {True, False}.issubset(list_styles) or {True, None}.issubset(list_styles) or {False, None}.issubset(
                 list_styles):
@@ -176,8 +273,7 @@ class DocxParagraph:
         else:
             return EnumFill.IS_UNKNOWN
 
-    @classmethod
-    def is_change_font_name(cls, paragraph):
+    def _is_change_font_name(self, paragraph: docx.text.paragraph.Paragraph) -> bool:
         """
         This is a function that uses the `docx` package.
         This is a function that uses the `lxml` package.
@@ -207,10 +303,9 @@ class DocxParagraph:
             if run.style.name:
                 styles.add(run.style.name)
 
-        return False if len(fonts) == 1 and len(styles) == 1 else True
+        return len(fonts) != 1 or len(styles) != 1
 
-    @classmethod
-    def is_change_text_size(cls, paragraph):
+    def _is_change_text_size(self, paragraph: docx.text.paragraph.Paragraph) -> bool:
         """
         Checks if the font size has changed within the same paragraph
 
@@ -224,3 +319,19 @@ class DocxParagraph:
                 is_changed = True
                 break
         return is_changed
+
+    @staticmethod
+    def get_alignment_enum(alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]:
+        """
+        Get alignment by kye
+
+        :return ENUM
+        """
+        alignment_map = {
+            0: WD_PARAGRAPH_ALIGNMENT.LEFT,
+            1: WD_PARAGRAPH_ALIGNMENT.CENTER,
+            2: WD_PARAGRAPH_ALIGNMENT.RIGHT,
+            3: WD_PARAGRAPH_ALIGNMENT.JUSTIFY,
+        }
+
+        return alignment_map.get(alignment, None)
