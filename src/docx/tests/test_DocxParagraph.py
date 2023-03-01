@@ -1,7 +1,7 @@
 import unittest
 from docx import Document
 from src.docx.DocxParagraph import DocxParagraph
-from src.docx.helpers.EnumFill import EnumFill
+from src.docx.helpers.StylePropertyCoverage import StylePropertyCoverage
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import os
 
@@ -34,7 +34,7 @@ class TestDocxParagraph(unittest.TestCase):
         docx = DocxParagraph(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
-        self.assertDictEqual(getattr(paragraph, '_Paragraph__colorText'), {'#000000': 13, 'max': '#000000'})
+        self.assertDictEqual(getattr(paragraph, '_Paragraph__colorText'), {'#000': 13, 'max': '#000'})
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[1])
         self.assertDictEqual(getattr(paragraph, '_Paragraph__colorText'), {'#00b0f0': 11, 'max': '#00b0f0'})
@@ -47,11 +47,11 @@ class TestDocxParagraph(unittest.TestCase):
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[4])
         self.assertDictEqual(getattr(paragraph, '_Paragraph__colorText'),
-                             {'#00b050': 5, '#000000': 6, '#c45911': 10, 'max': '#c45911'})
+                             {'#00b050': 5, '#000': 6, '#c45911': 10, 'max': '#c45911'})
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[5])
         self.assertDictEqual(getattr(paragraph, '_Paragraph__colorText'),
-                             {'#000000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000000'})
+                             {'#000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000'})
 
     def test_alignment(self):
         path = os.path.join(os.path.dirname(__file__), "documents/alignment.docx")
@@ -134,67 +134,67 @@ class TestDocxParagraph(unittest.TestCase):
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "bold"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "bold"), StylePropertyCoverage.NO)
         # All bold paragraph
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "bold"), EnumFill.APPLY_TO_ALL_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "bold"), StylePropertyCoverage.FULL)
         # Part of text bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "bold"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "bold"), StylePropertyCoverage.PARTLY)
         # First word is bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "bold"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "bold"), StylePropertyCoverage.PARTLY)
         # Жирные пробелы
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "bold"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "bold"), StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "bold"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "bold"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "bold"), EnumFill.IS_UNKNOWN)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "bold"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "bold"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "bold"), StylePropertyCoverage.NO)
 
     def test_is_italic_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/italic.docx")
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "italic"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "italic"), StylePropertyCoverage.NO)
         # All bold paragraph
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "italic"), EnumFill.APPLY_TO_ALL_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "italic"), StylePropertyCoverage.FULL)
         # Part of text bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "italic"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "italic"), StylePropertyCoverage.PARTLY)
         # First word is bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "italic"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "italic"), StylePropertyCoverage.PARTLY)
         # Жирные пробелы
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "italic"), EnumFill.APPLY_TO_SOME_ELEMENTS)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "italic"), StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "italic"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "italic"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "italic"), EnumFill.IS_UNKNOWN)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "italic"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "italic"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "italic"), StylePropertyCoverage.NO)
 
     def test_is_underline_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/underline.docx")
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "underline"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "underline"), StylePropertyCoverage.NO)
         # All bold paragraph
         self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "underline"),
-                         EnumFill.APPLY_TO_ALL_ELEMENTS)
+                         StylePropertyCoverage.FULL)
         # Part of text bold
         self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "underline"),
-                         EnumFill.APPLY_TO_SOME_ELEMENTS)
+                         StylePropertyCoverage.PARTLY)
         # First word is bold
         self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "underline"),
-                         EnumFill.APPLY_TO_SOME_ELEMENTS)
+                         StylePropertyCoverage.PARTLY)
         # Жирные пробелы
         self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "underline"),
-                         EnumFill.APPLY_TO_SOME_ELEMENTS)
+                         StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "underline"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "underline"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "underline"), EnumFill.IS_UNKNOWN)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "underline"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "underline"), EnumFill.NO_APPLY)
+        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "underline"), StylePropertyCoverage.NO)
 
     def test_is_change_font(self):
         path = os.path.join(os.path.dirname(__file__), "documents/font_change.docx")
@@ -231,9 +231,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -247,9 +247,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.APPLY_TO_ALL_ELEMENTS)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.FULL)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -263,9 +263,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.APPLY_TO_ALL_ELEMENTS)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.FULL)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -279,9 +279,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 16)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -295,9 +295,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -311,9 +311,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -327,9 +327,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -343,9 +343,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -359,9 +359,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -375,9 +375,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 18)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)
@@ -391,9 +391,9 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.textSize, 14)
         self.assertEqual(paragraph.mrgrg, 0)
         self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.italics, EnumFill.NO_APPLY)
-        self.assertEqual(paragraph.underlining, EnumFill.NO_APPLY)
+        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
+        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
         self.assertEqual(paragraph.keepLinesTogether, None)
         self.assertEqual(paragraph.keepWithNext, None)
         self.assertEqual(paragraph.outlineLevel, None)

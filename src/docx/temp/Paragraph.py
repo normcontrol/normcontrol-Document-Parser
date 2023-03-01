@@ -1,5 +1,5 @@
 import re
-from src.docx.helpers.EnumFill import EnumFill
+from src.docx.helpers.StylePropertyCoverage import StylePropertyCoverage
 
 
 class Paragraph:
@@ -66,7 +66,7 @@ Methods
     """
 
     def __init__(self, text, indent, lineSpacing, fontName, textSize, nochangeFontName, nochangeTextSize,
-                 alignment=None, mrgrg=None, mrglf=None, mrgtop=None, mrgbtm=None, bold: EnumFill = None, italics=None,
+                 alignment=None, mrgrg=None, mrglf=None, mrgtop=None, mrgbtm=None, bold: StylePropertyCoverage = None, italics=None,
                  underlining=None, subText=None, superText=None, colorText="White",
                  keepLinesTogether=None, keepWithNext=None, outlineLevel=None,
                  noSpaceBetweenParagraphsOfSameStyle=None, pageBreakBefore=None):
@@ -88,9 +88,9 @@ Methods
         self.__mrgtop = mrgtop
         self.__mrgbtm = mrgbtm
         self.__fontName = fontName
-        self.__bold = EnumFill(bold)
-        self.__italics = EnumFill(italics)
-        self.__underlining = EnumFill(underlining)
+        self.__bold = StylePropertyCoverage(bold)
+        self.__italics = StylePropertyCoverage(italics)
+        self.__underlining = StylePropertyCoverage(underlining)
         self.__subText = subText
         self.__superText = superText
         self.__textSize = textSize
@@ -344,7 +344,7 @@ Methods
     def bold(self, b):
         try:
             if b is not None:
-                self.__bold = EnumFill(b).name
+                self.__bold = StylePropertyCoverage(b).name
         except ValueError:
             print(
                 "You must use one of this state: NO_APPLY = 0 ; APPLY_TO_ALL_ELEMENTS = 1 ; APPLY_TO_SOME_ELEMENTS = 2; IS_UNKNOWN = None")
