@@ -10,8 +10,8 @@ class TableColumn:
             automatically if content in the column changes.
     """
 
-    def __init__(self, column_name, column_family, column_properties_column_width,
-                 column_properties_use_optimal_column_width):
+    def __init__(self, column_name: str, column_family: str, column_properties_column_width: float,
+                 column_properties_use_optimal_column_width: float):
         self._column_name = column_name
         self._column_family = column_family
         self._column_properties_column_width = column_properties_column_width

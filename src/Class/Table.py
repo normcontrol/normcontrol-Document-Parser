@@ -13,8 +13,8 @@ class Table:
         _table_properties_align - attribute specifies the horizontal alignment of a table (table:align).
     """
 
-    def __init__(self, table_name, table_family, table_master_page_name, table_properties_width,
-                 table_properties_margin_left, table_properties_align):
+    def __init__(self, table_name: str, table_family: str, table_master_page_name: str, table_properties_width: float,
+                 table_properties_margin_left: float, table_properties_align: str):
         self._table_name = table_name
         self._table_family = table_family
         self._table_master_page_name = table_master_page_name

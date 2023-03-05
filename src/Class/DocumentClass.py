@@ -1,32 +1,27 @@
 import json
-import re
 
-from src.Class.Table import Table
-from src.PDF.Table import PDFTable
+from src.Class.Paragraph import Paragraph
+from src.PDF.PDFClasses.Table import PDFTable
+
 
 class DocumentClass:
     """
     Description: a unified class representing a text document, its properties and content
 
     Parameters:
-
     ----------
-        __owner - attribute specifies the owner of a document,
-        __time - attribute specifies document creation time,
-        __content - attribute specifies the conten of a document
+        _owner: str
+            The attribute specifies the owner of a document
+        _time: datetime
+            The attribute specifies document creation time
+        _content: dictionary
+            The attribute specifies the conten of a document
 
 
-    Methods
-
+    Methods:
     ----------
         add_content(id, paragraph)
             Adds a paragraph to the content list
-
-        pt_to_sm(value)
-            Converts topographical points to centimeters
-
-        dm_to_sm(value)
-            Converts inches to centimeters
 
         create_json_to_clasifier(listOfAttr)
             Creates and returns a json string, which will later be sent to the classifier
@@ -38,53 +33,27 @@ class DocumentClass:
             Generates csv file based on content
 
     """
-    def __init__(self, owner, time):
-        self.__owner = owner
-        self.__time = time
-        self.__content = {}
 
-    def add_content(self, paragraph_id, paragraph):
+    def __init__(self, owner, time):
+        self._owner = owner
+        self._time = time
+        self._content = {}
+
+    def add_content(self, element_id, element):
         """
 
         Adds a paragraph to the content list
 
-        :param paragraph_id: Paragraph number to be added
-        :param paragraph: The paragraph to be added as a Paragraph class
+        :param element_id: Paragraph number to be added
+        :param element: The paragraph to be added as a Paragraph class
 
         """
-        self.content[paragraph_id] = paragraph
-    ## Пункт в сантиметры
-    @classmethod
-    def pt_to_sm(cls, value):
-        """
+        self.content[element_id] = element
 
-        Converts topographical points to centimeters
-
-        :param value: Conventional value
-
-        :return: The resulting value in centimeters
-
-        """
-        return value/28.346
-    ## Дюйм в сантиметры
-    @classmethod
-    def dm_to_sm(cls, value):
-        """
-
-        Converts inches to centimeters
-
-        :param value: Conventional value
-
-        :return: The resulting value in centimeters
-
-        """
-        return value * 2.54
-
-    def create_json_to_clasifier(self, list_of_attr = ["countn_of_sp_sbl","count_sbl","lowercase","uppercase","last_sbl",
-                                                  "firstkey","prev_el","cur_el","next_el","bold","italics",
-                                                  "keep_lines_together","keep_with_next", "outline_level",
-                                                  "page_breake_before"]
-                              ):
+    def create_json_to_clasifier(self, list_of_attr=["countn_of_sp_sbl", "count_sbl", "lowercase", "uppercase",
+                                                     "last_sbl", "first_key", "bold", "italics", "keep_lines_together",
+                                                     "keep_with_next", "outline_level", "page_breake_before"]
+                                 ):
         """
 
         Creates and returns a json string, which will later be sent to the classifier
@@ -95,26 +64,26 @@ class DocumentClass:
 
         """
 
-        s ="{"
+        json_string = "{"
         for attribute in dir(self):
             if attribute == "time" or attribute == "owner":
-                s = s + "\"" + attribute + "\": \"" + str(getattr(self,attribute)) + "\", "
-        s = s + "\"paragraphs\": {"
+                json_string = json_string + "\"" + attribute + "\": \"" + str(getattr(self, attribute)) + "\", "
+        json_string = json_string + "\"paragraphs\": {"
         for i, p in self.content.items():
-            if p.__class__ != PDFTable :
-                s = s + "\"" + str(i) + "\": {\""
+            if p.__class__ == Paragraph:
+                json_string = json_string + "\"" + str(i) + "\": {\""
                 for attribute in dir(p):
                     if not attribute.startswith('_') and attribute in list_of_attr:
-                        s = s + attribute + "\": \"" + str(getattr(p,attribute)) + "\",\""
-                l = len(s)
-                s = s[:l - 2] + "}, "
-        l = len(s)
-        s = s[:l - 2] + "}}"
-        json_text = json.loads(s)
+                        json_string = json_string + attribute + "\": \"" + str(getattr(p, attribute)) + "\",\""
+                length = len(json_string)
+                json_string = json_string[:length - 2] + "}, "
+        length = len(json_string)
+        json_string = json_string[:length - 2] + "}}"
+        json_text = json.loads(json_string)
         return json_text
 
     @classmethod
-    def request_to_clasify(cls, json_text, api = "http://127.0.0.1:8001/clasify"):
+    def request_to_clasify(cls, json_text, api="http://127.0.0.1:8001/clasify"):
         """
 
         Sends a request to the classification module
@@ -127,10 +96,10 @@ class DocumentClass:
         """
 
         import requests
-        response = requests.post(api, json= json_text)
+        response = requests.post(api, json=json_text)
         return response
 
-    def write_CSV(self, path = 'pdftocsv.csv'):
+    def write_CSV(self, path='pdftocsv.csv'):
 
         """
 
@@ -143,40 +112,37 @@ class DocumentClass:
         import csv
         with open(path, 'w', newline='', encoding="utf-8") as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(["text","countn_of_sp_sbl","count_sbl","uppercase", "lowercase","font_name","last_sbl",
-                                 "firstkey","indent","line_spasing","text_size"])
+            filewriter.writerow(["text", "countn_of_sp_sbl", "count_sbl", "uppercase", "lowercase", "font_name",
+                                 "last_sbl", "first_key", "indent", "line_spasing", "text_size"])
             for key in self.content.keys():
-                if type(self.content.get(key))!= PDFTable:
-                    filewriter.writerow([self.content.get(key).text, self.content.get(key).countn_of_sp_sbl,
-                                         self.content.get(key).count_sbl,self.content.get(key).uppercase,
+                if type(self.content.get(key)) == Paragraph:
+                    filewriter.writerow([self.content.get(key).text, self.content.get(key).count_of_sp_sbl,
+                                         self.content.get(key).count_sbl, self.content.get(key).uppercase,
                                          self.content.get(key).lowercase, self.content.get(key).font_name,
-                                         self.content.get(key).last_sbl,self.content.get(key).firstkey,
-                                         self.content.get(key).indent, self.content.get(key).line_spasing,
+                                         self.content.get(key).last_sbl, self.content.get(key).first_key,
+                                         self.content.get(key).indent, self.content.get(key).line_spacing,
                                          self.content.get(key).text_size])
-                else:
-                    filewriter.writerow([self.content.get(key).text])
-
 
     @property
     def content(self):
-        return self.__content
+        return self._content
 
     @property
     def time(self):
-        return self.__time
+        return self._time
 
     @property
     def owner(self):
-        return self.__owner
+        return self._owner
 
     @owner.setter
     def owner(self, owner):
-        self.__owner = owner
+        self._owner = owner
 
     @time.setter
     def time(self, time):
-        self.__time = time
+        self._time = time
 
     @content.setter
     def content(self, content):
-        self.__content = content
+        self._content = content
