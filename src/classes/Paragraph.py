@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass, field
 
-from src.Helpers.Enums import AlignmentEnum
+from src.helpers.enums import AlignmentEnum
 
 
 @dataclass

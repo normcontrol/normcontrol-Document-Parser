@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from src.PDF.PDFClasses.Line import Line
+from src.pdf.pdfclasses.Line import Line
 
 
 @dataclass()
@@ -9,7 +9,6 @@ class PdfParagraph:
     """
     Description: A class is a pdf paragraph and its attributes
     ----------
-
     Parameters:
     ----------
         _lines: list
@@ -28,7 +27,6 @@ class PdfParagraph:
             Attribute describing that the font of the paragraph has not changed
         _no_change_text_size: bool
             Attribute describing that the size of the paragraph has not changed
-
     """
 
     _indent: float = None

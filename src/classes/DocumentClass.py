@@ -1,7 +1,6 @@
 import json
 
-from src.Class.Paragraph import Paragraph
-from src.PDF.PDFClasses.Table import PDFTable
+from src.classes.Paragraph import Paragraph
 
 
 class DocumentClass:
