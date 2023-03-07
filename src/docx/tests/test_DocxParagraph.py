@@ -134,67 +134,67 @@ class TestDocxParagraph(unittest.TestCase):
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "bold"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[0], "bold"), StylePropertyCoverage.NO)
         # All bold paragraph
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "bold"), StylePropertyCoverage.FULL)
+        self.assertEqual(docx._is_style_append(document.paragraphs[1], "bold"), StylePropertyCoverage.FULL)
         # Part of text bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "bold"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[2], "bold"), StylePropertyCoverage.PARTLY)
         # First word is bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "bold"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[3], "bold"), StylePropertyCoverage.PARTLY)
         # Жирные пробелы
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "bold"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[4], "bold"), StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "bold"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[5], "bold"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "bold"), StylePropertyCoverage.UNKNOWN)
+        self.assertEqual(docx._is_style_append(document.paragraphs[6], "bold"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "bold"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[7], "bold"), StylePropertyCoverage.NO)
 
     def test_is_italic_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/italic.docx")
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "italic"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[0], "italic"), StylePropertyCoverage.NO)
         # All bold paragraph
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "italic"), StylePropertyCoverage.FULL)
+        self.assertEqual(docx._is_style_append(document.paragraphs[1], "italic"), StylePropertyCoverage.FULL)
         # Part of text bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "italic"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[2], "italic"), StylePropertyCoverage.PARTLY)
         # First word is bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "italic"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[3], "italic"), StylePropertyCoverage.PARTLY)
         # Жирные пробелы
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "italic"), StylePropertyCoverage.PARTLY)
+        self.assertEqual(docx._is_style_append(document.paragraphs[4], "italic"), StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "italic"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[5], "italic"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "italic"), StylePropertyCoverage.UNKNOWN)
+        self.assertEqual(docx._is_style_append(document.paragraphs[6], "italic"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "italic"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[7], "italic"), StylePropertyCoverage.NO)
 
     def test_is_underline_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/underline.docx")
         document = Document(path)
         docx = DocxParagraph(path)
         # Not bold text
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[0], "underline"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[0], "underline"), StylePropertyCoverage.NO)
         # All bold paragraph
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[1], "underline"),
+        self.assertEqual(docx._is_style_append(document.paragraphs[1], "underline"),
                          StylePropertyCoverage.FULL)
         # Part of text bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[2], "underline"),
+        self.assertEqual(docx._is_style_append(document.paragraphs[2], "underline"),
                          StylePropertyCoverage.PARTLY)
         # First word is bold
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[3], "underline"),
+        self.assertEqual(docx._is_style_append(document.paragraphs[3], "underline"),
                          StylePropertyCoverage.PARTLY)
         # Жирные пробелы
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[4], "underline"),
+        self.assertEqual(docx._is_style_append(document.paragraphs[4], "underline"),
                          StylePropertyCoverage.PARTLY)
         # Bold space after text(/n)  in Word does not have affect
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[5], "underline"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[5], "underline"), StylePropertyCoverage.NO)
         # Empty String
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[6], "underline"), StylePropertyCoverage.UNKNOWN)
+        self.assertEqual(docx._is_style_append(document.paragraphs[6], "underline"), StylePropertyCoverage.UNKNOWN)
         # Spaces
-        self.assertEqual(docx._is_style_append_text(document.paragraphs[7], "underline"), StylePropertyCoverage.NO)
+        self.assertEqual(docx._is_style_append(document.paragraphs[7], "underline"), StylePropertyCoverage.NO)
 
     def test_is_change_font(self):
         path = os.path.join(os.path.dirname(__file__), "documents/font_change.docx")

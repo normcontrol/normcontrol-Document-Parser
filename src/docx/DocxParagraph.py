@@ -28,15 +28,16 @@ from src.docx.temp.Paragraph import Paragraph
 
 class DocxParagraph:
     """
-    A class make styles for paragraph in one style with OTD and PDF
+    Class allows to take advantage of a file with the docx extension paragraph structure in a standard form
 
-    Attributes:
-        path_to_document: Path to document docx
+    Parameters:
+    ----------
+    path_to_document: Path to document docx
         document : docx.Document()
         styles: document.styles
 
     Methods:
-         get_all_paragraphs_in_standard: list Paragraph in standard
+    ----------
          get_standard_paragraph(self, paragraph): A method that return standard paragraph
          get_font_size(self, paragraph): int
          get_font_style_for_attr: list Find style.font attr_name  in any paren or child elements
@@ -58,17 +59,6 @@ class DocxParagraph:
         self.document = Document(path)
         self.styles = self.document.styles
 
-    def get_all_paragraphs_in_standard(self):
-        """
-        Get all paragraph in standard format as list
-
-        :return: list of standard_paragraph
-        """
-        list_paragraphs = list()
-        for paragraph in self.document.paragraphs:
-            list_paragraphs.append(self.get_standard_paragraph(paragraph))
-        return list_paragraphs
-
     def get_standard_paragraph(self, paragraph: ParagraphType):
         """
         Make paragraph in standard format
@@ -85,14 +75,15 @@ class DocxParagraph:
             textSize=self._get_font_size(paragraph),
             nochangeFontName=self._is_change_font_name(paragraph),
             nochangeTextSize=self._is_change_text_size(paragraph),
-            alignment=self.get_paragraph_justification_type(self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
+            alignment=self.get_paragraph_justification_type(
+                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
             mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
             mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
             mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
             mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-            bold=self._is_style_append_text(paragraph, "bold"),
-            italics=self._is_style_append_text(paragraph, "italic"),
-            underlining=self._is_style_append_text(paragraph, "underline"),
+            bold=self._is_style_append(paragraph, "bold"),
+            italics=self._is_style_append(paragraph, "italic"),
+            underlining=self._is_style_append(paragraph, "underline"),
             subText=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
             superText=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
             colorText=self._get_font_style_color(paragraph),
@@ -157,7 +148,7 @@ class DocxParagraph:
         sums_by_color['max'] = max(sums_by_color, key=lambda k: sums_by_color[k])
         return sums_by_color
 
-    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str) -> list:
+    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
         Find style.font attr_name  in any paren or child elements
 
@@ -167,19 +158,19 @@ class DocxParagraph:
         """
 
         attrs_values = set()
-        attr = getattr(paragraph.style.font, attr_name)
+        attr = getattr(paragraph.style.font, style_attr_name)
         for run in paragraph.runs:
-            attr_value = getattr(run.font, attr_name)
+            attr_value = getattr(run.font, style_attr_name)
             if attr_value is not None:
                 attrs_values.add(attr_value)
         if attr is not None:
             attrs_values.add(attr)
         else:
-            style = self.styles[getattr(paragraph.style, attr_name)]
+            style = self.styles[getattr(paragraph.style, style_attr_name)]
             # if font.name is None try find in parents
-            while getattr(style.font, attr_name) is None:
+            while getattr(style.font, style_attr_name) is None:
                 style = style.base_style
-            attrs_values.add(getattr(style.font, attr_name))
+            attrs_values.add(getattr(style.font, style_attr_name))
         return list(attrs_values)
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str,
@@ -246,7 +237,7 @@ class DocxParagraph:
                 style = style.base_style
         return attr
 
-    def _is_style_append_text(self, paragraph: ParagraphType, style_name: str) -> StylePropertyCoverage:
+    def _is_style_append(self, paragraph: ParagraphType, style_name: str) -> StylePropertyCoverage:
         """
         Checks if the text is bold | italic | underline
         This is a function that uses the `docx` package.
