@@ -1,71 +1,78 @@
 import re
 import pdfplumber
-from src.Class.DocumentClass import  DocumentClass
-from src.Class.Paragraph import Paragraph
-from src.PDF.Line import Line
-from src.PDF.PdfParagraph import PdfParagraph
-from src.PDF.Table import PDFTable
+from src.classes.DocumentClass import DocumentClass
+from src.classes.Paragraph import Paragraph
+from src.pdf.pdfclasses.Line import Line
+from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
+from src.pdf.pdfclasses.Table import PDFTable
 
 
 class PDFParser:
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
-    ----------
 
     Parameters:
-        __path - attribute specifies file path
+    ----------
+        path - attribute specifies file path
         __pdf - attribute representing an object obtained by using the pdfplumber library that models a pdf file
                 and its internal objects
-        __document - attribute representing a unified text document object containing structural elements and
+        document - attribute representing a unified text document object containing structural elements and
                 their properties
-        __lines - an attribute representing a list of all formed lines
-        __list_of_table - an attribute representing a list of all extracted tables
+        lines - an attribute representing a list of all formed lines
+        list_of_table - an attribute representing a list of all extracted tables
 
-    Methods
+    Methods:
     ----------
+        __get_tables(self):
+            Extracts all pdf tables using the object of pdfplumber library.
 
-        get_line_and_tables(self):
-            Extracts all pdf document objects using the pdfplumber library and forms rows and tables based on them
+        __get_lines(self):
+            Extracts all text rows using the object of pdfplumber library.
 
-        get_space(lines):
+        __get_space(lines):
             Based on the properties of the document lines, generates a line spacing for each line
 
         add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
-            Adds a paragraph object containing its properties and attributes to the list of structural elements of the document
+            Adds a paragraph object containing its properties and attributes to the list of structural elements
+            of the document
 
-        get_paragraph(self, lines, spaces, list_of_table):
-            Forms paragraphs of the document based on lines, line spacing and tables
+        get_elements(self, lines, spaces, list_of_table):
+            Forms structural elements of the document based on lines, line spacing, tables and pictures
 
+        @staticmethod
         get_standart_paragraph(pdf_paragraph):
             Converts the resulting paragraph and its attributes into a unified view
 
-        delete_dublicates(self, pdf_paragraph, removed_tables, list_of_table):
+        @classmethod
+        delete_dublicates(cls, pdf_paragraph, removed_tables, list_of_table):
             Removes duplicate table text lines, forms their properties and adds them to the paragraph object
 
     """
 
     def __init__(self, path):
-        self.path = path
-        self.pdf = pdfplumber.open(path)
-        self.document = DocumentClass(owner=self.pdf.metadata.get('Author'), time=self.pdf.metadata.get('CreationDate'))
-        self.lines = []
-        self.list_of_table = []
+        self._path = path
+        self.__pdf = pdfplumber.open(path)
+        self.document = DocumentClass(owner=self.__pdf.metadata.get('Author'),
+                                      time=self.__pdf.metadata.get('CreationDate'))
+        self._pictures = self.__get_all_pictures()
+        self._lines = self.__get_lines()
+        self._list_of_table = self.__get_tables()
 
     @property
     def path(self):
         return self._path
 
     @path.setter
-    def path(self, path):
-        self._path = path
+    def path(self, value):
+        self._path = value
 
     @property
-    def pdf(self):
-        return self._pdf
+    def pictures(self):
+        return self._pictures
 
-    @pdf.setter
-    def pdf(self, pdf):
-        self._pdf = pdf
+    @pictures.setter
+    def pictures(self, value):
+        self._pictures = value
 
     @property
     def document(self):
@@ -91,7 +98,19 @@ class PDFParser:
     def list_of_table(self, list_of_table):
         self._list_of_table = list_of_table
 
-    def get_lines_and_tables(self):
+    def __get_tables(self):
+        list_of_table = []
+        for page in self.__pdf.pages:
+            # Extracting tables and tabular text
+            tables = page.find_tables()
+            tables_text = page.extract_tables()
+            for number_of_table, table in enumerate(tables):
+                current_table = PDFTable(table)
+                current_table.addText(tables_text[number_of_table])
+                list_of_table.append(current_table)
+        return list_of_table
+
+    def __get_lines(self):
 
         """
 
@@ -106,21 +125,13 @@ class PDFParser:
         y0 = -1
         x1 = 0
         y1 = 0
-        fontname = []
-        size = []
+        font_names = []
+        text_sizes = []
         chars = []
         no_change_font_name = True
-        no_change_size = True
-
-        for number_of_page, page in enumerate(self.pdf.pages):
-            # Extracting tables and tabular text
-            tables = page.find_tables()
-            tables_text = page.extract_tables()
-            for number_of_table, table in enumerate(tables):
-                current_table = PDFTable(table)
-                current_table.addText(tables_text[number_of_table])
-                self.list_of_table.append(current_table)
-
+        no_change_text_size = True
+        lines = []
+        for number_of_page, page in enumerate(self.__pdf.pages):
             # Selecting text strings
             text = ""
             for i, char in enumerate(page.chars):
@@ -134,16 +145,16 @@ class PDFParser:
                     x1 = char.get('x1')
                     if i != 0:
                         # Font and line size selection
-                        if char.get('fontname') not in fontname:
+                        if char.get('fontname') not in font_names:
                             no_change_font_name = False
-                            fontname.append(char.get('fontname'))
-                        if char.get('size') not in size:
-                            no_change_size = False
-                            size.append(char.get('size'))
+                            font_names.append(char.get('fontname'))
+                        if char.get('size') not in text_sizes:
+                            no_change_text_size = False
+                            text_sizes.append(char.get('size'))
                         y1 = char.get('y1')
                     else:
-                        fontname.append(char.get('fontname'))
-                        size.append(char.get('size'))
+                        font_names.append(char.get('fontname'))
+                        text_sizes.append(char.get('size'))
                         y1 = char.get('y1')
                 else:
                     if i != 0:
@@ -153,16 +164,18 @@ class PDFParser:
                                 x0 = chars[0].get('x0')
                             else:
                                 x0 = 0
-                            self.lines.append(
-                                Line(x0, y0, x1, y1, text, fontname, size, no_change_font_name, no_change_size,
-                                     number_of_page + 1, chars))
+                            lines.append(
+                                Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names,
+                                     _text_sizes=text_sizes, _no_change_font_name=no_change_font_name,
+                                     _no_change_text_size=no_change_text_size, _number_of_page=number_of_page + 1,
+                                     _chars=chars))
                     chars = []
                     text = ""
                     y0 = char.get('y0')
-                    fontname = []
-                    size = []
+                    font_names = []
+                    text_sizes = []
                     no_change_font_name = True
-                    no_change_size = True
+                    no_change_text_size = True
                     # Deleting empty lines
                     if text == "" and char.get('text') == ' ':
                         continue
@@ -172,10 +185,11 @@ class PDFParser:
                 x0 = chars[0].get('x0')
             else:
                 x0 = 0
-            self.lines.append(
-                Line(x0, y0, x1, y1, text, fontname, size, no_change_font_name, no_change_size, number_of_page + 1,
-                     chars))
-        return self.lines, self.list_of_table
+            lines.append(
+                Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names, _text_sizes=text_sizes,
+                     _no_change_font_name=no_change_font_name, _no_change_text_size=no_change_text_size,
+                     _number_of_page=number_of_page + 1, _chars=chars))
+        return lines
 
     @staticmethod
     def get_space(lines):
@@ -206,32 +220,32 @@ class PDFParser:
     def add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
 
         """
-        Calculates the properties and attributes of a paragraph and adds it to the list of structural elements of the document
+        Calculates the properties and attributes of a paragraph and adds it to the list of structural elements
+        of the document
 
         :param
             pdf_paragraph: An object representing a paragraph highlighted by the algorithm
             paragraph_id: Id of paragraph
-        :return
 
         """
         # Highlighting string attributes
-        no_change_font_name = pdf_paragraph.lines[0].nochangeFontName
-        no_change_text_size = pdf_paragraph.lines[0].nochangeSize
+        no_change_font_name = pdf_paragraph.lines[0].no_change_font_name
+        no_change_text_size = pdf_paragraph.lines[0].no_change_text_size
         for line in pdf_paragraph.lines:
-            if len(line.fontname) > 1 or line.nochangeFontName is False:
+            if len(line.font_names) > 1 or line.no_change_font_name is False:
                 no_change_font_name = False
-            if len(line.size) > 1 or line.nochangeSize is False:
+            if len(line.text_sizes) > 1 or line.no_change_text_size is False:
                 no_change_text_size = False
-        if len(pdf_paragraph.lines[0].size) != 0:
-            pdf_paragraph.text_size = pdf_paragraph.lines[0].size[0]
-        if len(pdf_paragraph.lines[0].fontname) != 0:
-            pdf_paragraph.fontname = pdf_paragraph.lines[0].fontname[0]
+        if len(pdf_paragraph.lines[0].text_sizes) != 0:
+            pdf_paragraph.text_size = pdf_paragraph.lines[0].text_sizes[0]
+        if len(pdf_paragraph.lines[0].font_names) != 0:
+            pdf_paragraph.font_name = pdf_paragraph.lines[0].font_names[0]
         pdf_paragraph.no_change_font_name = no_change_font_name
         pdf_paragraph.no_change_text_size = no_change_text_size
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
         self.document.content[paragraph_id] = self.get_standart_paragraph(pdf_paragraph)
 
-    def get_paragraph(self, lines, spaces, list_of_table):
+    def get_elements(self, lines, spaces, list_of_table, list_of_picture):
         """
 
         Generates paragraphs from a list of lines
@@ -247,11 +261,14 @@ class PDFParser:
         """
 
         i = 1
+        paragraph_id = 1
+        removed_tables = []
+        removed_pictures = []
+
         paragraph = PdfParagraph()
         paragraph.lines.append(lines[0])
         paragraph.spaces.append(spaces[0])
-        paragraph_id = 1
-        removed_tables = []
+
         while i < len(lines):
             mean = 0
             j = 0
@@ -268,9 +285,16 @@ class PDFParser:
             # Condition for paragraph selection
             if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 520 or abs(spaces[i - 1] - mean) > 2 or (
                     len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
+                for picture in list_of_picture:
+                    if paragraph.lines[0].number_of_page == picture.get("page_number") and paragraph.lines[0].y0 >\
+                            picture.get("y0"):
+                        self.document.add_content(paragraph_id, picture)
+                        removed_pictures.append(picture)
+                        list_of_picture.remove(picture)
+                        paragraph_id += 1
                 paragraph.line_spacing = mean
-                element, removed_tables, list_of_table = self.delete_dublicates(paragraph, removed_tables,
-                                                                                              list_of_table)
+                element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
+                                                                                     list_of_table)
                 if element is not None:
                     if type(element) == PDFTable:
                         self.document.add_content(paragraph_id, element)
@@ -302,18 +326,22 @@ class PDFParser:
             paragraph: The resulting Standard paragraph
 
         """
+        from src.helpers.measurement import pt_to_sm
 
         text = ""
         for line in pdf_paragraph.lines:
             text = text + line.text
-        paragraph = Paragraph(text=text, indent=round(DocumentClass.pt_to_sm(pdf_paragraph.indent) - 3, 2),
-                              line_spasing=round(DocumentClass.pt_to_sm(pdf_paragraph.line_spacing), 2),
-                              font_name=pdf_paragraph.fontname, text_size=round(pdf_paragraph.text_size),
-                              no_change_text_size=pdf_paragraph.no_change_text_size,
-                              no_change_fontname=pdf_paragraph.no_change_font_name)
+        paragraph = Paragraph(_text=text, _indent=round(pt_to_sm(pdf_paragraph.indent) - 3, 2),
+                              _font_name=pdf_paragraph.font_name,
+                              _text_size=round(pdf_paragraph.text_size)
+                              if isinstance(pdf_paragraph.text_size, float) else None,
+                              _line_spacing=round(pt_to_sm(pdf_paragraph.line_spacing), 2),
+                              _no_change_text_size=pdf_paragraph.no_change_text_size,
+                              _no_change_fontname=pdf_paragraph.no_change_font_name)
         return paragraph
 
-    def delete_dublicates(self, pdf_paragraph, removed_tables, list_of_table):
+    @classmethod
+    def delete_dublicates(cls, pdf_paragraph, removed_tables, list_of_table):
 
         """
 
@@ -334,14 +362,21 @@ class PDFParser:
         for remove_table in removed_tables:
             if (remove_table.table.page.bbox[3] - remove_table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
                     (remove_table.table.page.bbox[3] - remove_table.table.bbox[3]) and \
-                    remove_table.table.page.page_number == pdf_paragraph.lines[0].page:
+                    remove_table.table.page.page_number == pdf_paragraph.lines[0].number_of_page:
                 return None, removed_tables, list_of_table
         # Checking that this paragraph is tabular and adding a table if it has not been completed yet
         for table in list_of_table:
             if (table.table.page.bbox[3] - table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
                     table.table.page.bbox[3] - table.table.bbox[3]) and table.table.page.page_number == \
-                    pdf_paragraph.lines[0].page:
+                    pdf_paragraph.lines[0].number_of_page:
                 removed_tables.append(table)
                 list_of_table.remove(table)
                 return table, removed_tables, list_of_table
         return pdf_paragraph, removed_tables, list_of_table
+
+    def __get_all_pictures(self):
+        pictures = []
+        for number_of_page, page in enumerate(self.__pdf.pages):
+            for image in page.images:
+                pictures.append(image)
+        return pictures
