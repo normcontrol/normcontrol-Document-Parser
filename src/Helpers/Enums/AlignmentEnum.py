@@ -1,7 +1,7 @@
-import enum
+from enum import Enum
 
 
-class AligmentEnum(enum.Enum):
+class AlignmentEnum(Enum):
     LEFT = 'left'
     Right = 'right'
     CENTER = 'center'

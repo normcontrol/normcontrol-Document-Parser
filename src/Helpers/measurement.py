@@ -1,4 +1,4 @@
-def pt_to_sm(value):
+def pt_to_sm(value: float):
     """
 
     Converts topographical points to centimeters
@@ -10,7 +10,7 @@ def pt_to_sm(value):
     """
     return value / 28.346
 
-def dm_to_sm(value):
+def dm_to_sm(value: float):
     """
 
     Converts inches to centimeters
