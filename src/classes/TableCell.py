@@ -20,9 +20,9 @@ class TableCell:
             or inline-area.
     """
 
-    def __init__(self, cell_name, cell_family, cell_properties_border, cell_properties_writing_mode,
-                 cell_properties_padding_top, cell_properties_padding_left,
-                 cell_properties_padding_bottom, cell_properties_padding_right):
+    def __init__(self, cell_name: str, cell_family: str, cell_properties_border: float, cell_properties_writing_mode: str,
+                 cell_properties_padding_top: float, cell_properties_padding_left: float,
+                 cell_properties_padding_bottom: float, cell_properties_padding_right: float):
         self._cell_name = cell_name
         self._cell_family = cell_family
         self._cell_properties_border = cell_properties_border

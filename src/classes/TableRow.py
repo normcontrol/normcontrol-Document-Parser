@@ -11,7 +11,7 @@ class TableRow:
             automatically if content in the row changes.
     """
 
-    def __init__(self, row_name, row_family, row_properties_min_row_height, row_properties_use_optimal_row_height):
+    def __init__(self, row_name:str, row_family:str, row_properties_min_row_height:float, row_properties_use_optimal_row_height:float):
         self._row_name = row_name
         self._row_family = row_family
         self._row_properties_min_row_height = row_properties_min_row_height

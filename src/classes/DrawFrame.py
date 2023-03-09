@@ -20,8 +20,9 @@ class DrawFrame:
             to the ending resource.
     """
 
-    def __init__(self, frame_style_name, frame_name, frame_anchor_type, frame_x, frame_y, frame_width, frame_height,
-                 frame_rel_width, frame_rel_height, image_href, image_type, image_show, image_actuate):
+    def __init__(self, frame_style_name: str, frame_name: str, frame_anchor_type: str, frame_x: float, frame_y: float,
+                 frame_width: float, frame_height: float, frame_rel_width: str, frame_rel_height: str, image_href: str,
+                 image_type: str, image_show: str, image_actuate: str):
         self._frame_style_name = frame_style_name
         self._frame_name = frame_name
         self._frame_anchor_type = frame_anchor_type
