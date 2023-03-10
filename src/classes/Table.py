@@ -69,3 +69,10 @@ class Table:
     @table_properties_align.setter
     def table_properties_align(self, value):
         self._table_properties_align = value
+
+    def __repr__(self):
+        return str('{_table_name: ' + self._table_name + '; _table_family: ' + self._table_family +
+                   '; _table_master_page_name: ' + self._table_master_page_name + '; _table_properties_width: ' +
+                   str(self._table_properties_width) + '; _table_properties_margin_left: ' +
+                   str(self._table_properties_margin_left) + '; _table_properties_align: ' +
+                   self._table_properties_align + '}')

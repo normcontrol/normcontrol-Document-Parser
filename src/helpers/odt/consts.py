@@ -1,3 +1,7 @@
+"""
+    A file with constants for attributes of document elements.
+"""
+
 DEFAULT_PARAM = {}
 TABLE_PARAM = {}
 ROW_PARAM = {}

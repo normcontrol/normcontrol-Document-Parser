@@ -48,3 +48,9 @@ class TableColumn:
     @column_properties_use_optimal_column_width.setter
     def column_properties_use_optimal_column_width(self, value):
         self._column_properties_use_optimal_column_width = value
+
+    def __repr__(self):
+        return str('{_column_name: ' + self._column_name + '; _column_family: ' + self._column_family +
+                   '; _column_properties_column_width: ' + str(self._column_properties_column_width) +
+                   '; _column_properties_use_optimal_column_width: ' +
+                   str(self._column_properties_use_optimal_column_width) + '}')

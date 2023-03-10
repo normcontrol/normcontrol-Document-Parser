@@ -95,3 +95,12 @@ class TableCell:
     @cell_properties_padding_right.setter
     def cell_properties_padding_right(self, value):
         self._cell_properties_padding_right = value
+
+    def __repr__(self):
+        return str('{_cell_name: ' + self._cell_name + '; _cell_family: ' + self._cell_family +
+                   '; _cell_properties_border: ' + str(self._cell_properties_border) +
+                   '; _cell_properties_writing_mode: ' + self._cell_properties_writing_mode +
+                   '; _cell_properties_padding_top: ' + str(self._cell_properties_padding_top) +
+                   '; _cell_properties_padding_left: ' + str(self._cell_properties_padding_left) +
+                   '; _cell_properties_padding_bottom: ' + str(self._cell_properties_padding_bottom) +
+                   '; _cell_properties_padding_right: ' + str(self._cell_properties_padding_right) + '}')

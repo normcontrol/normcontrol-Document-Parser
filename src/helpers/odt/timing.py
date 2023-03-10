@@ -1,3 +1,7 @@
+"""
+    A file with methods for calculating the running time of scripts.
+"""
+
 import atexit
 import time
 from functools import reduce

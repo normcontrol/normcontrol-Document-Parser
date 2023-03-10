@@ -48,3 +48,9 @@ class TableRow:
     @row_properties_use_optimal_row_height.setter
     def row_properties_use_optimal_row_height(self, value):
         self._row_properties_use_optimal_row_height = value
+
+    def __repr__(self):
+        return str('{_row_name: ' + self._row_name + '; _row_family: ' + self._row_family +
+                   '; _row_properties_min_row_height: ' + str(self._row_properties_min_row_height) +
+                   '; _row_properties_use_optimal_row_height: ' +
+                   str(self._row_properties_use_optimal_row_height) + '}')

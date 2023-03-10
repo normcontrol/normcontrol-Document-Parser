@@ -4,18 +4,9 @@ from odf.table import Table
 from odf.text import P
 from guppy import hpy
 from src.odt.styles import Style, Auto, Default
-from src.odt.helpers import const
+from src.helpers.odt import consts
 import os
 
-def create_path(abs_path, rel_path):
-    script_dir = str.split(abs_path, '/')
-    path = ''
-    ind = 0
-    while ind < len(script_dir) - 2:
-        path += script_dir[ind]
-        path += '/'
-        ind += 1
-    return path + rel_path
 
 class DocumentParser:
     def __init__(self, file):

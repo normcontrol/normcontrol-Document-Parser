@@ -140,3 +140,12 @@ class DrawFrame:
     @image_actuate.setter
     def image_actuate(self, value):
         self._image_actuate = value
+
+    def __repr__(self):
+        return str('{_frame_style_name: ' + self._frame_style_name + '; _frame_name: ' + self._frame_name +
+                   '; _frame_anchor_type: ' + self._frame_anchor_type + '; _frame_x: ' + str(self._frame_x) +
+                   '; _frame_y: ' + str(self._frame_y) + '; _frame_width: ' + str(self._frame_width) +
+                   '; _frame_height: ' + str(self._frame_height) + '; _frame_rel_width: ' + self._frame_rel_width +
+                   '; _frame_rel_height: ' + self._frame_rel_height + '; _image_href: ' + self._image_href +
+                   '; _image_type: ' + self._image_type + '; _image_show: ' + self._image_show + '; _image_actuate: ' +
+                   self._image_actuate + '}')
