@@ -1,8 +1,13 @@
+
+from dataclasses import dataclass
+
+
+@dataclass
 class Table:
     """
     Description: Table class for ODT document.
 
-    Parameters:
+    Attributes:
         _table_name - attribute specifies the name of a table,
         _table_family - attribute specifies the family of a style (style:family),
         _table_master_page_name - attribute specifies the name of element that contains the content
@@ -13,14 +18,12 @@ class Table:
         _table_properties_align - attribute specifies the horizontal alignment of a table (table:align).
     """
 
-    def __init__(self, table_name: str, table_family: str, table_master_page_name: str, table_properties_width: float,
-                 table_properties_margin_left: float, table_properties_align: str):
-        self._table_name = table_name
-        self._table_family = table_family
-        self._table_master_page_name = table_master_page_name
-        self._table_properties_width = table_properties_width
-        self._table_properties_margin_left = table_properties_margin_left
-        self._table_properties_align = table_properties_align
+    _table_name: str
+    _table_family: str
+    _table_master_page_name: str
+    _table_properties_width: float
+    _table_properties_margin_left: float
+    _table_properties_align: str
 
     @property
     def table_name(self):
@@ -69,10 +72,3 @@ class Table:
     @table_properties_align.setter
     def table_properties_align(self, value):
         self._table_properties_align = value
-
-    def __repr__(self):
-        return str('{_table_name: ' + self._table_name + '; _table_family: ' + self._table_family +
-                   '; _table_master_page_name: ' + self._table_master_page_name + '; _table_properties_width: ' +
-                   str(self._table_properties_width) + '; _table_properties_margin_left: ' +
-                   str(self._table_properties_margin_left) + '; _table_properties_align: ' +
-                   self._table_properties_align + '}')

@@ -1,8 +1,13 @@
+
+from dataclasses import dataclass
+
+
+@dataclass
 class DrawFrame:
     """
     Description: Draw frame class for ODT document.
 
-    Parameters:
+    Attributes:
         _frame_style_name - attribute specifies the style of current frame,
         _frame_name - attribute specifies the name of current frame,
         _frame_anchor_type - attribute specifies how a frame is bound to a text document,
@@ -20,22 +25,19 @@ class DrawFrame:
             to the ending resource.
     """
 
-    def __init__(self, frame_style_name: str, frame_name: str, frame_anchor_type: str, frame_x: float, frame_y: float,
-                 frame_width: float, frame_height: float, frame_rel_width: str, frame_rel_height: str, image_href: str,
-                 image_type: str, image_show: str, image_actuate: str):
-        self._frame_style_name = frame_style_name
-        self._frame_name = frame_name
-        self._frame_anchor_type = frame_anchor_type
-        self._frame_x = frame_x
-        self._frame_y = frame_y
-        self._frame_width = frame_width
-        self._frame_height = frame_height
-        self._frame_rel_width = frame_rel_width
-        self._frame_rel_height = frame_rel_height
-        self._image_href = image_href
-        self._image_type = image_type
-        self._image_show = image_show
-        self._image_actuate = image_actuate
+    _frame_style_name: str
+    _frame_name: str
+    _frame_anchor_type: str
+    _frame_x: float
+    _frame_y: float
+    _frame_width: float
+    _frame_height: float
+    _frame_rel_width: str
+    _frame_rel_height: str
+    _image_href: str
+    _image_type: str
+    _image_show: str
+    _image_actuate: str
 
     @property
     def frame_style_name(self):
@@ -140,12 +142,3 @@ class DrawFrame:
     @image_actuate.setter
     def image_actuate(self, value):
         self._image_actuate = value
-
-    def __repr__(self):
-        return str('{_frame_style_name: ' + self._frame_style_name + '; _frame_name: ' + self._frame_name +
-                   '; _frame_anchor_type: ' + self._frame_anchor_type + '; _frame_x: ' + str(self._frame_x) +
-                   '; _frame_y: ' + str(self._frame_y) + '; _frame_width: ' + str(self._frame_width) +
-                   '; _frame_height: ' + str(self._frame_height) + '; _frame_rel_width: ' + self._frame_rel_width +
-                   '; _frame_rel_height: ' + self._frame_rel_height + '; _image_href: ' + self._image_href +
-                   '; _image_type: ' + self._image_type + '; _image_show: ' + self._image_show + '; _image_actuate: ' +
-                   self._image_actuate + '}')
