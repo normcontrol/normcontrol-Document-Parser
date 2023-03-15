@@ -27,4 +27,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
     - name: Test with pytest
-      run: pytest tests/test*
+      run: pytest src/tests/test*
