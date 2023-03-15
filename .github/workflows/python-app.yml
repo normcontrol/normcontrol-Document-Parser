@@ -26,5 +26,6 @@ jobs:
       run: |
           python -m pip install --upgrade pip
           pip install pytest
-    - name: Test with pytest
-      run: pytest src/tests/test*
+    - name: Test docx
+      working-directory: src
+      run: pytest tests/docx/test*
