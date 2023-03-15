@@ -19,3 +19,5 @@ requests==2.28.1
 urllib3==1.26.13
 Wand==0.6.10
 Werkzeug==2.2.2
+lxmlx==2.0.2
+python-docx==0.8.11
