@@ -40,7 +40,7 @@ class DocxParagraph:
     ----------
          get_standard_paragraph(self, paragraph): A method that return standard paragraph
          get_font_size(self, paragraph): int
-         get_font_style_for_attr: list Find style.font attr_name  in any paren or child elements
+         get_font_style_for_attr: list Find style.font style_attr_name  in any paren or child elements
          get_paragraph_format_style_for_attr: int | float
             Find paragraph_format.* attr, like first_line_indent, line_spacing
             in parent Styles if None
@@ -150,11 +150,11 @@ class DocxParagraph:
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
-        Find style.font attr_name  in any paren or child elements
+        Find style.font style_attr_name  in any paren or child elements
 
-        :param attr_name: str name of style attr
+        :param style_attr_name: str name of style attr
         :param paragraph: docx.Paragraph
-        :return: list Names of attr_name values
+        :return: list Names of style_attr_name values
         """
 
         attrs_values = set()
@@ -173,7 +173,7 @@ class DocxParagraph:
             attrs_values.add(getattr(style.font, style_attr_name))
         return list(attrs_values)
 
-    def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str,
+    def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
                                              msg: str = "pt") -> Union[int, float]:
         """
         Find paragraph_format attr value
@@ -188,13 +188,13 @@ class DocxParagraph:
         but when this value is returned by the python-docx library, it is rounded to the nearest integer.
 
 
-        :param attr_name: str name of paragraph_format attr
+        :param style_attr_name: str name of paragraph_format attr
         :param paragraph: docx.Paragraph
         :param msg: str "pt" | "cm"
         :return: int | pt | float
         """
 
-        attr = self._get_paragraph_format_in_hierarchy(paragraph, attr_name)
+        attr = self._get_paragraph_format_in_hierarchy(paragraph, style_attr_name)
         if attr is None:
             return 0
         return attr if isinstance(attr, float) else getattr(attr, msg)
@@ -211,14 +211,14 @@ class DocxParagraph:
             style = style.base_style
         return self.styles[style_name]
 
-    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str) -> list:
+    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
         Find docx.text.run.Font attributes
         """
         values = list()
         for run in paragraph.runs:
-            if getattr(run.font, attr_name) is True:
-                values.append({"count": len(run.text), "type": attr_name})
+            if getattr(run.font, style_attr_name) is True:
+                values.append({"count": len(run.text), "type": style_attr_name})
         return values
 
     def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
