@@ -161,7 +161,7 @@ class Paragraph:
         :return: True if all text is in lowercase
 
         """
-        return True if text.islower() else False
+        return bool(text.islower())
 
     @classmethod
     def get_uppercase(cls, text):
@@ -173,10 +173,10 @@ class Paragraph:
         :return: True if all text is in uppercase
 
         """
-        return True if text.isupper() else False
+        return bool(text.isupper())
 
     @classmethod
-    def get_last_sbl(cls, text):
+    def get_last_sbl(cls, text: str):
         """
 
         Calculates the last character of a paragraph
@@ -188,9 +188,12 @@ class Paragraph:
         try:
             if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
                 return text[len(text) - 2]
-            else:
-                return None
-        except:
+            return None
+        except IndexError:
+            print("IndexError")
+        except TypeError:
+            print('Allowed type is str')
+        finally:
             return None
 
     @classmethod
@@ -203,24 +206,18 @@ class Paragraph:
         :return: The type of the first character of a paragraph
 
         """
-        import re
         first_key = text.split(' ')[0]
         if re.match(r'^(\d+\.)$|^(\d+\))$|^(-)$|^(–)$', first_key):
             return 'listLevel1'
-        else:
-            if re.match(r'^\d+$', first_key):
-                return 'TitleLevel1'
-            else:
-                if re.match(r'\d+(\.\d+)+', first_key):
-                    return 'TitleLevel23'
-                else:
-                    if re.match(r'^Таблица$', first_key):
-                        return 'Таблица'
-                    else:
-                        if re.match(r'(Рисунок)|(Рис)|(Рис.)', first_key):
-                            return 'Рисунок'
-                        else:
-                            return ''
+        if re.match(r'^\d+$', first_key):
+            return 'TitleLevel1'
+        if re.match(r'\d+(\.\d+)+', first_key):
+            return 'TitleLevel23'
+        if re.match(r'^Таблица$', first_key):
+            return 'Таблица'
+        if re.match(r'(Рисунок)|(Рис)|(Рис.)', first_key):
+            return 'Рисунок'
+        return ''
 
     @property
     def text(self):

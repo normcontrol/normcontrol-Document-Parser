@@ -1,8 +1,4 @@
-from pdfplumber.table import TableFinder
-
-
-class PDFTable():
-
+class PDFTable:
     """
     Description: The class is a pdf table and its text
 
@@ -16,6 +12,7 @@ class PDFTable():
     def __init__(self, table):
         self._table = table
         self._text = []
+
     def addText(self, text):
         self.text.append(text)
 
@@ -34,4 +31,3 @@ class PDFTable():
     @text.setter
     def text(self, text):
         self._text = text
-

@@ -1,4 +1,7 @@
+import csv
 import json
+
+import requests
 
 from src.classes.Paragraph import Paragraph
 
@@ -65,7 +68,7 @@ class DocumentClass:
 
         json_string = "{"
         for attribute in dir(self):
-            if attribute == "time" or attribute == "owner":
+            if attribute in ("time","owner") :
                 json_string = json_string + "\"" + attribute + "\": \"" + str(getattr(self, attribute)) + "\", "
         json_string = json_string + "\"paragraphs\": {"
         for i, p in self.content.items():
@@ -94,7 +97,6 @@ class DocumentClass:
 
         """
 
-        import requests
         response = requests.post(api, json=json_text)
         return response
 
@@ -108,7 +110,6 @@ class DocumentClass:
 
         """
 
-        import csv
         with open(path, 'w', newline='', encoding="utf-8") as csvfile:
             filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             filewriter.writerow(["text", "countn_of_sp_sbl", "count_sbl", "uppercase", "lowercase", "font_name",

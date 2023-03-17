@@ -8,7 +8,7 @@ class PdfParagraph:
 
     """
     Description: A class is a pdf paragraph and its attributes
-    ----------
+
     Parameters:
     ----------
         _lines: list

@@ -296,7 +296,7 @@ class PDFParser:
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None:
-                    if type(element) == PDFTable:
+                    if isinstance(element, PDFTable):
                         self.document.add_content(paragraph_id, element)
                     else:
                         self.add_paragraph_in_document_with_attribute(element, paragraph_id)
