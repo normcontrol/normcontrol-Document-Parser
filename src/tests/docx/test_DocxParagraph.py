@@ -1,9 +1,13 @@
 import unittest
-from docx import Document
-from src.docx.DocxParagraph import DocxParagraph
-from src.docx.helpers.StylePropertyCoverage import StylePropertyCoverage
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+import sys
 import os
+
+from docx import Document
+
+from doc.DocxParagraph import DocxParagraph
+from doc.helpers.StylePropertyCoverage import StylePropertyCoverage
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+
 
 
 class TestDocxParagraph(unittest.TestCase):
