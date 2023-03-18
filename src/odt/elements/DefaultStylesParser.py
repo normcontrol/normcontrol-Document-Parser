@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with default styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы со стилями по умолчанию в документе формата ODT.
+"""
 from src.odt.elements.ODTDocument import ODTDocument
 
 class DefaultStylesParser:
@@ -53,19 +58,19 @@ class DefaultStylesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "default-style":
                 family = ast.getAttribute('family')
                 style = {}
-                stylesDict[family] = style
+                styles_dict[family] = style
 
-                for k in ast.attributes.keys():
-                    style[k[1]] = ast.attributes[k]
-                for n in ast.childNodes:
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                for key in ast.attributes.keys():
+                    style[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    for node_keys in node.attributes.keys():
+                        style[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_default_style_by_family(self, doc: ODTDocument, style_family: str):
         """Searches for a style by style-family among default styles and returns its attributes.
@@ -80,16 +85,16 @@ class DefaultStylesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             style_family - строковое название искомого стиля.
         """
-        style = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "default-style":
                 if ast.getAttribute("family") == style_family:
-                    for k in ast.attributes.keys():
-                        style[k[1]] = ast.attributes[k]
-                    for n in ast.childNodes:
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return style
+                    for key in ast.attributes.keys():
+                        styles_dict[key[1]] = ast.attributes[key]
+                    for node in ast.childNodes:
+                        for node_keys in node.attributes.keys():
+                            styles_dict[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_default_style_object_by_family(self, doc: ODTDocument, style_family: str):
         """Searches for a style by style-family among default styles and returns it as an object to work with.
@@ -108,6 +113,7 @@ class DefaultStylesParser:
             if ast.qname[1] == "default-style":
                 if ast.getAttribute("family") == style_family:
                     return ast
+        return None
 
     def get_default_style_parameters(self, style, parameter_name: str, property_type: str):
         """Gets a style parameter by name and attribute among the default styles.
@@ -124,11 +130,12 @@ class DefaultStylesParser:
             param_name - строковое название искомого параметра;
             property_type - строковое название искомого атрибута.
         """
-        for n in style.childNodes:
-            if n.qname[1] == property_type:
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == property_type:
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None
 
     def has_default_parameter(self, doc: ODTDocument, style_parameter: str, family: str, parameter_name: str,
                               property_type: str):

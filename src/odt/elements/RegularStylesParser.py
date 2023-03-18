@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with default styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы со стилями по умолчанию в документе формата ODT.
+"""
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.elements.DefaultStylesParser import DefaultStylesParser
 from src.odt.elements.ParagraphsParser import ParagraphsParser
@@ -67,19 +72,19 @@ class RegularStylesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
-                stylesDict[name] = style
+                styles_dict[name] = style
 
-                for k in ast.attributes.keys():
-                    style[k[1]] = ast.attributes[k]
-                for n in ast.childNodes:
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                for key in ast.attributes.keys():
+                    style[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    for node_keys in node.attributes.keys():
+                        style[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_text_styles_from_regular_styles(self, doc: ODTDocument):
         """Returns a list of all text styles with their attributes from the regular document styles.
@@ -92,18 +97,18 @@ class RegularStylesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
-                stylesDict[name] = style
+                styles_dict[name] = style
 
-                for n in ast.childNodes:
-                    if n.qname[1] == "text-properties":
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                for node in ast.childNodes:
+                    if node.qname[1] == "text-properties":
+                        for key in node.attributes.keys():
+                            style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_regular_style(self, doc: ODTDocument, style_name: str):
         """Returns a list of attributes of the specified regular style.
@@ -118,16 +123,16 @@ class RegularStylesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             style_name - строковое название искомого стиля.
         """
-        style = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 if ast.getAttribute("name") == style_name:
-                    for k in ast.attributes.keys():
-                        style[k[1]] = ast.attributes[k]
-                    for n in ast.childNodes:
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return style
+                    for key in ast.attributes.keys():
+                        styles_dict[key[1]] = ast.attributes[key]
+                    for node in ast.childNodes:
+                        for node_keys in node.attributes.keys():
+                            styles_dict[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_regular_style_object(self, doc: ODTDocument, style_name: str):
         """Searches for a style by style-family among default styles and returns it as an object to work with.
@@ -146,6 +151,7 @@ class RegularStylesParser:
             if ast.qname[1] == "style":
                 if ast.getAttribute("name") == style_name:
                     return ast
+        return None
 
     def get_parameter_from_regular_style_fast(self, doc: ODTDocument, default: str, style_name: str, param_name: str,
                 property_type: str):
@@ -171,10 +177,10 @@ class RegularStylesParser:
         style = self.get_regular_style_object(doc, style_name)
         param = paragraph_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
-            for k in style.attributes.keys():
-                if k[1] == "parent-style-name":
+            for key in style.attributes.keys():
+                if key[1] == "parent-style-name":
                    default = \
-                       self.get_parameter_from_regular_style_fast_helper(doc, default, style.attributes[k],
+                       self.get_parameter_from_regular_style_fast_helper(doc, default, style.attributes[key],
                                                                          param_name, property_type)
                    break
         else:
@@ -237,9 +243,9 @@ class RegularStylesParser:
         param = paragraph_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
             flag = 0
-            for k in style.attributes.keys():
-                if k[1] == "parent-style-name":
-                   default = self.get_parameter_from_regular_style(doc, default, style.attributes[k],
+            for key in style.attributes.keys():
+                if key[1] == "parent-style-name":
+                   default = self.get_parameter_from_regular_style(doc, default, style.attributes[key],
                                                                    param_name, property_type)
                    flag = 1
                    break
@@ -268,14 +274,15 @@ class RegularStylesParser:
         flag = 0
         for ast in doc.document.automaticstyles.childNodes:
             if ast.getAttribute("name") == style_name:
-                for k in ast.attributes.keys():
-                    style[k[1]] = ast.attributes[k]
-                for n in ast.childNodes:
-                    if n.qname[1] == "paragraph-properties":
-                        for k in n.attributes.keys():
-                            if k[1] == "text-align":
+                for key in ast.attributes.keys():
+                    style[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    if node.qname[1] == "paragraph-properties":
+                        for node_keys in node.attributes.keys():
+                            if node_keys[1] == "text-align":
                                 flag=1
-                                style[n.qname[1] + "/" + k[1]] = n.attributes[k]
+                                style[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
                     if flag==0:
                         parent = style["parent-style-name"]
                         return self.get_regular_style(doc, parent)
+        return None

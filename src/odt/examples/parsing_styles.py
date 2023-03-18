@@ -10,36 +10,29 @@ if __name__ == '__main__':
     print(odt_parser.automatic_styles_parser.get_automatic_styles(doc))
     print("-----------------------------------------\n")
 
-    print("Получение стилей:\n")
+    print("Получение стилей по умолчанию:\n")
     print(odt_parser.default_styles_parser.get_default_styles(doc))
 
-    print("--------------------1-----------------------")
+    print("Получение обычных стилей:\n")
     print(odt_parser.regular_styles_parser.get_regular_styles(doc))
 
-    print("--------------------2-----------------------")
-    print(odt_parser.lists_parser.get_list_styles(doc))
-
-    print("--------------------3-----------------------")
-    print(odt_parser.lists_parser.get_lists_text_styles(doc), '\n')
-
-    print("--------------------3-1---------------------")
-    print(odt_parser.lists_parser.get_list_styles_from_automatic_styles(doc), '\n')
-
-    print("--------------------3-2---------------------")
+    print("Получение автоматических стилей по имени:\n")
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'WW_CharLFO5LVL1'))
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'WW_CharLFO8LVL1'))
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'WW_CharLFO17LVL8'))
 
-    print("--------------------3-3---------------------")
+    print("Получение автоматических стилей списка по имени:\n")
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'LFO2'))
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'LFO5'))
     print(odt_parser.automatic_styles_parser.get_automatic_style_by_name(doc, 'LFO16'))
 
-    print("----------------------lists-------------------\n")
-    print("Получение конкретных характеристик:")
+    print("Получение конкретных характеристик списка с использованием автоматических стилей:\n")
     ast = odt_parser.automatic_styles_parser.get_automatic_style_object_by_name(doc, 'LFO2')
     print(odt_parser.lists_parser.get_list_parameter(ast, 'num-letter-sync'))
 
     ast = odt_parser.regular_styles_parser.get_regular_style_object(doc, 'WW_CharLFO17LVL9')
     print(odt_parser.lists_parser.get_list_parameter(ast, 'font-size'))
     print("-------------------------------------------\n")
+
+    print("Печать всех узлов документа:")
+    print(odt_parser.nodes_parser.print_all_document_nodes_with_style_data(doc.document.text, "", doc))

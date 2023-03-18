@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with tables styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы со стилями таблиц в документе формата ODT.
+"""
 from odf.table import Table
 from src.odt.elements.ODTDocument import ODTDocument
 
@@ -63,19 +68,19 @@ class TablesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
-                stylesDict[name] = style
+                styles_dict[name] = style
 
-                for n in ast.childNodes:
-                    if n.qname[1] == "table-properties" or n.qname[1] == "table-column-properties" \
-                            or n.qname[1] == "table-row-properties" or n.qname[1] == "table-cell-properties":
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                for node in ast.childNodes:
+                    if node.qname[1] == "table-properties" or node.qname[1] == "table-column-properties" \
+                            or node.qname[1] == "table-row-properties" or node.qname[1] == "table-cell-properties":
+                        for key in node.attributes.keys():
+                            style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_automatic_table_styles(self, doc: ODTDocument):
         """Returns a list of all tables styles from automatic document styles with their attributes.
@@ -88,17 +93,17 @@ class TablesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        styles = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
             style = {}
-            styles[name] = style
-            for n in ast.childNodes:
-                if n.qname[1] == "table-properties" or n.qname[1] == "table-column-properties" \
-                        or n.qname[1] == "table-row-properties" or n.qname[1] == "table-cell-properties":
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return styles
+            styles_dict[name] = style
+            for node in ast.childNodes:
+                if node.qname[1] == "table-properties" or node.qname[1] == "table-column-properties" \
+                        or node.qname[1] == "table-row-properties" or node.qname[1] == "table-cell-properties":
+                    for key in node.attributes.keys():
+                        style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_table_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among table styles.
@@ -113,11 +118,12 @@ class TablesParser:
             style - объект стиля для исследования;
             parameter_name - строковое название искомого параметра.
         """
-        for n in style.childNodes:
-            if n.qname[1] == "table-properties":
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == "table-properties":
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None
 
     def get_table_row_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among tables rows styles.
@@ -132,11 +138,12 @@ class TablesParser:
             style - объект стиля для исследования;
             parameter_name - строковое название искомого параметра.
         """
-        for n in style.childNodes:
-            if n.qname[1] == "table-row-properties":
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == "table-row-properties":
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None
 
     def get_table_column_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among table columns styles.
@@ -151,11 +158,12 @@ class TablesParser:
             style - объект стиля для исследования;
             parameter_name - строковое название искомого параметра.
         """
-        for n in style.childNodes:
-            if n.qname[1] == "table-column-properties":
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == "table-column-properties":
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None
 
     def get_table_cell_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among table cells styles.
@@ -170,11 +178,12 @@ class TablesParser:
             style - объект стиля для исследования;
             parameter_name - строковое название искомого параметра.
         """
-        for n in style.childNodes:
-            if n.qname[1] == "table-cell-properties":
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == "table-cell-properties":
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None
 
     def get_all_odt_tables_text(self, doc: ODTDocument):
         """Returns the text of all the tables in the document.

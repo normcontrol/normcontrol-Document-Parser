@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with paragraphs styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы со стилями абзацев в документе формата ODT.
+"""
 from src.odt.elements.ODTDocument import ODTDocument
 
 class ParagraphsParser:
@@ -42,11 +47,12 @@ class ParagraphsParser:
             parameter_name - строковое название искомого параметра;
             property_type - строковое название искомого атрибута.
         """
-        for n in style.childNodes:
-            if n.qname[1] == property_type:
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                       return n.attributes[k]
+        for node in style.childNodes:
+            if node.qname[1] == property_type:
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                       return node.attributes[key]
+        return None
 
     def get_paragraph_properties_from_automatic_styles(self, doc: ODTDocument, style_name: str):
         """Returns the value of the paragraph parameter from automatic styles.
@@ -61,16 +67,16 @@ class ParagraphsParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             style_name - строковое название исследуемого стиля.
         """
-        style = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             if ast.getAttribute("name") == style_name:
-                for k in ast.attributes.keys():
-                    style[k[1]] = ast.attributes[k]
-                for n in ast.childNodes:
-                    if n.qname[1] == "paragraph-properties":
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return style
+                for key in ast.attributes.keys():
+                    styles_dict[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    if node.qname[1] == "paragraph-properties":
+                        for node_keys in node.attributes.keys():
+                            styles_dict[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_paragraph_styles_from_regular_styles(self, doc: ODTDocument):
         """Returns text parameters from regular styles.
@@ -83,16 +89,16 @@ class ParagraphsParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
-                stylesDict[name] = style
+                styles_dict[name] = style
 
-                for n in ast.childNodes:
-                    if n.qname[1] == "paragraph-properties":
-                        for k in n.attributes.keys():
-                            if k[1] == "text-align":
-                                style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        print(stylesDict)
+                for node in ast.childNodes:
+                    if node.qname[1] == "paragraph-properties":
+                        for key in node.attributes.keys():
+                            if key[1] == "text-align":
+                                style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        print(styles_dict)

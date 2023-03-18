@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with automatic styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы с автоматическими стилями в документе формата ODT.
+"""
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.elements.RegularStylesParser import RegularStylesParser
 from src.odt.elements.ParagraphsParser import ParagraphsParser
@@ -66,17 +71,17 @@ class AutomaticStylesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        styles = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
             style = {}
-            styles[name] = style
-            for k in ast.attributes.keys():
-                style[k[1]] = ast.attributes[k]
-            for n in ast.childNodes:
-                for k in n.attributes.keys():
-                    style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return styles
+            styles_dict[name] = style
+            for key in ast.attributes.keys():
+                style[key[1]] = ast.attributes[key]
+            for node in ast.childNodes:
+                for key in node.attributes.keys():
+                    style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_text_styles_from_automatic_styles(self, doc: ODTDocument):
         """Returns a list of all text styles with their attributes from the automatic document styles.
@@ -89,16 +94,16 @@ class AutomaticStylesParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        styles = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
             style = {}
-            styles[name] = style
-            for n in ast.childNodes:
-                if n.qname[1] == "text-properties":
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return styles
+            styles_dict[name] = style
+            for node in ast.childNodes:
+                if node.qname[1] == "text-properties":
+                    for key in node.attributes.keys():
+                        style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_automatic_style_by_name(self, doc: ODTDocument, style_name: str):
         """Searches for a style by name among automatic styles and returns its attributes.
@@ -113,15 +118,15 @@ class AutomaticStylesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             style_name - строковое название искомого стиля.
         """
-        style = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             if ast.getAttribute("name") == style_name:
-                for k in ast.attributes.keys():
-                    style[k[1]] = ast.attributes[k]
-                for n in ast.childNodes:
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return style
+                for key in ast.attributes.keys():
+                    styles_dict[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    for node_keys in node.attributes.keys():
+                        styles_dict[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+        return styles_dict
 
     def get_text_style_by_name(self, doc: ODTDocument, text_name: str):
         """Searches for a text style by name among automatic styles and returns its attributes.
@@ -140,11 +145,11 @@ class AutomaticStylesParser:
         for ast in doc.document.automaticstyles.childNodes:
             if ast.qname[1] == "style":
                 if ast.getAttribute("name") == text_name:
-                    for k in ast.attributes.keys():
-                        text_styles[k[1]] = ast.attributes[k]
-                    for n in ast.childNodes:
-                        for k in n.attributes.keys():
-                            text_styles[n.qname[1] + "/" + k[1]] = n.attributes[k]
+                    for key in ast.attributes.keys():
+                        text_styles[key[1]] = ast.attributes[key]
+                    for node in ast.childNodes:
+                        for node_keys in node.attributes.keys():
+                            text_styles[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
         return text_styles
 
     def get_automatic_style_object_by_name(self, doc: ODTDocument, style_name: str):
@@ -163,6 +168,7 @@ class AutomaticStylesParser:
         for ast in doc.document.automaticstyles.childNodes:
             if ast.getAttribute("name") == style_name:
                 return ast
+        return None
 
     def has_automatic_style_parameter(self, doc: ODTDocument, style, param_name: str, default: str,
                     property_type: str):
@@ -187,10 +193,10 @@ class AutomaticStylesParser:
         paragraphs_parser = ParagraphsParser()
         param = paragraphs_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
-            for k in style.attributes.keys():
-                if k[1] == "parent-style-name":
+            for key in style.attributes.keys():
+                if key[1] == "parent-style-name":
                     parser_regular_styles = RegularStylesParser()
-                    default = parser_regular_styles.get_parameter_from_regular_style(doc, default, style.attributes[k],
+                    default = parser_regular_styles.get_parameter_from_regular_style(doc, default, style.attributes[key],
                                                                                      param_name, property_type)
                     break
         else:
@@ -222,5 +228,4 @@ class AutomaticStylesParser:
         if style is None:
             return parser_regular_styles.get_parameter_from_regular_style(doc, default, style_name, param_name,
                                                                           property_type)
-        else:
-            return self.has_automatic_style_parameter(doc, style, param_name, default, property_type)
+        return self.has_automatic_style_parameter(doc, style, param_name, default, property_type)

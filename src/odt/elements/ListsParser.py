@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for working with lists styles in an ODT document.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для работы со стилями списков в документе формата ODT.
+"""
 from src.odt.elements.ODTDocument import ODTDocument
 
 class ListsParser:
@@ -44,17 +49,17 @@ class ListsParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
-                stylesDict[name] = style
-                for n in ast.childNodes:
-                    if "list" in n.qname[1]:
-                        for k in n.attributes.keys():
-                            style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                styles_dict[name] = style
+                for node in ast.childNodes:
+                    if "list" in node.qname[1]:
+                        for key in node.attributes.keys():
+                            style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_lists_text_styles(self, doc: ODTDocument):
         """Returns a list of all text styles with their attributes from the lists styles of document.
@@ -67,18 +72,18 @@ class ListsParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        stylesDict = {}
+        styles_dict = {}
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
                 if 'Абзацсписка' in name or 'WW' in name or 'LF' in name:
-                    stylesDict[name] = style
-                    for n in ast.childNodes:
-                        if n.qname[1] == "text-properties":
-                            for k in n.attributes.keys():
-                                style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return stylesDict
+                    styles_dict[name] = style
+                    for node in ast.childNodes:
+                        if node.qname[1] == "text-properties":
+                            for key in node.attributes.keys():
+                                style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_list_styles_from_automatic_styles(self, doc: ODTDocument):
         """Returns a list of all list styles from automatic document styles with their attributes.
@@ -91,16 +96,16 @@ class ListsParser:
         Аргументы:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
-        styles = {}
+        styles_dict = {}
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
             style = {}
-            for n in ast.childNodes:
-                if "list-level" in n.qname[1]:
-                    styles[name] = style
-                    for k in n.attributes.keys():
-                        style[n.qname[1] + "/" + k[1]] = n.attributes[k]
-        return styles
+            for node in ast.childNodes:
+                if "list-level" in node.qname[1]:
+                    styles_dict[name] = style
+                    for key in node.attributes.keys():
+                        style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+        return styles_dict
 
     def get_list_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among list styles.
@@ -115,8 +120,9 @@ class ListsParser:
             style - объект стиля для исследования;
             parameter_name - строковое название искомого параметра.
         """
-        for n in style.childNodes:
-            if "list" in n.qname[1] or "text" in n.qname[1]:
-                for k in n.attributes.keys():
-                    if k[1] == parameter_name:
-                        return n.attributes[k]
+        for node in style.childNodes:
+            if "list" in node.qname[1] or "text" in node.qname[1]:
+                for key in node.attributes.keys():
+                    if key[1] == parameter_name:
+                        return node.attributes[key]
+        return None

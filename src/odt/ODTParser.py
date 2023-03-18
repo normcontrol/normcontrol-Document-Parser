@@ -1,9 +1,8 @@
 """
-    Description: A wrapper class that provides access to object parsing modules.
+    Description: The module contains a wrapper class that provides access to object parsing modules.
     ----------
-    Описание: Класс-обертка, предоставляющий доступ к модулям парсинга объектов.
+    Описание: Модуль содержит класс-обертку, предоставляющую доступ к модулям парсинга объектов.
 """
-
 from src.odt.elements.TablesParser import TablesParser
 from src.odt.elements.RegularStylesParser import RegularStylesParser
 from src.odt.elements.AutomaticStylesParser import AutomaticStylesParser

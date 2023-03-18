@@ -1,3 +1,8 @@
+"""
+    Description: The module stores a class that containing methods for traversing document style nodes.
+    ----------
+    Описание: Модуль хранит класс, содержащий методы для обхода узлов стилей документа.
+"""
 from src.helpers.odt import consts
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.elements.AutomaticStylesParser import AutomaticStylesParser
@@ -14,7 +19,7 @@ class NodesParser:
             Outputs each text node of the document and its attributes with a passage through all styles,
             performing a search at the same nesting level.
 
-        print_all_document_nodes_with_higher_style_data(start_node, list, doc: ODTDocument, level=0) -
+        print_all_document_nodes_with_higher_style_data(start_node, attributes_list, doc: ODTDocument, level=0) -
             Outputs each text node of the document and its attributes with a passage through all styles, searching,
             in case of absence, in nodes at a higher level.
     ----------
@@ -28,7 +33,7 @@ class NodesParser:
             Выводит каждый каждый текстовый узел документа и его атрибуты с прохождением по всем стилям,
             выполняя поиск на одном уровне вложенности.
 
-        print_all_document_nodes_with_higher_style_data((start_node, list, doc: ODTDocument, level=0) -
+        print_all_document_nodes_with_higher_style_data((start_node, attributes_list, doc: ODTDocument, level=0) -
             Выводит каждый каждый текстовый узел документа и его атрибуты с прохождением по всем стилям,
             выполняя поиск, в случае отсутствия, в узлах уровнем выше.
     """
@@ -48,13 +53,12 @@ class NodesParser:
         """
         if start_node.nodeType == 1:
             attrs = []
-            for k in start_node.attributes.keys():
-                attrs.append(k[1] + ':' + start_node.attributes[k])
+            for key in start_node.attributes.keys():
+                attrs.append(key[1] + ':' + start_node.attributes[key])
             print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", ",".join(attrs), ") ", str(start_node))
 
-            for n in start_node.childNodes:
-                self.print_all_document_nodes(n, level + 1)
-        return
+            for node in start_node.childNodes:
+                self.print_all_document_nodes(node, level + 1)
 
     def print_all_document_nodes_with_style_data(self, start_node, global_style_name: str, doc: ODTDocument, level=0):
         """Outputs each text node of the document and its attributes with a passage through all styles,
@@ -77,31 +81,30 @@ class NodesParser:
         """
         parser_auto_styles = AutomaticStylesParser()
         if start_node.nodeType == 1:
-            for k in start_node.attributes.keys():
-                if (k[1] == "style-name"):
+            for key in start_node.attributes.keys():
+                if (key[1] == "style-name"):
                     default = consts.DEFAULT_PARAM["text-align"]
-                    par_detail = parser_auto_styles.is_automatic_style(doc, start_node.attributes[k], "text-align",
+                    par_detail = parser_auto_styles.is_automatic_style(doc, start_node.attributes[key], "text-align",
                                                             "paragraph-properties", default)
                     if par_detail == default:
                         if global_style_name != "":
                             par_detail = parser_auto_styles.is_automatic_style(doc, global_style_name, "text-align",
                                                                     "paragraph-properties", default)
                     default2 = consts.DEFAULT_PARAM["font-name"]
-                    par_detail2 = parser_auto_styles.is_automatic_style(doc, start_node.attributes[k], "font-name",
+                    par_detail2 = parser_auto_styles.is_automatic_style(doc, start_node.attributes[key], "font-name",
                                                              "text-properties", default2)
                     if par_detail2 == default2:
                         if global_style_name != "":
                             par_detail2 = parser_auto_styles.is_automatic_style(doc, global_style_name, "font-name",
                                                                      "text-properties", default2)
                     print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                          k[1] + ':' + start_node.attributes[k],
+                          key[1] + ':' + start_node.attributes[key],
                           ") ", str(start_node), " род блок ", global_style_name, "параметр ", par_detail2, par_detail)
-                    global_style_name = start_node.attributes[k]
-            for n in start_node.childNodes:
-                self.print_all_document_nodes_with_style_data(n, global_style_name, doc, level + 1)
-        return
+                    global_style_name = start_node.attributes[key]
+            for node in start_node.childNodes:
+                self.print_all_document_nodes_with_style_data(node, global_style_name, doc, level + 1)
 
-    def print_all_document_nodes_with_higher_style_data(self, start_node, list, doc: ODTDocument, level=0):
+    def print_all_document_nodes_with_higher_style_data(self, start_node, attributes_list, doc: ODTDocument, level=0):
         """Outputs each text node of the document and its attributes with a passage through all styles, searching,
         in case of absence, in nodes at a higher level.
 
@@ -122,19 +125,18 @@ class NodesParser:
         """
         parser_auto_styles = AutomaticStylesParser()
         if start_node.nodeType == 1:
-            for k in start_node.attributes.keys():
-                if (k[1] == "style-name"):
+            for key in start_node.attributes.keys():
+                if (key[1] == "style-name"):
                     default = consts.DEFAULT_PARAM["text-align"]
-                    par_detail = parser_auto_styles.is_automatic_style(doc, start_node.attributes[k],
+                    par_detail = parser_auto_styles.is_automatic_style(doc, start_node.attributes[key],
                                                                        "text-align", "paragraph-properties", default)
                     if par_detail == default:
-                        par_detail = list["text-align"]
+                        par_detail = attributes_list["text-align"]
                     else:
-                        list["text-align"] = par_detail
-                        list["style"] = start_node.attributes[k]
+                        attributes_list["text-align"] = par_detail
+                        attributes_list["style"] = start_node.attributes[key]
                     print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                          k[1] + ':' + start_node.attributes[k],
-                          ") ", str(start_node), "параметр ", par_detail, " стиль ", list["style"])
-            for n in start_node.childNodes:
-                self.print_all_document_nodes_with_higher_style_data(n, list, doc, level + 1)
-        return
+                          key[1] + ':' + start_node.attributes[key],
+                          ") ", str(start_node), "параметр ", par_detail, " стиль ", attributes_list["style"])
+            for node in start_node.childNodes:
+                self.print_all_document_nodes_with_higher_style_data(node, attributes_list, doc, level + 1)

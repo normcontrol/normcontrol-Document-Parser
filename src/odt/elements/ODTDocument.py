@@ -1,3 +1,10 @@
+"""
+    Description: The module contains a class that stores the data of the file to be parsed. This object is accessed by
+        library methods.
+    ----------
+    Описание: Модуль содержит класс, который хранит данные файла, подлежащего анализу. Доступ к этому объекту
+        осуществляется с помощью библиотечных методов.
+"""
 from odf.opendocument import load
 from src.helpers.odt import path
 from odf.text import P
@@ -16,7 +23,8 @@ class ODTDocument:
         all_odt_text -
             Returns the entire text of the document.
     ----------
-    Описание: Класс, содержащий методы для работы с автоматическими стилями в документе формата ODT.
+    Описание: Класс, который хранит данные файла, подлежащего анализу. Доступ к этому объекту осуществляется с
+        помощью библиотечных методов.
 
     Свойства:
         _file_path -  атрибут хранит путь к файлу;
