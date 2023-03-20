@@ -5,7 +5,7 @@ import os
 from docx import Document
 
 from src.doc.DocxParagraph import DocxParagraph
-from src.doc.helpers.StylePropertyCoverage import StylePropertyCoverage
+from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
