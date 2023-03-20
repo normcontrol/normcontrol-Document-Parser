@@ -4,8 +4,8 @@ import os
 
 from docx import Document
 
-from doc.DocxParagraph import DocxParagraph
-from doc.helpers.StylePropertyCoverage import StylePropertyCoverage
+from src.doc.DocxParagraph import DocxParagraph
+from src.doc.helpers.StylePropertyCoverage import StylePropertyCoverage
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
