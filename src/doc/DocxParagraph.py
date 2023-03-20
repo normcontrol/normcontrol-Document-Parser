@@ -22,8 +22,8 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.styles.style import BaseStyle
 from docx.text.paragraph import Paragraph as ParagraphType
 
-from doc.helpers.StylePropertyCoverage import StylePropertyCoverage
-from doc.temp.Paragraph import Paragraph
+from src.doc.helpers.StylePropertyCoverage import StylePropertyCoverage
+from src.doc.temp.Paragraph import Paragraph
 
 
 class DocxParagraph:

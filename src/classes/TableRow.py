@@ -1,8 +1,13 @@
+
+from dataclasses import dataclass
+
+
+@dataclass
 class TableRow:
     """
     Description: Table row class for ODT document.
 
-    Parameters:
+    Attributes:
         _row_name - attribute specifies the name of a row,
         _row_family - attribute specifies the family of a style (style:family),
         _row_properties_min_row_height - attribute specifies a fixed minimum height for a row
@@ -11,11 +16,10 @@ class TableRow:
             automatically if content in the row changes.
     """
 
-    def __init__(self, row_name:str, row_family:str, row_properties_min_row_height:float, row_properties_use_optimal_row_height:float):
-        self._row_name = row_name
-        self._row_family = row_family
-        self._row_properties_min_row_height = row_properties_min_row_height
-        self._row_properties_use_optimal_row_height = row_properties_use_optimal_row_height
+    _row_name:str
+    _row_family:str
+    _row_properties_min_row_height:float
+    _row_properties_use_optimal_row_height:float
 
     @property
     def row_name(self):

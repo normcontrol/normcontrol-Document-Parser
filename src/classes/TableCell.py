@@ -1,8 +1,13 @@
+
+from dataclasses import dataclass
+
+
+@dataclass
 class TableCell:
     """
     Description: Table cell class for ODT document.
 
-    Parameters:
+    Attributes:
         _cell_name - attribute specifies the name of a cell,
         _cell_family - attribute specifies the family of a style (style:family),
         _cell_properties_border - attribute specifies the property for setting the same width, color, and style for
@@ -20,17 +25,14 @@ class TableCell:
             or inline-area.
     """
 
-    def __init__(self, cell_name: str, cell_family: str, cell_properties_border: float, cell_properties_writing_mode: str,
-                 cell_properties_padding_top: float, cell_properties_padding_left: float,
-                 cell_properties_padding_bottom: float, cell_properties_padding_right: float):
-        self._cell_name = cell_name
-        self._cell_family = cell_family
-        self._cell_properties_border = cell_properties_border
-        self._cell_properties_writing_mode = cell_properties_writing_mode
-        self._cell_properties_padding_top = cell_properties_padding_top
-        self._cell_properties_padding_left = cell_properties_padding_left
-        self._cell_properties_padding_bottom = cell_properties_padding_bottom
-        self._cell_properties_padding_right = cell_properties_padding_right
+    _cell_name: str
+    _cell_family: str
+    _cell_properties_border: float
+    _cell_properties_writing_mode: str
+    _cell_properties_padding_top: float
+    _cell_properties_padding_left: float
+    _cell_properties_padding_bottom: float
+    _cell_properties_padding_right: float
 
     @property
     def cell_name(self):
