@@ -1,5 +1,5 @@
 import re
-from doc.helpers.StylePropertyCoverage import StylePropertyCoverage
+from src.doc.helpers.StylePropertyCoverage import StylePropertyCoverage
 
 
 class Paragraph:
