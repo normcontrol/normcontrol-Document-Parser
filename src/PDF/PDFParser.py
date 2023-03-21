@@ -1,25 +1,40 @@
 import re
 import pdfplumber
-from src.classes.DocumentClass import DocumentClass
+from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
 from src.pdf.pdfclasses.Line import Line
 from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
-from src.pdf.pdfclasses.Table import PDFTable
+from src.pdf.pdfclasses.PDFTable import PDFTable
 
 
 class PDFParser:
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
 
-    Parameters:
+    Attributes:
     ----------
-        path - attribute specifies file path
-        __pdf - attribute representing an object obtained by using the pdfplumber library that models a pdf file
-                and its internal objects
-        document - attribute representing a unified text document object containing structural elements and
-                their properties
-        lines - an attribute representing a list of all formed lines
-        list_of_table - an attribute representing a list of all extracted tables
+        _path:str
+            Attribute specifies file path
+
+        __pdf: pdfplumber.pdf
+            Attribute representing an object obtained by using the pdfplumber library that models a pdf file
+            and its internal objects
+
+        _document: UnifiedDocumentView
+            Attribute representing a unified text document object containing structural elements and
+            their properties
+
+        _lines: list
+            An attribute representing a list of all formed lines
+
+        _list_of_table: list
+            An attribute representing a list of all extracted tables
+
+        _line_spaces: list
+            An attribute representing a list of spaces between lines
+
+        _pictures:list
+            An attribute representing a list of all pictures in file
 
     Methods:
     ----------
@@ -29,8 +44,8 @@ class PDFParser:
         __get_lines(self):
             Extracts all text rows using the object of pdfplumber library.
 
-        __get_space(lines):
-            Based on the properties of the document lines, generates a line spacing for each line
+        __get_all_pictures(self):
+            Extracts all images from a pdf document
 
         add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
             Adds a paragraph object containing its properties and attributes to the list of structural elements
@@ -38,6 +53,10 @@ class PDFParser:
 
         get_elements(self, lines, spaces, list_of_table):
             Forms structural elements of the document based on lines, line spacing, tables and pictures
+
+        @classmethod
+        get_space(lines):
+            Based on the properties of the document lines, generates a line spacing for each line
 
         @staticmethod
         get_standart_paragraph(pdf_paragraph):
@@ -52,10 +71,11 @@ class PDFParser:
     def __init__(self, path):
         self._path = path
         self.__pdf = pdfplumber.open(path)
-        self.document = DocumentClass(owner=self.__pdf.metadata.get('Author'),
-                                      time=self.__pdf.metadata.get('CreationDate'))
+        self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
+                                             time=self.__pdf.metadata.get('CreationDate'))
         self._pictures = self.__get_all_pictures()
         self._lines = self.__get_lines()
+        self._line_spaces = self.get_space(self._lines)
         self._list_of_table = self.__get_tables()
 
     @property
@@ -63,15 +83,23 @@ class PDFParser:
         return self._path
 
     @path.setter
-    def path(self, value):
+    def path(self, value: str):
         self._path = value
+
+    @property
+    def line_spaces(self):
+        return self._line_spaces
+
+    @line_spaces.setter
+    def line_spaces(self, value: list):
+        self._line_spaces = value
 
     @property
     def pictures(self):
         return self._pictures
 
     @pictures.setter
-    def pictures(self, value):
+    def pictures(self, value: list):
         self._pictures = value
 
     @property
@@ -79,7 +107,7 @@ class PDFParser:
         return self._document
 
     @document.setter
-    def document(self, document):
+    def document(self, document: UnifiedDocumentView):
         self._document = document
 
     @property
@@ -87,7 +115,7 @@ class PDFParser:
         return self._lines
 
     @lines.setter
-    def lines(self, lines):
+    def lines(self, lines: list):
         self._lines = lines
 
     @property
@@ -95,10 +123,20 @@ class PDFParser:
         return self._list_of_table
 
     @list_of_table.setter
-    def list_of_table(self, list_of_table):
+    def list_of_table(self, list_of_table: list):
         self._list_of_table = list_of_table
 
     def __get_tables(self):
+        """
+
+        Extracts all table from a pdf document
+
+        :return
+            list_of_table: list
+                The list of tables in PDF file
+
+        """
+
         list_of_table = []
         for page in self.__pdf.pages:
             # Extracting tables and tabular text
@@ -114,11 +152,11 @@ class PDFParser:
 
         """
 
-        Counts and returns the number of special characters in a text
+        Generates lines from a list of chars
 
         :return
-            lines: List of all document lines
-            list_of_table: List of all document tables
+            lines: list
+                List of all document lines
 
         """
         # Initial initializations of variables
@@ -192,17 +230,19 @@ class PDFParser:
         return lines
 
     @staticmethod
-    def get_space(lines):
+    def get_space(lines: list):
 
         """
 
         Calculates the line spacing between two subsequent lines
 
         :param
-            lines: list of document lines
+            lines: list
+                list of document lines
 
         :return
-            spaces: List of calculated line spacing
+            spaces: list
+                List of calculated line spacing
 
         """
 
@@ -217,15 +257,17 @@ class PDFParser:
             i = i + 1
         return spaces
 
-    def add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
+    def add_paragraph_in_document_with_attribute(self, pdf_paragraph: PdfParagraph, paragraph_id: int):
 
         """
+
         Calculates the properties and attributes of a paragraph and adds it to the list of structural elements
         of the document
-
         :param
-            pdf_paragraph: An object representing a paragraph highlighted by the algorithm
-            paragraph_id: Id of paragraph
+            pdf_paragraph: PdfParagraph
+                An object representing a paragraph highlighted by the algorithm
+            paragraph_id: int
+                Id of paragraph
 
         """
         # Highlighting string attributes
@@ -245,18 +287,23 @@ class PDFParser:
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
         self.document.content[paragraph_id] = self.get_standart_paragraph(pdf_paragraph)
 
-    def get_elements(self, lines, spaces, list_of_table, list_of_picture):
+    def get_elements(self, lines: list, spaces: list, list_of_table: list, list_of_picture: list):
         """
 
         Generates paragraphs from a list of lines
-
         :param
-            lines: List of all document lines
-            spaces: List of calculated line spacing
-            list_of_table: List of all document tables
+            lines: list
+                List of all document lines
+
+            spaces: list
+                List of calculated line spacing
+
+            list_of_table: list
+                List of all document tables
 
         :return
-            document: List of all structural elements in the document
+            document: UnifiedDocumentView
+                List of all structural elements in the document
 
         """
 
@@ -264,6 +311,7 @@ class PDFParser:
         paragraph_id = 1
         removed_tables = []
         removed_pictures = []
+        list_of_table = list_of_table.copy()
 
         paragraph = PdfParagraph()
         paragraph.lines.append(lines[0])
@@ -286,7 +334,7 @@ class PDFParser:
             if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 520 or abs(spaces[i - 1] - mean) > 2 or (
                     len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
                 for picture in list_of_picture:
-                    if paragraph.lines[0].number_of_page == picture.get("page_number") and paragraph.lines[0].y0 >\
+                    if paragraph.lines[0].number_of_page == picture.get("page_number") and paragraph.lines[0].y0 > \
                             picture.get("y0"):
                         self.document.add_content(paragraph_id, picture)
                         removed_pictures.append(picture)
@@ -313,17 +361,16 @@ class PDFParser:
         return self.document
 
     @staticmethod
-    def get_standart_paragraph(pdf_paragraph):
-
+    def get_standart_paragraph(pdf_paragraph: PdfParagraph):
         """
 
         Brings the resulting paragraph to the standard form
-
         :param
-            pdf_paragraph: The original, obtained after executing the formation algorithm, paragraph
-
+            pdf_paragraph: PdfParagraph
+                The original, obtained after executing the formation algorithm, paragraph
         :return
-            paragraph: The resulting Standard paragraph
+            paragraph: Paragraph
+                The resulting Standard paragraph
 
         """
         from src.helpers.measurement import pt_to_sm
@@ -341,21 +388,33 @@ class PDFParser:
         return paragraph
 
     @classmethod
-    def delete_dublicates(cls, pdf_paragraph, removed_tables, list_of_table):
+    def delete_dublicates(cls, pdf_paragraph: PdfParagraph, removed_tables: list, list_of_table: list):
 
         """
 
         Brings the resulting paragraph to the standard form
-
         :param
-            pdf_paragraph: The original, obtained after executing the formation algorithm, paragraph
-            removed_tables: The list of already added to the list of structural elements of tables
-            list_of_table: The list of tables that have not yet been added has been added to the list of structural elements
+            pdf_paragraph: PdfParagraph
+                The original, obtained after executing the formation algorithm, paragraph
+
+            removed_tables: list
+                The list of already added to the list of structural elements of tables
+
+            list_of_table: list
+                The list of tables that have not yet been added has been added to the list of structural elements
+
         :return
-            table: If a table is found, it returns the object representing it to add
-            pdf_paragraph: If there are no duplicates of the table text, returns the paragraph passed as a parameter
-            removed_tables: The list of already added to the list of structural elements of tables
-            list_of_table: The list of tables that have not yet been added has been added to the list of structural elements
+            table: PDFTable
+                If a table is found, it returns the object representing it to add
+
+            pdf_paragraph: PdfParagraph
+                If there are no duplicates of the table text, returns the paragraph passed as a parameter
+
+            removed_tables: list
+                The list of already added to the list of structural elements of tables
+
+            list_of_table: list
+                The list of tables that have not yet been added has been added to the list of structural elements
 
         """
         # Checking that this paragraph is tabular and this table has already been added
@@ -375,8 +434,17 @@ class PDFParser:
         return pdf_paragraph, removed_tables, list_of_table
 
     def __get_all_pictures(self):
+        """
+
+        Extracts all images from a pdf document
+        :return
+            pictures: list
+                The list of pictures in PDF file
+
+        """
+
         pictures = []
-        for number_of_page, page in enumerate(self.__pdf.pages):
+        for page in self.__pdf.pages:
             for image in page.images:
                 pictures.append(image)
         return pictures
