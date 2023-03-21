@@ -131,7 +131,7 @@ class DocxParagraph:
         :return: most use hex code color
         """
 
-        values = list()
+        values = []
         for run in paragraph.runs:
             value = {"count": len(run.text), "color": "#000"}
             if run.font.color.rgb is not None:
@@ -153,7 +153,7 @@ class DocxParagraph:
         :return: str more used font
         """
 
-        attrs_values = list()
+        attrs_values = []
         attr = getattr(paragraph.style.font, style_attr_name)
         for run in paragraph.runs:
             attr_value = getattr(run.font, style_attr_name)
@@ -208,15 +208,14 @@ class DocxParagraph:
         return self.styles[style_name]
 
     def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph,
-                                         style_attr_name: str) -> list:
+                                         style_attr_name: str) -> bool:
         """
         Find docx.text.run.Font attributes
         """
-        values = list()
         for run in paragraph.runs:
             if getattr(run.font, style_attr_name) is True:
-                values.append({"count": len(run.text), "type": style_attr_name})
-        return values
+                return True
+        return False
 
     def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
         """
