@@ -150,30 +150,30 @@ class DocxParagraph:
         sums_by_color['max'] = max(sums_by_color, key=lambda k: sums_by_color[k])
         return sums_by_color
 
-    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
+    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str:
         """
         Find style.font style_attr_name  in any paren or child elements
 
         :param style_attr_name: str name of style attr
         :param paragraph: docx.Paragraph
-        :return: list Names of style_attr_name values
+        :return: str more used font
         """
 
-        attrs_values = set()
+        attrs_values = list()
         attr = getattr(paragraph.style.font, style_attr_name)
         for run in paragraph.runs:
             attr_value = getattr(run.font, style_attr_name)
             if attr_value is not None:
-                attrs_values.add(attr_value)
+                attrs_values.append({"count": len(run.text), "font": attr_value})
         if attr is not None:
-            attrs_values.add(attr)
+            attrs_values.append({"count": len(paragraph.text), "font": attr})
         else:
             style = self.styles[getattr(paragraph.style, style_attr_name)]
             # if font.name is None try find in parents
             while getattr(style.font, style_attr_name) is None:
                 style = style.base_style
-            attrs_values.add(getattr(style.font, style_attr_name))
-        return list(attrs_values)
+            attrs_values.append({"count": len(paragraph.text), "font": getattr(style.font, style_attr_name)})
+        return self.__find_sum_by_attr(attrs_values, "font")
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
                                              msg: str = "pt") -> Union[int, float]:
@@ -325,3 +325,21 @@ class DocxParagraph:
         ]
 
         return alignments[alignment] if alignment < len(alignments) else None
+
+    def __find_sum_by_attr(self, values: list, attr: str, count_field: str = "count") -> str:
+        """
+
+        @param values: [{"name_attr": "name", "count": 11}]
+        @param attr: "name_attr" name
+        @param count_field: "count" name
+        @return: more used attr
+        """
+        sum = {}
+        for item in values:
+            if item[attr] in sum:
+                sum[item[attr]] += item[count_field]
+            else:
+                sum[item[attr]] = item[count_field]
+        sum['max'] = max(sum, key=lambda k: sum[k])
+
+        return sum['max']
