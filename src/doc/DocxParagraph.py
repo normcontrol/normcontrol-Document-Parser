@@ -327,12 +327,12 @@ class DocxParagraph:
         @param count_field: "count" name
         @return: more used attr
         """
-        sum = {}
+        sum_repeat = {}
         for item in values:
-            if item[attr] in sum:
-                sum[item[attr]] += item[count_field]
+            if item[attr] in sum_repeat:
+                sum_repeat[item[attr]] += item[count_field]
             else:
-                sum[item[attr]] = item[count_field]
-        sum['max'] = max(sum, key=lambda k: sum[k])
+                sum_repeat[item[attr]] = item[count_field]
+        sum_repeat['max'] = max(sum_repeat, key=lambda k: sum_repeat[k])
 
-        return sum['max']
+        return sum_repeat['max']
