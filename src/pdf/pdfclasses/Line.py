@@ -7,7 +7,7 @@ class Line:
     """
     Description: A class is a text string and its attributes
 
-    Attributes:
+    Parameters:
     ----------
         _x0: float
             The attribute describes the upper horizontal position of the symbol
@@ -51,7 +51,7 @@ class Line:
         return self._x0
 
     @x0.setter
-    def x0(self, value: float):
+    def x0(self, value):
         self._x0 = value
 
     @property
@@ -95,41 +95,41 @@ class Line:
         return self._chars
 
     @x1.setter
-    def x1(self, value: float):
+    def x1(self, value):
         self._x1 = value
 
     @y0.setter
-    def y0(self, value: float):
+    def y0(self, value):
         self._y0 = value
 
     @y1.setter
-    def y1(self, value: float):
+    def y1(self, value):
         self._y1 = value
 
     @text.setter
-    def text(self, value: str):
+    def text(self, value):
         self._text = value
 
     @font_names.setter
-    def font_names(self, value: list):
+    def font_names(self, value):
         self._font_names = value
 
     @text_sizes.setter
-    def text_sizes(self, value: list):
+    def text_sizes(self, value):
         self._text_sizes = value
 
     @no_change_font_name.setter
-    def no_change_font_name(self, value: bool):
+    def no_change_font_name(self, value):
         self._no_change_font_name = value
 
     @no_change_text_size.setter
-    def no_change_text_size(self, value: bool):
+    def no_change_text_size(self, value):
         self._no_change_text_size = value
 
     @number_of_page.setter
-    def number_of_page(self, value: int):
+    def number_of_page(self, value):
         self._number_of_page = value
 
     @chars.setter
-    def chars(self, value: list):
+    def chars(self, value):
         self._chars = value

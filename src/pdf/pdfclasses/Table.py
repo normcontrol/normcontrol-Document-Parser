@@ -1,8 +1,12 @@
-class PDFTable:
+from pdfplumber.table import TableFinder
+
+
+class PDFTable():
+
     """
     Description: The class is a pdf table and its text
 
-    Attributes:
+    Parameters:
     ----------
         _table -  attribute represents the table itself and its attributes
         _text - attribute representing tabular text
@@ -12,8 +16,7 @@ class PDFTable:
     def __init__(self, table):
         self._table = table
         self._text = []
-
-    def addText(self, text: list):
+    def addText(self, text):
         self.text.append(text)
 
     @property
@@ -29,5 +32,6 @@ class PDFTable:
         return self._text
 
     @text.setter
-    def text(self, text: str):
+    def text(self, text):
         self._text = text
+
