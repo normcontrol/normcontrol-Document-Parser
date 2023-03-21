@@ -8,8 +8,8 @@ class PdfParagraph:
 
     """
     Description: A class is a pdf paragraph and its attributes
-    ----------
-    Parameters:
+
+    Attributes:
     ----------
         _lines: list
             The attribute describes list of all paragraph lines
@@ -37,7 +37,6 @@ class PdfParagraph:
     _no_change_text_size: bool = None
     _spaces: list = field(default_factory=list)
     _lines: list[Line] = field(default_factory=list)
-
 
     @property
     def lines(self):
@@ -72,33 +71,33 @@ class PdfParagraph:
         return self._no_change_text_size
 
     @lines.setter
-    def lines(self, value):
+    def lines(self, value: list):
         self._lines = value
 
     @indent.setter
-    def indent(self, value):
+    def indent(self, value: float):
         self._indent = value
 
     @spaces.setter
-    def spaces(self, value):
+    def spaces(self, value: list):
         self._spaces = value
 
     @line_spacing.setter
-    def line_spacing(self, value):
+    def line_spacing(self, value: float):
         self._line_spacing = value
 
     @font_name.setter
-    def font_name(self, value):
+    def font_name(self, value: str):
         self._font_name = value
 
     @text_size.setter
-    def text_size(self, value):
+    def text_size(self, value: float):
         self._text_size = value
 
     @no_change_font_name.setter
-    def no_change_font_name(self, value):
+    def no_change_font_name(self, value: bool):
         self._no_change_font_name = value
 
     @no_change_text_size.setter
-    def no_change_text_size(self, value):
+    def no_change_text_size(self, value: bool):
         self._no_change_text_size = value
