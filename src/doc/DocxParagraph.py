@@ -163,7 +163,7 @@ class DocxParagraph:
         return self.__find_sum_by_attr(attrs_values, "font")
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
-                                             msg: str = "pt") -> Union[int, float, bool]:
+                                             format_return: str = "pt") -> Union[int, float, bool]:
         """
         Find paragraph_format attr value
 
@@ -176,19 +176,18 @@ class DocxParagraph:
         In Word, the value of this property can be set to a value with up to two decimal places,
         but when this value is returned by the python-docx library, it is rounded to the nearest integer.
 
-
         :param style_attr_name: str name of paragraph_format attr
         :param paragraph: docx.Paragraph
-        :param msg: str "pt" | "cm"
-        :return: int | pt | float | bool
+        :param format_return: str "pt" | "cm" | "bool"
+        :return: int | float | bool
         """
 
         attr = self._get_paragraph_format_in_hierarchy(paragraph, style_attr_name)
         if attr is None:
-            return 0 if msg != "bool" else False
-        if msg == "bool":
+            return 0 if format_return != "bool" else False
+        if format_return == "bool":
             return True
-        return attr if isinstance(attr, float) else getattr(attr, msg)
+        return attr if isinstance(attr, float) else getattr(attr, format_return)
 
     def __get_style_in_hierarchy(self, paragraph) -> BaseStyle:
         """
