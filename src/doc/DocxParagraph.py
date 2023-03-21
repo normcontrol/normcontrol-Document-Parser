@@ -11,23 +11,21 @@ This file can also be imported as a module and
 contains the following public
 functions:
 
-    * get_all_paragraphs_in_standard: list Paragraph in standard
     * get_standard_paragraph(self, paragraph): A method that return standard paragraph
 """
 import re
 from typing import Union
-
-from lxml import etree
 
 import docx.text.paragraph
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.styles.style import BaseStyle
 from docx.text.paragraph import Paragraph as ParagraphType
+from lxml import etree
 
-from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.classes.Paragraph import Paragraph
 from src.helpers.colors import rgb_to_hex
+from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 
 
 class DocxParagraph:
@@ -36,23 +34,56 @@ class DocxParagraph:
 
     Parameters:
     ----------
-    path_to_document: Path to document docx
+        path_to_document: Path to document docx
+
         document : docx.Document()
+
         styles: document.styles
+
+        path_to_document: string Path to file
 
     Methods:
     ----------
-         get_standard_paragraph(self, paragraph): A method that return standard paragraph
-         get_font_size(self, paragraph): int
-         get_font_style_for_attr: list Find style.font style_attr_name
-            in any paren or child elements
-         get_paragraph_format_style_for_attr: int | float
-            Find paragraph_format.* attr, like first_line_indent, line_spacing
-            in parent Styles if None
-         _is_style_append_text(cls, paragraph, style_name: str):
-            A method  check text is bold | italic | underline
-         _is_change_font_name(cls, paragraph): A method chek changed font style in each paragraph
-         get_all_paragraphs_in_standard(cls): Get all paragraph in standard format as list
+        get_standard_paragraph(paragraph):
+            A method that return standard paragraph src.classes.Paragraph
+
+        _get_font_size(paragraph) -> int
+            Size in pt of font
+
+        _get_font_style_color(paragraph: ParagraphType) -> str
+            HEX code of color
+
+        _get_font_style_for_attr(paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str
+            Find style.font style_attr_name in any parent or child elements
+
+        _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
+                                             format_return: str = "pt") -> Union[int, float, bool]
+            Return value of attribute if set format_return in "pt" or "cm". If set "bool" check has element this
+            attribute or not
+
+        __get_style_in_hierarchy(self, paragraph): BaseStyle
+            Find style in hierarchy
+
+        _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph,
+                                         style_attr_name: str) -> bool
+            Find docx.text.run.Font attributes
+
+        _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str)
+            Find paragraph.paragraph_format attributes
+
+        _is_style_append(self, paragraph: ParagraphType, style_name: str) -> stylePropertyCoverage
+            Checks if the text is bold | italic | underline
+
+        _is_change_text_size(self, paragraph: ParagraphType) -> bool
+            Checks if the font size has changed within the same paragraph
+
+        _get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]
+            Get paragraph justification type by key
+
+        __find_sum_by_attr(self, values: list, attr: str, count_field: str = "count") -> str
+            Function is used in determining the name of the font or color, if there are several of them
+            in one paragraph. Since the Paragraph class expects a single value, the font name or color
+            that occurs most often in the paragraph is returned.
     """
 
     def __init__(self, path):
@@ -78,7 +109,7 @@ class DocxParagraph:
             _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
             _font_name=self._get_font_style_for_attr(paragraph, "name"),
             _text_size=self._get_font_size(paragraph),
-            _alignment=self.get_paragraph_justification_type(
+            _alignment=self._get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
             _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
             _mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
@@ -139,7 +170,7 @@ class DocxParagraph:
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str:
         """
-        Find style.font style_attr_name  in any paren or child elements
+        Find style.font style_attr_name in any parent or child elements
 
         :param style_attr_name: str name of style attr
         :param paragraph: docx.Paragraph
@@ -298,7 +329,7 @@ class DocxParagraph:
                 break
         return is_changed
 
-    def get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]:
+    def _get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]:
         """
         Get paragraph justification type by key
 
