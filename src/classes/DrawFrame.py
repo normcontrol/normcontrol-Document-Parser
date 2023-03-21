@@ -2,7 +2,7 @@ class DrawFrame:
     """
     Description: Draw frame class for ODT document.
 
-    Parameters:
+    Attributes:
         _frame_style_name - attribute specifies the style of current frame,
         _frame_name - attribute specifies the name of current frame,
         _frame_anchor_type - attribute specifies how a frame is bound to a text document,

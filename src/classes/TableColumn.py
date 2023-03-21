@@ -2,7 +2,7 @@ class TableColumn:
     """
     Description: Table column class for ODT document.
 
-    Parameters:
+    Attributes:
         _column_name - attribute specifies the name of a column,
         _column_family - attribute specifies the family of a style (style:family),
         _column_properties_column_width - attribute specifies a fixed width for a column (style:table-column-properties),

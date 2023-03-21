@@ -2,7 +2,7 @@ class TableRow:
     """
     Description: Table row class for ODT document.
 
-    Parameters:
+    Attributes:
         _row_name - attribute specifies the name of a row,
         _row_family - attribute specifies the family of a style (style:family),
         _row_properties_min_row_height - attribute specifies a fixed minimum height for a row

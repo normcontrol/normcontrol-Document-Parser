@@ -2,7 +2,7 @@ class Table:
     """
     Description: Table class for ODT document.
 
-    Parameters:
+    Attributes:
         _table_name - attribute specifies the name of a table,
         _table_family - attribute specifies the family of a style (style:family),
         _table_master_page_name - attribute specifies the name of element that contains the content

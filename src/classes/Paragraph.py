@@ -9,7 +9,7 @@ class Paragraph:
     """
     Description: a inified class representing a text paragraph, its properties? styles and content
 
-    Parameters:
+    Attributes:
     ----------
             _text: str
                 The attribute specifies paragraph text
@@ -133,8 +133,9 @@ class Paragraph:
 
         Counts and returns the number of special characters in a text
 
-        :param text: Paragraph text
-        :return: The number of special characters in the text, such as dots and commas
+        :param
+            text: Paragraph text
+        :return The number of special characters in the text, such as dots and commas
 
         """
         return len(re.findall("[,.!?;:\'\"«»~]", text))
@@ -145,8 +146,10 @@ class Paragraph:
 
         Counts and returns the number of all characters in a text
 
-        :param text: Paragraph text
-        :return: The number of all characters in the text
+        :param
+            text: Paragraph text
+
+        :return The number of all characters in the text
 
         """
         return len(text)
@@ -157,8 +160,10 @@ class Paragraph:
 
         Calculates whether the entire paragraph is lowercase
 
-        :param text: Paragraph text
-        :return: True if all text is in lowercase
+        :param
+            text: Paragraph text
+
+        :return True if all text is in lowercase
 
         """
         return bool(text.islower())
@@ -169,8 +174,10 @@ class Paragraph:
 
         Calculates whether the entire paragraph is uppercase
 
-        :param text: Paragraph text
-        :return: True if all text is in uppercase
+        :param
+            text: Paragraph text
+
+        :return True if all text is in uppercase
 
         """
         return bool(text.isupper())
@@ -181,19 +188,23 @@ class Paragraph:
 
         Calculates the last character of a paragraph
 
-        :param text: Paragraph text
-        :return: The last character of a paragraph
+        :param
+            text: Paragraph text
+
+        :return The last character of a paragraph
 
         """
         try:
-            if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
+            if text[len(text) - 1] == ' ' and re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
                 return text[len(text) - 2]
+            if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 1]) is None:
+                return text[len(text) - 1]
             return None
         except IndexError:
             print("IndexError")
+            return None
         except TypeError:
-            print('Allowed type is str')
-        finally:
+            print('TypeError, allowed type is str')
             return None
 
     @classmethod

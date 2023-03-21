@@ -2,7 +2,7 @@ class TableCell:
     """
     Description: Table cell class for ODT document.
 
-    Parameters:
+    Attributes:
         _cell_name - attribute specifies the name of a cell,
         _cell_family - attribute specifies the family of a style (style:family),
         _cell_properties_border - attribute specifies the property for setting the same width, color, and style for
