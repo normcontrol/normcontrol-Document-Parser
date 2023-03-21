@@ -120,8 +120,8 @@ class DocxParagraph:
 
         :return: str Hex-code
         """
-        r, g, b = rgb
-        return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+        red, green, blue = rgb
+        return '#{:02x}{:02x}{:02x}'.format(red, green, blue)
 
     def _get_font_style_color(self, paragraph: ParagraphType) -> str:
         """
