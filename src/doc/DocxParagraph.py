@@ -88,7 +88,7 @@ class DocxParagraph:
             _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
             _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
             _color_text=self._get_font_style_color(paragraph),
-            _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before"),
+            _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
             _keep_lines_together=paragraph.paragraph_format.keep_together,
             _keep_with_next=paragraph.paragraph_format.keep_with_next,
             _outline_level=paragraph.style.font.outline,
@@ -170,7 +170,7 @@ class DocxParagraph:
         return self.__find_sum_by_attr(attrs_values, "font")
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
-                                             msg: str = "pt") -> Union[int, float]:
+                                             msg: str = "pt") -> Union[int, float, bool]:
         """
         Find paragraph_format attr value
 
@@ -187,12 +187,14 @@ class DocxParagraph:
         :param style_attr_name: str name of paragraph_format attr
         :param paragraph: docx.Paragraph
         :param msg: str "pt" | "cm"
-        :return: int | pt | float
+        :return: int | pt | float | bool
         """
 
         attr = self._get_paragraph_format_in_hierarchy(paragraph, style_attr_name)
         if attr is None:
-            return 0
+            return 0 if msg != "bool" else False
+        if msg == "bool":
+            return True
         return attr if isinstance(attr, float) else getattr(attr, msg)
 
     def __get_style_in_hierarchy(self, paragraph) -> BaseStyle:
