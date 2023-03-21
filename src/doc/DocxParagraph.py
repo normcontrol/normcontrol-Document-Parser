@@ -315,6 +315,10 @@ class DocxParagraph:
 
     def __find_sum_by_attr(self, values: list, attr: str, count_field: str = "count") -> str:
         """
+        This function is used in determining the name of the font or color,
+        if there are several of them in one paragraph.
+        Since the Paragraph class expects a single value,
+        the font name or color that occurs most often in the paragraph is returned.
 
         @param values: [{"name_attr": "name", "count": 11}]
         @param attr: "name_attr" name
