@@ -123,12 +123,12 @@ class DocxParagraph:
         r, g, b = rgb
         return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-    def _get_font_style_color(self, paragraph: ParagraphType) -> dict:
+    def _get_font_style_color(self, paragraph: ParagraphType) -> str:
         """
         Function get all colors of paragraph in hex
 
         :param paragraph: docx.Paragraph
-        :return: dict of hex color with max value {'#000000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000000'}
+        :return: most use hex code color
         """
 
         values = list()
@@ -141,14 +141,8 @@ class DocxParagraph:
                 if style.font.color.rgb is not None:
                     value["color"] = self.rgb_to_hex(style.font.color.rgb)
             values.append(value)
-        sums_by_color = {}
-        for item in values:
-            if item['color'] in sums_by_color:
-                sums_by_color[item['color']] += item['count']
-            else:
-                sums_by_color[item['color']] = item['count']
-        sums_by_color['max'] = max(sums_by_color, key=lambda k: sums_by_color[k])
-        return sums_by_color
+
+        return self.__find_sum_by_attr(values, "color")
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str:
         """

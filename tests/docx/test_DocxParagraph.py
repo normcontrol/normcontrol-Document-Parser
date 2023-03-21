@@ -38,24 +38,22 @@ class TestDocxParagraph(unittest.TestCase):
         docx = DocxParagraph(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
-        self.assertDictEqual(getattr(paragraph, '_color_text'), {'#000': 13, 'max': '#000'})
+        self.assertEqual(getattr(paragraph, '_color_text'), '#000')
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[1])
-        self.assertDictEqual(getattr(paragraph, '_color_text'), {'#00b0f0': 11, 'max': '#00b0f0'})
+        self.assertEqual(getattr(paragraph, '_color_text'), '#00b0f0')
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[2])
-        self.assertDictEqual(getattr(paragraph, '_color_text'), {'#c45911': 9, 'max': '#c45911'})
+        self.assertEqual(getattr(paragraph, '_color_text'), '#c45911')
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[3])
-        self.assertDictEqual(getattr(paragraph, '_color_text'), {'#2e74b5': 9, 'max': '#2e74b5'})
+        self.assertEqual(getattr(paragraph, '_color_text'), '#2e74b5')
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[4])
-        self.assertDictEqual(getattr(paragraph, '_color_text'),
-                             {'#00b050': 5, '#000': 6, '#c45911': 10, 'max': '#c45911'})
+        self.assertEqual(getattr(paragraph, '_color_text'),'#c45911')
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[5])
-        self.assertDictEqual(getattr(paragraph, '_color_text'),
-                             {'#000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000'})
+        self.assertEqual(getattr(paragraph, '_color_text'),'#000')
 
     def test_alignment(self):
         path = os.path.join(os.path.dirname(__file__), "documents/alignment.docx")
