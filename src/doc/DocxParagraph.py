@@ -27,11 +27,12 @@ from docx.text.paragraph import Paragraph as ParagraphType
 
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.classes.Paragraph import Paragraph
+from src.helpers.colors import rgb_to_hex
 
 
 class DocxParagraph:
     """
-    Class extract paragraph and attribures from DOCX files
+    Class extract paragraph and attributes from DOCX files
 
     Parameters:
     ----------
@@ -115,15 +116,6 @@ class DocxParagraph:
             return p_font_style
         return round(sum(fonts_sizes) / len(fonts_sizes))
 
-    def rgb_to_hex(self, rgb: tuple):
-        """
-        Function to convert rgb to hex
-
-        :return: str Hex-code
-        """
-        red, green, blue = rgb
-        return '#{:02x}{:02x}{:02x}'.format(red, green, blue)
-
     def _get_font_style_color(self, paragraph: ParagraphType) -> str:
         """
         Function get all colors of paragraph in hex
@@ -136,11 +128,11 @@ class DocxParagraph:
         for run in paragraph.runs:
             value = {"count": len(run.text), "color": "#000"}
             if run.font.color.rgb is not None:
-                value["color"] = self.rgb_to_hex(run.font.color.rgb)
+                value["color"] = rgb_to_hex(run.font.color.rgb)
             else:
                 style = self.styles[paragraph.style.name]
                 if style.font.color.rgb is not None:
-                    value["color"] = self.rgb_to_hex(style.font.color.rgb)
+                    value["color"] = rgb_to_hex(style.font.color.rgb)
             values.append(value)
 
         return self.__find_sum_by_attr(values, "color")
