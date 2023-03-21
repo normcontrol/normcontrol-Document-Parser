@@ -1,11 +1,14 @@
 """DOCX Paragraph module
 
-The module allows you to download a docx file and bring the properties of paragraphs to a single view
+The module allows you to download a docx file and bring
+the properties of paragraphs to a single view
 
-This script requires that `lxml`, `typing` , `python-docx` to be installed within the Python
+This script requires that `lxml`, `typing` , `python-docx`
+to be installed within the Python
 environment you are running this script in.
 
-This file can also be imported as a module and contains the following public
+This file can also be imported as a module and
+contains the following public
 functions:
 
     * get_all_paragraphs_in_standard: list Paragraph in standard
@@ -68,30 +71,29 @@ class DocxParagraph:
         """
 
         return Paragraph(
-            text=paragraph.text,
-            indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
-            lineSpacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-            fontName=self._get_font_style_for_attr(paragraph, "name"),
-            textSize=self._get_font_size(paragraph),
-            nochangeFontName=self._is_change_font_name(paragraph),
-            nochangeTextSize=self._is_change_text_size(paragraph),
-            alignment=self.get_paragraph_justification_type(
+            _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            _text=paragraph.text,
+            _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
+            _font_name=self._get_font_style_for_attr(paragraph, "name"),
+            _text_size=self._get_font_size(paragraph),
+            _alignment=self.get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
-            mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
-            mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
-            mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-            mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-            bold=self._is_style_append(paragraph, "bold"),
-            italics=self._is_style_append(paragraph, "italic"),
-            underlining=self._is_style_append(paragraph, "underline"),
-            subText=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
-            superText=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
-            colorText=self._get_font_style_color(paragraph),
-            keepLinesTogether=paragraph.paragraph_format.keep_together,
-            keepWithNext=paragraph.paragraph_format.keep_with_next,
-            outlineLevel=paragraph.style.font.outline,
-            # noSpaceBetweenParagraphsOfSameStyle = None,
-            pageBreakBefore=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before")
+            _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+            _mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
+            _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+            _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+            _bold=self._is_style_append(paragraph, "bold"),
+            _italics=self._is_style_append(paragraph, "italic"),
+            _underlining=self._is_style_append(paragraph, "underline"),
+            _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+            _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+            _color_text=self._get_font_style_color(paragraph),
+            _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before"),
+            _keep_lines_together=paragraph.paragraph_format.keep_together,
+            _keep_with_next=paragraph.paragraph_format.keep_with_next,
+            _outline_level=paragraph.style.font.outline,
+            _no_change_fontname=self._is_change_font_name(paragraph),
+            _no_change_text_size=self._is_change_text_size(paragraph),
         )
 
     def _get_font_size(self, paragraph: ParagraphType):
@@ -211,7 +213,8 @@ class DocxParagraph:
             style = style.base_style
         return self.styles[style_name]
 
-    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
+    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph,
+                                         style_attr_name: str) -> list:
         """
         Find docx.text.run.Font attributes
         """
