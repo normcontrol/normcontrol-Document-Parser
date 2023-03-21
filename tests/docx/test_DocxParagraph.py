@@ -17,20 +17,20 @@ class TestDocxParagraph(unittest.TestCase):
         docx = DocxParagraph(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
-        self.assertEqual(getattr(paragraph, '_sub_text'), [])
-        self.assertEqual(getattr(paragraph, '_super_text'), [{'count': 7, 'type': 'superscript'}])
+        self.assertEqual(getattr(paragraph, '_sub_text'), False)
+        self.assertEqual(getattr(paragraph, '_super_text'), True)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[1])
-        self.assertEqual(getattr(paragraph, '_sub_text'), [{'count': 6, 'type': 'subscript'}])
-        self.assertEqual(getattr(paragraph, '_super_text'), [])
+        self.assertEqual(getattr(paragraph, '_sub_text'), True)
+        self.assertEqual(getattr(paragraph, '_super_text'), False)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[2])
-        self.assertEqual(getattr(paragraph, '_sub_text'), [{'count': 3, 'type': 'subscript'}])
-        self.assertEqual(getattr(paragraph, '_super_text'), [{'count': 4, 'type': 'superscript'}])
+        self.assertEqual(getattr(paragraph, '_sub_text'), True)
+        self.assertEqual(getattr(paragraph, '_super_text'), True)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[3])
-        self.assertEqual(getattr(paragraph, '_sub_text'), [])
-        self.assertEqual(getattr(paragraph, '_super_text'), [])
+        self.assertEqual(getattr(paragraph, '_sub_text'), False)
+        self.assertEqual(getattr(paragraph, '_super_text'), False)
 
     def test_color(self):
         path = os.path.join(os.path.dirname(__file__), "documents/color.docx")
