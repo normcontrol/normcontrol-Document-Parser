@@ -31,7 +31,7 @@ from src.classes.Paragraph import Paragraph
 
 class DocxParagraph:
     """
-    Class allows to take advantage of a file with the docx extension paragraph structure in a standard form
+    Class extract paragraph and attribures from DOCX files
 
     Parameters:
     ----------
@@ -43,7 +43,8 @@ class DocxParagraph:
     ----------
          get_standard_paragraph(self, paragraph): A method that return standard paragraph
          get_font_size(self, paragraph): int
-         get_font_style_for_attr: list Find style.font style_attr_name  in any paren or child elements
+         get_font_style_for_attr: list Find style.font style_attr_name
+            in any paren or child elements
          get_paragraph_format_style_for_attr: int | float
             Find paragraph_format.* attr, like first_line_indent, line_spacing
             in parent Styles if None
