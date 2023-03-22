@@ -28,7 +28,7 @@ from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 
 
-class DocxParagraph:
+class DocxParagraphParser:
     """
     Class extract paragraph and attributes from DOCX files
 

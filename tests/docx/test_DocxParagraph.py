@@ -4,7 +4,7 @@ import os
 
 from docx import Document
 
-from src.doc.DocxParagraph import DocxParagraph
+from src.doc.DocxParagraphParser import DocxParagraphParser
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
@@ -14,7 +14,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_super_sub_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/super_sub.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
         self.assertEqual(getattr(paragraph, '_sub_text'), False)
@@ -35,7 +35,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_color(self):
         path = os.path.join(os.path.dirname(__file__), "documents/color.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
         self.assertEqual(getattr(paragraph, '_color_text'), '#000')
@@ -58,7 +58,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_alignment(self):
         path = os.path.join(os.path.dirname(__file__), "documents/alignment.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
         self.assertEqual(getattr(paragraph, '_alignment'), WD_PARAGRAPH_ALIGNMENT.LEFT)
@@ -75,7 +75,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_indent(self):
         path = os.path.join(os.path.dirname(__file__), "documents/indent.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
 
         paragraph = docx.get_standard_paragraph(document.paragraphs[0])
         self.assertEqual(paragraph._mrgrg, 1.5)
@@ -134,7 +134,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_is_bold_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/bold.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
         # Not bold text
         self.assertEqual(docx._is_style_append(document.paragraphs[0], "bold"), StylePropertyCoverage.NO)
         # All bold paragraph
@@ -155,7 +155,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_is_italic_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/italic.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
         # Not bold text
         self.assertEqual(docx._is_style_append(document.paragraphs[0], "italic"), StylePropertyCoverage.NO)
         # All bold paragraph
@@ -176,7 +176,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_is_underline_text(self):
         path = os.path.join(os.path.dirname(__file__), "documents/underline.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
         # Not bold text
         self.assertEqual(docx._is_style_append(document.paragraphs[0], "underline"), StylePropertyCoverage.NO)
         # All bold paragraph
@@ -201,7 +201,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_is_change_font(self):
         path = os.path.join(os.path.dirname(__file__), "documents/font_change.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
         # Not change font
         self.assertEqual(docx._is_change_font_name(document.paragraphs[0]), False)
         # Change second and third word in different font
@@ -220,7 +220,7 @@ class TestDocxParagraph(unittest.TestCase):
     def test_standard_paragraph(self):
         path = os.path.join(os.path.dirname(__file__), "documents/paragraph.docx")
         document = Document(path)
-        docx = DocxParagraph(path)
+        docx = DocxParagraphParser(path)
 
         # TODO: private methods:  nochange_font_name, nochange_text_size, alignment
 
