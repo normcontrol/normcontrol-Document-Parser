@@ -80,7 +80,7 @@ class DocxParagraphParser:
         _get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]
             Get paragraph justification type by key
 
-        __find_sum_by_attr(self, values: list, attr: str, count_field: str = "count") -> str
+        __find_most_common_attribute(self, values: list, attr: str, count_field: str = "count") -> str
             Function is used in determining the name of the font or color, if there are several of them
             in one paragraph. Since the Paragraph class expects a single value, the font name or color
             that occurs most often in the paragraph is returned.
@@ -166,7 +166,7 @@ class DocxParagraphParser:
                     value["color"] = rgb_to_hex(style.font.color.rgb)
             values.append(value)
 
-        return self.__find_sum_by_attr(values, "color")
+        return self.__find_most_common_attribute(values, "color")
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str:
         """
@@ -191,7 +191,7 @@ class DocxParagraphParser:
             while getattr(style.font, style_attr_name) is None:
                 style = style.base_style
             attrs_values.append({"count": len(paragraph.text), "font": getattr(style.font, style_attr_name)})
-        return self.__find_sum_by_attr(attrs_values, "font")
+        return self.__find_most_common_attribute(attrs_values, "font")
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
                                              format_return: str = "pt") -> Union[int, float, bool]:
@@ -344,7 +344,7 @@ class DocxParagraphParser:
 
         return alignments[alignment] if alignment < len(alignments) else None
 
-    def __find_sum_by_attr(self, values: list, attr: str, count_field: str = "count") -> str:
+    def __find_most_common_attribute(self, values: list, attr: str, count_field: str = "count") -> str:
         """
         This function is used in determining the name of the font or color,
         if there are several of them in one paragraph.
