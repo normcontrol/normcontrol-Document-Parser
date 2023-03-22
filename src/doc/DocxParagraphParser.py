@@ -1,53 +1,89 @@
 """DOCX Paragraph module
 
-The module allows you to download a docx file and bring the properties of paragraphs to a single view
+The module allows you to download a docx file and bring
+the properties of paragraphs to a single view
 
-This script requires that `lxml`, `typing` , `python-docx` to be installed within the Python
+This script requires that `lxml`, `typing` , `python-docx`
+to be installed within the Python
 environment you are running this script in.
 
-This file can also be imported as a module and contains the following public
+This file can also be imported as a module and
+contains the following public
 functions:
 
-    * get_all_paragraphs_in_standard: list Paragraph in standard
     * get_standard_paragraph(self, paragraph): A method that return standard paragraph
 """
 import re
 from typing import Union
-
-from lxml import etree
 
 import docx.text.paragraph
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.styles.style import BaseStyle
 from docx.text.paragraph import Paragraph as ParagraphType
+from lxml import etree
 
-from src.doc.helpers.StylePropertyCoverage import StylePropertyCoverage
-from src.doc.temp.Paragraph import Paragraph
+from src.classes.Paragraph import Paragraph
+from src.helpers.colors import rgb_to_hex
+from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 
 
-class DocxParagraph:
+class DocxParagraphParser:
     """
-    Class allows to take advantage of a file with the docx extension paragraph structure in a standard form
+    Class extract paragraph and attributes from DOCX files
 
     Parameters:
     ----------
-    path_to_document: Path to document docx
+        path_to_document: Path to document docx
+
         document : docx.Document()
+
         styles: document.styles
+
+        path_to_document: string Path to file
 
     Methods:
     ----------
-         get_standard_paragraph(self, paragraph): A method that return standard paragraph
-         get_font_size(self, paragraph): int
-         get_font_style_for_attr: list Find style.font attr_name  in any paren or child elements
-         get_paragraph_format_style_for_attr: int | float
-            Find paragraph_format.* attr, like first_line_indent, line_spacing
-            in parent Styles if None
-         _is_style_append_text(cls, paragraph, style_name: str):
-            A method  check text is bold | italic | underline
-         _is_change_font_name(cls, paragraph): A method chek changed font style in each paragraph
-         get_all_paragraphs_in_standard(cls): Get all paragraph in standard format as list
+        get_standard_paragraph(paragraph):
+            A method that return standard paragraph src.classes.Paragraph
+
+        _get_font_size(paragraph) -> int
+            Size in pt of font
+
+        _get_font_style_color(paragraph: ParagraphType) -> str
+            HEX code of color
+
+        _get_font_style_for_attr(paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str
+            Find style.font style_attr_name in any parent or child elements
+
+        _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
+                                             format_return: str = "pt") -> Union[int, float, bool]
+            Return value of attribute if set format_return in "pt" or "cm". If set "bool" check has element this
+            attribute or not
+
+        __get_style_in_hierarchy(self, paragraph): BaseStyle
+            Find style in hierarchy
+
+        _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph,
+                                         style_attr_name: str) -> bool
+            Find docx.text.run.Font attributes
+
+        _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str)
+            Find paragraph.paragraph_format attributes
+
+        _is_style_append(self, paragraph: ParagraphType, style_name: str) -> stylePropertyCoverage
+            Checks if the text is bold | italic | underline
+
+        _is_change_text_size(self, paragraph: ParagraphType) -> bool
+            Checks if the font size has changed within the same paragraph
+
+        _get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]
+            Get paragraph justification type by key
+
+        __find_most_common_attribute(self, values: list, attr: str, count_field: str = "count") -> str
+            Function is used in determining the name of the font or color, if there are several of them
+            in one paragraph. Since the Paragraph class expects a single value, the font name or color
+            that occurs most often in the paragraph is returned.
     """
 
     def __init__(self, path):
@@ -68,30 +104,29 @@ class DocxParagraph:
         """
 
         return Paragraph(
-            text=paragraph.text,
-            indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
-            lineSpacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-            fontName=self._get_font_style_for_attr(paragraph, "name"),
-            textSize=self._get_font_size(paragraph),
-            nochangeFontName=self._is_change_font_name(paragraph),
-            nochangeTextSize=self._is_change_text_size(paragraph),
-            alignment=self.get_paragraph_justification_type(
+            _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            _text=paragraph.text,
+            _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
+            _font_name=self._get_font_style_for_attr(paragraph, "name"),
+            _text_size=self._get_font_size(paragraph),
+            _alignment=self._get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
-            mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
-            mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
-            mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-            mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-            bold=self._is_style_append(paragraph, "bold"),
-            italics=self._is_style_append(paragraph, "italic"),
-            underlining=self._is_style_append(paragraph, "underline"),
-            subText=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
-            superText=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
-            colorText=self._get_font_style_color(paragraph),
-            keepLinesTogether=paragraph.paragraph_format.keep_together,
-            keepWithNext=paragraph.paragraph_format.keep_with_next,
-            outlineLevel=paragraph.style.font.outline,
-            # noSpaceBetweenParagraphsOfSameStyle = None,
-            pageBreakBefore=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before")
+            _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+            _mrglf=round(self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm"), 2),
+            _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+            _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+            _bold=self._is_style_append(paragraph, "bold"),
+            _italics=self._is_style_append(paragraph, "italic"),
+            _underlining=self._is_style_append(paragraph, "underline"),
+            _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+            _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+            _color_text=self._get_font_style_color(paragraph),
+            _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
+            _keep_lines_together=paragraph.paragraph_format.keep_together,
+            _keep_with_next=paragraph.paragraph_format.keep_with_next,
+            _outline_level=paragraph.style.font.outline,
+            _no_change_fontname=self._is_change_font_name(paragraph),
+            _no_change_text_size=self._is_change_text_size(paragraph),
         )
 
     def _get_font_size(self, paragraph: ParagraphType):
@@ -112,69 +147,54 @@ class DocxParagraph:
             return p_font_style
         return round(sum(fonts_sizes) / len(fonts_sizes))
 
-    def rgb_to_hex(self, rgb: tuple):
-        """
-        Function to convert rgb to hex
-
-        :return: str Hex-code
-        """
-        r, g, b = rgb
-        return '#{:02x}{:02x}{:02x}'.format(r, g, b)
-
-    def _get_font_style_color(self, paragraph: ParagraphType) -> dict:
+    def _get_font_style_color(self, paragraph: ParagraphType) -> str:
         """
         Function get all colors of paragraph in hex
 
         :param paragraph: docx.Paragraph
-        :return: dict of hex color with max value {'#000000': 19, '#00b050': 1, '#5b9bd5': 1, 'max': '#000000'}
+        :return: most use hex code color
         """
 
-        values = list()
+        values = []
         for run in paragraph.runs:
             value = {"count": len(run.text), "color": "#000"}
             if run.font.color.rgb is not None:
-                value["color"] = self.rgb_to_hex(run.font.color.rgb)
+                value["color"] = rgb_to_hex(run.font.color.rgb)
             else:
                 style = self.styles[paragraph.style.name]
                 if style.font.color.rgb is not None:
-                    value["color"] = self.rgb_to_hex(style.font.color.rgb)
+                    value["color"] = rgb_to_hex(style.font.color.rgb)
             values.append(value)
-        sums_by_color = {}
-        for item in values:
-            if item['color'] in sums_by_color:
-                sums_by_color[item['color']] += item['count']
-            else:
-                sums_by_color[item['color']] = item['count']
-        sums_by_color['max'] = max(sums_by_color, key=lambda k: sums_by_color[k])
-        return sums_by_color
 
-    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
+        return self.__find_most_common_attribute(values, "color")
+
+    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> str:
         """
-        Find style.font attr_name  in any paren or child elements
+        Find style.font style_attr_name in any parent or child elements
 
-        :param attr_name: str name of style attr
+        :param style_attr_name: str name of style attr
         :param paragraph: docx.Paragraph
-        :return: list Names of attr_name values
+        :return: str more used font
         """
 
-        attrs_values = set()
+        attrs_values = []
         attr = getattr(paragraph.style.font, style_attr_name)
         for run in paragraph.runs:
             attr_value = getattr(run.font, style_attr_name)
             if attr_value is not None:
-                attrs_values.add(attr_value)
+                attrs_values.append({"count": len(run.text), "font": attr_value})
         if attr is not None:
-            attrs_values.add(attr)
+            attrs_values.append({"count": len(paragraph.text), "font": attr})
         else:
             style = self.styles[getattr(paragraph.style, style_attr_name)]
             # if font.name is None try find in parents
             while getattr(style.font, style_attr_name) is None:
                 style = style.base_style
-            attrs_values.add(getattr(style.font, style_attr_name))
-        return list(attrs_values)
+            attrs_values.append({"count": len(paragraph.text), "font": getattr(style.font, style_attr_name)})
+        return self.__find_most_common_attribute(attrs_values, "font")
 
-    def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str,
-                                             msg: str = "pt") -> Union[int, float]:
+    def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
+                                             format_return: str = "pt") -> Union[int, float, bool]:
         """
         Find paragraph_format attr value
 
@@ -187,17 +207,18 @@ class DocxParagraph:
         In Word, the value of this property can be set to a value with up to two decimal places,
         but when this value is returned by the python-docx library, it is rounded to the nearest integer.
 
-
-        :param attr_name: str name of paragraph_format attr
+        :param style_attr_name: str name of paragraph_format attr
         :param paragraph: docx.Paragraph
-        :param msg: str "pt" | "cm"
-        :return: int | pt | float
+        :param format_return: str "pt" | "cm" | "bool"
+        :return: int | float | bool
         """
 
-        attr = self._get_paragraph_format_in_hierarchy(paragraph, attr_name)
+        attr = self._get_paragraph_format_in_hierarchy(paragraph, style_attr_name)
         if attr is None:
-            return 0
-        return attr if isinstance(attr, float) else getattr(attr, msg)
+            return 0 if format_return != "bool" else False
+        if format_return == "bool":
+            return True
+        return attr if isinstance(attr, float) else getattr(attr, format_return)
 
     def __get_style_in_hierarchy(self, paragraph) -> BaseStyle:
         """
@@ -211,15 +232,15 @@ class DocxParagraph:
             style = style.base_style
         return self.styles[style_name]
 
-    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str) -> list:
+    def _get_run_font_style_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph,
+                                         style_attr_name: str) -> bool:
         """
         Find docx.text.run.Font attributes
         """
-        values = list()
         for run in paragraph.runs:
-            if getattr(run.font, attr_name) is True:
-                values.append({"count": len(run.text), "type": attr_name})
-        return values
+            if getattr(run.font, style_attr_name) is True:
+                return True
+        return False
 
     def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
         """
@@ -308,7 +329,7 @@ class DocxParagraph:
                 break
         return is_changed
 
-    def get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]:
+    def _get_paragraph_justification_type(self, alignment: int) -> Union[WD_PARAGRAPH_ALIGNMENT, None]:
         """
         Get paragraph justification type by key
 
@@ -322,3 +343,25 @@ class DocxParagraph:
         ]
 
         return alignments[alignment] if alignment < len(alignments) else None
+
+    def __find_most_common_attribute(self, values: list, attr: str, count_field: str = "count") -> str:
+        """
+        This function is used in determining the name of the font or color,
+        if there are several of them in one paragraph.
+        Since the Paragraph class expects a single value,
+        the font name or color that occurs most often in the paragraph is returned.
+
+        @param values: [{"name_attr": "name", "count": 11}]
+        @param attr: "name_attr" name
+        @param count_field: "count" name
+        @return: more used attr
+        """
+        sum_repeat = {}
+        for item in values:
+            if item[attr] in sum_repeat:
+                sum_repeat[item[attr]] += item[count_field]
+            else:
+                sum_repeat[item[attr]] = item[count_field]
+        sum_repeat['max'] = max(sum_repeat, key=lambda k: sum_repeat[k])
+
+        return sum_repeat['max']
