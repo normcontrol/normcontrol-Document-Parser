@@ -14,13 +14,13 @@
 * DOCX
 
   * [Описание (in dev)](docx/index.md)
-  * [Paragraph (in dev)](docx/paragraph.md)
+  * [Elements (in dev)](docx/elements.md)
  
     
 * ODT
 
   * [Описание (in dev)](odt/index.md)
-  * [Paragraph (in dev)](odt/paragraph.md)
+  * [Paragraph (in dev)](odt/elements.md)
     
 * PDF
 
