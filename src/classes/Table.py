@@ -1,6 +1,7 @@
-
 from dataclasses import dataclass
-
+from src.classes.TableCell import TableCell
+from src.classes.TableColumn import TableColumn
+from src.classes.TableRow import TableRow
 
 @dataclass
 class Table:
@@ -11,11 +12,14 @@ class Table:
         _table_name - attribute specifies the name of a table,
         _table_family - attribute specifies the family of a style (style:family),
         _table_master_page_name - attribute specifies the name of element that contains the content
-            of headers and footers.
+            of headers and footers,
         _table_properties_width - attribute specifies the width of a table relative to the width of
             the area that the table is in (style:table-properties),
-        _table_properties_margin_left - attribute sets the left margin of a table.
-        _table_properties_align - attribute specifies the horizontal alignment of a table (table:align).
+        _table_properties_margin_left - attribute sets the left margin of a table,
+        _table_properties_align - attribute specifies the horizontal alignment of a table (table:align),
+        _table_cells - a list containing table cell objects,
+        _table_columns - a list containing table colum objects,
+        _table_rows - a list containing table row objects.
     """
 
     _table_name: str
@@ -24,6 +28,9 @@ class Table:
     _table_properties_width: float
     _table_properties_margin_left: float
     _table_properties_align: str
+    _table_cells: [TableCell]
+    _table_columns: [TableColumn]
+    _table_rows: [TableRow]
 
     @property
     def table_name(self):
@@ -72,3 +79,27 @@ class Table:
     @table_properties_align.setter
     def table_properties_align(self, value):
         self._table_properties_align = value
+
+    @property
+    def table_cells(self):
+        return self._table_cells
+
+    @table_cells.setter
+    def table_cells(self, value):
+        self._table_cells = value
+
+    @property
+    def table_columns(self):
+        return self._table_columns
+
+    @table_columns.setter
+    def table_columns(self, values):
+        self._table_columns = values
+
+    @property
+    def table_rows(self):
+        return self._table_rows
+
+    @table_rows.setter
+    def table_rows(self, value):
+        self._table_rows = value
