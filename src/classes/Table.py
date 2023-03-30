@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from src.classes.TableCell import TableCell
 from src.classes.TableColumn import TableColumn
 from src.classes.TableRow import TableRow
@@ -6,7 +6,7 @@ from src.classes.TableRow import TableRow
 @dataclass
 class Table:
     """
-    Description: Table class for ODT document.
+    Description: Table class for document.
 
     Attributes:
         _table_name - attribute specifies the name of a table,
@@ -22,15 +22,15 @@ class Table:
         _table_rows - a list containing table row objects.
     """
 
-    _table_name: str
-    _table_family: str
-    _table_master_page_name: str
-    _table_properties_width: float
-    _table_properties_margin_left: float
-    _table_properties_align: str
-    _table_cells: [TableCell]
-    _table_columns: [TableColumn]
-    _table_rows: [TableRow]
+    _table_name: str = None
+    _table_family: str = None
+    _table_master_page_name: str = None
+    _table_properties_width: float = None
+    _table_properties_margin_left: float = None
+    _table_properties_align: str = None
+    _table_cells: [TableCell] = field(default_factory=list)
+    _table_columns: [TableColumn] = field(default_factory=list)
+    _table_rows: [TableRow] = field(default_factory=list)
 
     @property
     def table_name(self):
