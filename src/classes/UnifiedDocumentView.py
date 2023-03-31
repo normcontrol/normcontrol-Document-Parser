@@ -1,11 +1,8 @@
 import csv
 import json
-
 import requests
 from bestconfig import Config
-
 from src.classes.Paragraph import Paragraph
-
 
 class UnifiedDocumentView:
     """
