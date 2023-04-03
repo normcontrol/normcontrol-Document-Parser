@@ -23,6 +23,9 @@ class DocumentParser:
     def __init__(self, file):
         self.filePath = file
         self.fileText = []
+        self.default_styles_dict = Default.get_styles_new(file)
+        self.styles_dict = Style.get_styles_style_new(file)
+        self.auto_styles_dict = Auto.get_styles_new(file)
 
     # Получаем весь текст документа
     def all_odt_text(self):
@@ -390,6 +393,99 @@ class DocumentParser:
             default = param
         return default
 
+    # общее
+
+    def check(self):
+        print(self.default_styles_dict)
+        print(self.styles_dict)
+        print(self.auto_styles_dict)
+
+    def inher_start(self, doc, stylename, paramname):
+        if stylename in self.auto_styles_dict.keys():
+            return doc.style_inherit(stylename, paramname)
+        else:
+            return doc.style_inherit2(stylename, paramname)
+
+    def style_inherit(self, stylename, paramname):
+        if paramname in self.auto_styles_dict[stylename]:
+            #print(self.auto_styles_dict[stylename][paramname])
+            return self.auto_styles_dict[stylename][paramname]
+        else:
+            if 'parent-style-name' in self.auto_styles_dict[stylename]:
+                parent = self.auto_styles_dict[stylename]['parent-style-name']
+                #print(parent)
+                if paramname in self.styles_dict[parent]:
+                    #print(self.styles_dict[parent][paramname])
+                    return self.styles_dict[parent][paramname]
+                else:
+                    family = self.auto_styles_dict[stylename]['family']
+                    if 'parent-style-name' in self.styles_dict[parent]:
+                        parent2 = self.styles_dict[parent]['parent-style-name']
+                        #print(parent2)
+                        if paramname in self.styles_dict[parent2]:
+                            #print(self.styles_dict[parent2][paramname])
+                            return self.styles_dict[parent2][paramname]
+                        else:
+                            if family in self.default_styles_dict:
+                                #print("       "+self.default_styles_dict[family]['family'])
+                                if paramname in self.default_styles_dict[family]:
+                                    #print(self.default_styles_dict[family][paramname])
+                                    return self.default_styles_dict[family][paramname]
+                                else:
+                                    #print(self.default_styles_dict[family]['family'])
+                                    return None
+                            else:
+                                return None
+                    else:
+                        if family in self.default_styles_dict:
+                            #print("       " + self.default_styles_dict[family]['family'])
+                            if paramname in self.default_styles_dict[family]:
+                                #print(self.default_styles_dict[family][paramname])
+                                return self.default_styles_dict[family][paramname]
+                            else:
+                                #print(self.default_styles_dict[family]['family'])
+                                return None
+                        else:
+                            return None
+            else:
+                return None
+
+    def style_inherit2(self, stylename, paramname):
+        if paramname in self.styles_dict[stylename]:
+            #print(self.styles_dict[stylename][paramname])
+            return self.styles_dict[stylename][paramname]
+        else:
+            family = self.styles_dict[stylename]['family']
+            if 'parent-style-name' in self.styles_dict[stylename]:
+                parent2 = self.styles_dict[stylename]['parent-style-name']
+                #print(parent2)
+                if paramname in self.styles_dict[parent2]:
+                    #print(self.styles_dict[parent2][paramname])
+                    return self.styles_dict[parent2][paramname]
+                else:
+                    if family in self.default_styles_dict:
+                        #print("       " + self.default_styles_dict[family]['family'])
+                        if paramname in self.default_styles_dict[family]:
+                           # print(self.default_styles_dict[family][paramname])
+                            return self.default_styles_dict[family][paramname]
+                        else:
+                            #print(self.default_styles_dict[family]['family'])
+                            return None
+                    else:
+                        return None
+            else:
+                if family in self.default_styles_dict:
+                    #print("       " + self.default_styles_dict[family]['family'])
+                    if paramname in self.default_styles_dict[family]:
+                        #print(self.default_styles_dict[family][paramname])
+                        return self.default_styles_dict[family][paramname]
+                    else:
+                        #print(self.default_styles_dict[family]['family'])
+                        return None
+                else:
+                    return None
+
+
 
 # Функция описывающая узел (фрагмент текста) и его атрибуты
 def odf_dump_nodes(start_node, level=0):
@@ -517,6 +613,22 @@ def get_nodes_with_style_full4(start_node, list, doc, level=0):
         for n in start_node.childNodes:
             get_nodes_with_style_full4(n, list, doc, level + 1)
     return
+# узлы с прохождением по всем стилям НОВЫЙ
+def get_nodes_with_style_full5(start_node, doc, style_val, level=0):
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                #print(start_node.attributes[k])
+                par_detail = doc.inher_start(doc, start_node.attributes[k], "text-align")
+                if par_detail is None:
+                    par_detail = style_val
+                else:
+                    style_val = par_detail
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), "параметр ", par_detail, "   ", style_val)
+        for n in start_node.childNodes:
+            get_nodes_with_style_full5(n, doc, style_val, level + 1)
+    return
 
 
 if __name__ == '__main__':
@@ -525,7 +637,7 @@ if __name__ == '__main__':
 
     script_path = os.path.abspath(__file__)
     rel_path = "documents/dipbac.odt"
-    doc = DocumentParser(create_path(script_path, rel_path))
+    doc = DocumentParser('C:/Users/lario/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt')
     '''
     print(get_nodes_with_style_full3(doc2.text,"1","2", doc))
     h2 = h.heap()
@@ -598,11 +710,19 @@ if __name__ == '__main__':
     print(doc.has_style_param(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align", "paragraph-properties"))
     print(doc.has_style_param_without_recursion1(const.DEFAULT_PARAM["text-align"], "Оглавление1", "text-align",
                                                  "paragraph-properties"))
-   '''
-    doc2 = load(create_path(script_path, rel_path))
+   
+    
 
 
     print(get_nodes_with_style_full(doc2.text, "", doc))
     h2 = h.heap()
     print(h2)
-    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
+    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")'''
+    #print(Default.get_styles_new(doc))
+    for key in const.DEFAULT_PARAM.keys():
+        print(key)
+    doc.check()
+    doc.style_inherit('P12', "text-align")
+    doc2 = load("C:/Users/lario/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt")
+    print(get_nodes_with_style_full5(doc2.text,doc,"ttt"))
+    print(get_nodes_with_style_full(doc2.text, "", doc))

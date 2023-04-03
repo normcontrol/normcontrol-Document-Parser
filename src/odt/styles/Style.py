@@ -2,6 +2,9 @@ from odf.opendocument import load
 
 
 # Получение стилей
+from src.odt.helpers import const
+
+
 def get_styles_style(self):
     doc = load(self.filePath)
     stylesDict = {}
@@ -235,3 +238,22 @@ def get_image_param(filePath, stylename, paramname):
             for i in ast.attributes.keys():
                 if paramname in i:
                     return ast.attributes[i]
+
+#новое
+# Получение стилей
+def get_styles_style_new(filePath):
+    doc = load(filePath)
+    stylesDict = {}
+    for ast in doc.styles.childNodes:
+        if ast.qname[1] == "style":
+            name = ast.getAttribute('name')
+            style = {}
+            stylesDict[name] = style
+
+            for k in ast.attributes.keys():
+                style[k[1]] = ast.attributes[k]
+            for n in ast.childNodes:
+                for k in n.attributes.keys() :
+                    if k[1] in const.DEFAULT_PARAM.keys():
+                        style[k[1]] = n.attributes[k]
+    return stylesDict

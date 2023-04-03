@@ -2,6 +2,9 @@ from odf.opendocument import load
 
 
 # Получение стилей
+from src.odt.helpers import const
+
+
 def get_styles(self):
     doc = load(self.filePath)
     styles = {}
@@ -125,3 +128,21 @@ def get_styles_automatic_listsText(self):
                         for k in n.attributes.keys():
                             style[n.qname[1] + "/" + k[1]] = n.attributes[k]
     return stylesDict
+
+# новый
+def get_styles_new(filePath):
+    doc = load(filePath)
+    styles = {}
+    for ast in doc.automaticstyles.childNodes:
+
+        name = ast.getAttribute('name')
+        style = {}
+        styles[name] = style
+
+        for k in ast.attributes.keys():
+            style[k[1]] = ast.attributes[k]
+        for n in ast.childNodes:
+            for k in n.attributes.keys():
+                if k[1] in const.DEFAULT_PARAM.keys():
+                    style[k[1]] = n.attributes[k]
+    return styles
