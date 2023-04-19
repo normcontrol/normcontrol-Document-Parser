@@ -5,6 +5,8 @@
     Описание: Модуль хранит класс, содержащий методы для работы со стилями изображений и рамок в документе формата ODT.
 """
 from src.odt.elements.ODTDocument import ODTDocument
+from src.classes.Frame import Frame
+from src.classes.Image import Image
 
 class ImagesParser:
     """
@@ -39,7 +41,7 @@ class ImagesParser:
              Получает параметр стиля по имени и атрибуту среди стилей изображений.
     """
 
-    def get_frame_styles(self, doc: ODTDocument):
+    def get_frame_styles(self, doc: ODTDocument) -> [Frame]:
         """Returns a list of all frame styles with their attributes.
 
         Keyword arguments:
@@ -51,6 +53,7 @@ class ImagesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        frame_objs = []
         elements_keys = list(doc.document.element_dict.keys())
         token = ''
         for key in elements_keys:
@@ -61,16 +64,20 @@ class ImagesParser:
         for ast in objs:
             if ast.qname[1] == "frame":
                 name = ast.getAttribute('name')
-                style = {}
+                style = []
                 for key in ast.attributes.keys():
-                    style[ast.qname[1] + "/" + key[1]] = ast.attributes[key]
+                    style.append(ast.attributes[key])
                 for node in ast.childNodes:
                     for node_keys in node.attributes.keys():
-                        style[node.qname[1] + "/" + node_keys[1]] = node.attributes[node_keys]
+                        style.append(node.attributes[node_keys])
                 styles_dict[name] = style
-        return styles_dict
+        for cur_frame in styles_dict.keys():
+            frame_objs.append(Frame(styles_dict[cur_frame][0], styles_dict[cur_frame][1], styles_dict[cur_frame][2],
+                                    styles_dict[cur_frame][3], styles_dict[cur_frame][4], styles_dict[cur_frame][5],
+                                    styles_dict[cur_frame][6], styles_dict[cur_frame][7], styles_dict[cur_frame][8]))
+        return frame_objs
 
-    def get_image_styles(self, doc: ODTDocument):
+    def get_image_styles(self, doc: ODTDocument) -> [Image]:
         """Returns a list of all image styles with their attributes.
 
         Keyword arguments:
@@ -82,6 +89,7 @@ class ImagesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        image_objs = []
         elements_keys = list(doc.document.element_dict.keys())
         token = ''
         for key in elements_keys:
@@ -92,11 +100,14 @@ class ImagesParser:
         for ast in objs:
             if ast.qname[1] == "image":
                 name = ast.getAttribute('href')
-                style = {}
+                style = []
                 for node in ast.attributes.keys():
-                    style[node] = ast.attributes[node]
+                    style.append(ast.attributes[node])
                 styles_dict[name] = style
-        return styles_dict
+        for cur_image in styles_dict.keys():
+            image_objs.append(Image(styles_dict[cur_image][0], styles_dict[cur_image][1], styles_dict[cur_image][2],
+                                    styles_dict[cur_image][3]))
+        return image_objs
 
     def get_frame_parameter(self, doc: ODTDocument, style_name: str, parameter_name: str):
         """Gets a style parameter by name and attribute among the frame styles.

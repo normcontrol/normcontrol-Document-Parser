@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Frame import Frame
+from src.classes.Frame import Frame
 
 @dataclass
 class Image:
@@ -20,7 +20,6 @@ class Image:
     _image_type: str
     _image_show: str
     _image_actuate: str
-    _image_frame: Frame
 
     @property
     def image_href(self):
@@ -53,11 +52,3 @@ class Image:
     @image_actuate.setter
     def image_actuate(self, value):
         self._image_actuate = value
-
-    @property
-    def image_frame(self):
-        return self._image_frame
-
-    @image_frame.setter
-    def image_frame(self, value):
-        self._image_frame = value

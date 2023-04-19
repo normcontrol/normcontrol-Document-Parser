@@ -4,6 +4,9 @@
     Описание: Модуль хранит класс, содержащий методы для работы со стилями списков в документе формата ODT.
 """
 from src.odt.elements.ODTDocument import ODTDocument
+from src.classes.List import List
+from src.helpers.odt.converters import convert_to_list
+from dacite import from_dict
 
 class ListsParser:
     """
@@ -97,6 +100,7 @@ class ListsParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        list_objs = []
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
             style = {}
@@ -105,7 +109,9 @@ class ListsParser:
                     styles_dict[name] = style
                     for key in node.attributes.keys():
                         style[node.qname[1] + "/" + key[1]] = node.attributes[key]
-        return styles_dict
+        for cur_style in styles_dict:
+            list_objs.append(from_dict(data_class=List, data=convert_to_list(cur_style, styles_dict[cur_style])))
+        return list_objs
 
     def get_list_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among list styles.

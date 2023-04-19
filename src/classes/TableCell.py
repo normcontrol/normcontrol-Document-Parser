@@ -23,14 +23,14 @@ class TableCell:
             or inline-area.
     """
 
-    _cell_name: str
-    _cell_family: str
-    _cell_properties_border: float
-    _cell_properties_writing_mode: str
-    _cell_properties_padding_top: float
-    _cell_properties_padding_left: float
-    _cell_properties_padding_bottom: float
-    _cell_properties_padding_right: float
+    _cell_name: str = None
+    _cell_family: str = None
+    _cell_properties_border: float = None
+    _cell_properties_writing_mode: str = None
+    _cell_properties_padding_top: float = None
+    _cell_properties_padding_left: float = None
+    _cell_properties_padding_bottom: float = None
+    _cell_properties_padding_right: float = None
 
     @property
     def cell_name(self):

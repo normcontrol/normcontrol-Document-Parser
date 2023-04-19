@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import List
 from src.classes.TableCell import TableCell
 from src.classes.TableColumn import TableColumn
 from src.classes.TableRow import TableRow
@@ -28,9 +29,9 @@ class Table:
     _table_properties_width: float = None
     _table_properties_margin_left: float = None
     _table_properties_align: str = None
-    _table_cells: [TableCell] = field(default_factory=list)
-    _table_columns: [TableColumn] = field(default_factory=list)
-    _table_rows: [TableRow] = field(default_factory=list)
+    _table_cells: List[TableCell] = field(default_factory=list)
+    _table_columns: List[TableColumn] = field(default_factory=list)
+    _table_rows: List[TableRow] = field(default_factory=list)
 
     @property
     def table_name(self):

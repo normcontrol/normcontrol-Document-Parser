@@ -3,8 +3,13 @@
     ----------
     Описание: Модуль хранит класс, содержащий методы для работы со стилями таблиц в документе формата ODT.
 """
-from odf.table import Table
 from src.odt.elements.ODTDocument import ODTDocument
+from src.classes.Table import Table
+from src.classes.TableColumn import TableColumn
+from src.classes.TableRow import TableRow
+from src.classes.TableCell import TableCell
+from src.helpers.odt.converters import convert_to_table, convert_to_table_column, convert_to_table_row, convert_to_table_cell
+from dacite import from_dict
 
 class TablesParser:
     """
@@ -94,16 +99,31 @@ class TablesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        table_objs = []
         for ast in doc.document.automaticstyles.childNodes:
             name = ast.getAttribute('name')
-            style = {}
-            styles_dict[name] = style
-            for node in ast.childNodes:
-                if node.qname[1] == "table-properties" or node.qname[1] == "table-column-properties" \
-                        or node.qname[1] == "table-row-properties" or node.qname[1] == "table-cell-properties":
+            if name.count('able') > 0:
+                style = {}
+                styles_dict[name] = style
+                for key in ast.attributes.keys():
+                    style[ast.qname[1] + "/" + key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
                     for key in node.attributes.keys():
                         style[node.qname[1] + "/" + key[1]] = node.attributes[key]
-        return styles_dict
+        for cur_style in styles_dict:
+            if cur_style.count('Column') > 0:
+                table_objs.append(from_dict(data_class=TableColumn,
+                                            data=convert_to_table_column(cur_style, styles_dict[cur_style])))
+            elif cur_style.count('Row') > 0:
+                table_objs.append(from_dict(data_class=TableRow,
+                                            data=convert_to_table_row(cur_style, styles_dict[cur_style])))
+            elif cur_style.count('Cell') > 0:
+                table_objs.append(from_dict(data_class=TableCell,
+                                            data=convert_to_table_cell(cur_style, styles_dict[cur_style])))
+            else:
+                table_objs.append(from_dict(data_class=Table,
+                                            data=convert_to_table(cur_style, styles_dict[cur_style])))
+        return table_objs
 
     def get_table_parameter(self, style, parameter_name: str):
         """Returns a style parameter by attribute among table styles.
@@ -185,19 +205,19 @@ class TablesParser:
                         return node.attributes[key]
         return None
 
-    def get_all_odt_tables_text(self, doc: ODTDocument):
-        """Returns the text of all the tables in the document.
-
-        Keyword arguments:
-            doc - an instance of the ODTDocument class containing the data of the document under study.
-        ----------
-        Возвращает текст всех таблиц документа.
-
-        Аргументы:
-            doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
-        """
-        table_text = []
-        for table in doc.document.getElementsByType(Table):
-            table_text.append(table)
-            print(table)
-        return table_text
+    # def get_all_odt_tables_text(self, doc: ODTDocument):
+    #     """Returns the text of all the tables in the document.
+    #
+    #     Keyword arguments:
+    #         doc - an instance of the ODTDocument class containing the data of the document under study.
+    #     ----------
+    #     Возвращает текст всех таблиц документа.
+    #
+    #     Аргументы:
+    #         doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
+    #     """
+    #     table_text = []
+    #     for table in doc.document.getElementsByType(table.Table):
+    #         table_text.append(table)
+    #         print(table)
+    #     return table_text

@@ -22,3 +22,4 @@ Werkzeug==2.2.2
 lxmlx==2.0.2
 python-docx==0.8.11
 bestconfig==1.3.5
+dacite==1.8.0
