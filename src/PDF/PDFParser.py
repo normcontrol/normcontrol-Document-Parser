@@ -2,12 +2,13 @@ import re
 import pdfplumber
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
+from src.classes.interfaces.InformalParserInterface import InformalParserInterface
 from src.pdf.pdfclasses.Line import Line
 from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
 from src.pdf.pdfclasses.PDFTable import PDFTable
 
 
-class PDFParser:
+class PDFParser(InformalParserInterface):
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
 
@@ -44,14 +45,17 @@ class PDFParser:
         __get_lines(self):
             Extracts all text rows using the object of pdfplumber library.
 
-        __get_all_pictures(self):
+        __get_pictures(self):
             Extracts all images from a pdf document
+
+        __get_formules(self):
+            Extracts all formules from a pdf document
 
         add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
             Adds a paragraph object containing its properties and attributes to the list of structural elements
             of the document
 
-        get_elements(self, lines, spaces, list_of_table):
+        get_all_elements(self, lines, spaces, list_of_table):
             Forms structural elements of the document based on lines, line spacing, tables and pictures
 
         @classmethod
@@ -73,10 +77,11 @@ class PDFParser:
         self.__pdf = pdfplumber.open(path)
         self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
                                              time=self.__pdf.metadata.get('CreationDate'))
-        self._pictures = self.__get_all_pictures()
+        self._pictures = self.__get_pictures()
         self._lines = self.__get_lines()
         self._line_spaces = self.get_space(self._lines)
         self._list_of_table = self.__get_tables()
+        self._paragraph_list = self.__get_paragraphs(self.lines, self.line_spaces, self.list_of_table)
 
     @property
     def path(self):
@@ -257,7 +262,7 @@ class PDFParser:
             i = i + 1
         return spaces
 
-    def add_paragraph_in_document_with_attribute(self, pdf_paragraph: PdfParagraph, paragraph_id: int):
+    def add_special_paragraph_attribute(self, pdf_paragraph: PdfParagraph):
 
         """
 
@@ -266,8 +271,6 @@ class PDFParser:
         :param
             pdf_paragraph: PdfParagraph
                 An object representing a paragraph highlighted by the algorithm
-            paragraph_id: int
-                Id of paragraph
 
         """
         # Highlighting string attributes
@@ -285,9 +288,10 @@ class PDFParser:
         pdf_paragraph.no_change_font_name = no_change_font_name
         pdf_paragraph.no_change_text_size = no_change_text_size
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
-        self.document.content[paragraph_id] = self.get_standart_paragraph(pdf_paragraph)
+        return pdf_paragraph
 
-    def get_elements(self, lines: list, spaces: list, list_of_table: list, list_of_picture: list):
+
+    def get_all_elements(self, lines: list, spaces: list, list_of_table: list, list_of_picture: list):
         """
 
         Generates paragraphs from a list of lines
@@ -347,7 +351,8 @@ class PDFParser:
                     if isinstance(element, PDFTable):
                         self.document.add_content(paragraph_id, element)
                     else:
-                        self.add_paragraph_in_document_with_attribute(element, paragraph_id)
+                        element = self.add_special_paragraph_attribute(element)
+                        self.document.content[paragraph_id] = self.get_standart_paragraph(element)
                     paragraph_id += 1
                 paragraph = PdfParagraph()
                 paragraph.lines.append(lines[i])
@@ -359,6 +364,48 @@ class PDFParser:
                 paragraph.spaces.append(spaces[i])
             i = i + 1
         return self.document
+
+    def __get_paragraphs(self, lines: list, spaces: list, list_of_table: list):
+        i = 1
+        removed_tables = []
+        list_of_table = list_of_table.copy()
+        paragraph_list = []
+
+        paragraph = PdfParagraph()
+        paragraph.lines.append(lines[0])
+        paragraph.spaces.append(spaces[0])
+
+        while i < len(lines):
+            mean = 0
+            j = 0
+            while j < len(paragraph.lines) - 1:
+                mean = mean + paragraph.spaces[j]
+                j = j + 1
+            # Calculating the average value of the line spacing
+            if len(paragraph.lines) - 1 > 1:
+                mean = mean / (len(paragraph.lines) - 1)
+            if mean == 0:
+                mean = spaces[i - 1]
+            if spaces[i - 1] == 0:
+                spaces[i - 1] = mean
+            # Condition for paragraph selection
+            if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 520 or abs(spaces[i - 1] - mean) > 2 or (
+                    len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
+                paragraph.line_spacing = mean
+                element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
+                                                                                     list_of_table)
+                if element is not None and isinstance(element, PdfParagraph):
+                    paragraph_list.append(self.add_special_paragraph_attribute(element))
+                paragraph = PdfParagraph()
+                paragraph.lines.append(lines[i])
+                paragraph.spaces.append(spaces[i])
+            else:
+                paragraph.lines.append(lines[i])
+                if spaces[i] == 0:
+                    spaces[i] = mean
+                paragraph.spaces.append(spaces[i])
+            i = i + 1
+        return paragraph_list
 
     @staticmethod
     def get_standart_paragraph(pdf_paragraph: PdfParagraph):
@@ -433,7 +480,7 @@ class PDFParser:
                 return table, removed_tables, list_of_table
         return pdf_paragraph, removed_tables, list_of_table
 
-    def __get_all_pictures(self):
+    def __get_pictures(self):
         """
 
         Extracts all images from a pdf document
@@ -448,3 +495,6 @@ class PDFParser:
             for image in page.images:
                 pictures.append(image)
         return pictures
+
+    def __get_formulas(self):
+        print("In progress")
