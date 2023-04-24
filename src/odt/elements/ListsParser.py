@@ -53,6 +53,7 @@ class ListsParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        list_objs = []
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
@@ -62,7 +63,9 @@ class ListsParser:
                     if "list" in node.qname[1]:
                         for key in node.attributes.keys():
                             style[node.qname[1] + "/" + key[1]] = node.attributes[key]
-        return styles_dict
+        for cur_style in styles_dict:
+            list_objs.append(from_dict(data_class=List, data=convert_to_list(cur_style, styles_dict[cur_style])))
+        return list_objs
 
     def get_lists_text_styles(self, doc: ODTDocument):
         """Returns a list of all text styles with their attributes from the lists styles of document.
@@ -76,6 +79,7 @@ class ListsParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
         """
         styles_dict = {}
+        list_objs = []
         for ast in doc.document.styles.childNodes:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
@@ -86,7 +90,9 @@ class ListsParser:
                         if node.qname[1] == "text-properties":
                             for key in node.attributes.keys():
                                 style[node.qname[1] + "/" + key[1]] = node.attributes[key]
-        return styles_dict
+        for cur_style in styles_dict:
+            list_objs.append(from_dict(data_class=List, data=convert_to_list(cur_style, styles_dict[cur_style])))
+        return list_objs
 
     def get_list_styles_from_automatic_styles(self, doc: ODTDocument):
         """Returns a list of all list styles from automatic document styles with their attributes.

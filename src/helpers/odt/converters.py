@@ -1,3 +1,9 @@
+from src.classes.Table import Table
+from src.classes.TableColumn import TableColumn
+from src.classes.TableRow import TableRow
+from src.classes.TableCell import TableCell
+from dacite import from_dict
+
 def convert_to_list(list_name: str, list_data: dict):
     converted_data = {}
     data_keys = list(list_data.keys())
@@ -37,6 +43,23 @@ def convert_to_table(table_name: str, table_data: dict):
             case 'align':
                 converted_data.update({'_table_properties_align': table_data[element]})
     return converted_data
+
+def get_tables_objects(tables_data: dict):
+    table_objs = []
+    for cur_style in tables_data:
+        if cur_style.count('Column') > 0:
+            table_objs.append(from_dict(data_class=TableColumn,
+                                        data=convert_to_table_column(cur_style, tables_data[cur_style])))
+        elif cur_style.count('Row') > 0:
+            table_objs.append(from_dict(data_class=TableRow,
+                                        data=convert_to_table_row(cur_style, tables_data[cur_style])))
+        elif cur_style.count('Cell') > 0:
+            table_objs.append(from_dict(data_class=TableCell,
+                                        data=convert_to_table_cell(cur_style, tables_data[cur_style])))
+        else:
+            table_objs.append(from_dict(data_class=Table,
+                                        data=convert_to_table(cur_style, tables_data[cur_style])))
+    return table_objs
 
 def convert_to_table_column(column_name: str, column_data: dict):
     converted_data = {}
