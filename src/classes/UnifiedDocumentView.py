@@ -83,12 +83,12 @@ class UnifiedDocumentView:
         for attribute in dir(self):
             if attribute in ("time", "owner"):
                 json_string += "\"" + attribute + "\": \"" + str(getattr(self, attribute)) + "\", "
-        json_string += "\"paragraphs\": {"
+        json_string += "\"content\": {"
         for i, p in self.content.items():
             if p.__class__ == Paragraph:
                 json_string += "\"" + str(i) + "\": {\""
                 for attribute in dir(p):
-                    if not attribute.startswith('_') and attribute in list_of_attr:
+                    if attribute in list_of_attr:
                         json_string += attribute + "\": \"" + str(getattr(p, attribute)) + "\",\""
                 json_str_len = len(json_string)
                 json_string = json_string[:json_str_len - 2] + "}, "

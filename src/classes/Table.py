@@ -1,9 +1,8 @@
-
-from dataclasses import dataclass
-
+tabfrom dataclasses import dataclass
+from src.classes.superclass.Element import Element
 
 @dataclass
-class Table:
+class Table(Element):
     """
     Description: Table class for ODT document.
 

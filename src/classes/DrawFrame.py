@@ -1,9 +1,9 @@
-
 from dataclasses import dataclass
+from src.classes.superclass.Element import Element
 
 
 @dataclass
-class DrawFrame:
+class DrawFrame(Element):
     """
     Description: Draw frame class for ODT document.
 
