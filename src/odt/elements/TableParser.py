@@ -6,7 +6,7 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.helpers.odt.converters import get_tables_objects
 
-class TablesParser:
+class TableParser:
     """
         Description: A class containing methods for working with tables styles in an ODT document.
 
@@ -28,9 +28,6 @@ class TablesParser:
 
             get_table_cell_parameter(style, parameter_name: str) -
                 Returns a style parameter by attribute among table cells styles.
-
-            get_all_odt_tables_text(doc: ODTDocument) -
-                Returns the text of all the tables in the document.
         ----------
         Описание: Класс, содержащий методы для работы со стилями таблиц в документе формата ODT.
 
@@ -52,9 +49,6 @@ class TablesParser:
 
             get_table_cell_parameter(style, parameter_name: str) -
                 Возвращает параметр стиля по атрибуту среди стилей ячеек таблиц.
-
-            get_all_odt_tables_text(doc: ODTDocument) -
-                Возвращает текст всех таблиц документа.
         """
 
     def get_table_styles(self, doc: ODTDocument):

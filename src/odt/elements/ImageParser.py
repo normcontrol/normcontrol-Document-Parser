@@ -8,7 +8,7 @@ from src.odt.elements.ODTDocument import ODTDocument
 from src.classes.Frame import Frame
 from src.classes.Image import Image
 
-class ImagesParser:
+class ImageParser:
     """
     Description: A class containing methods for working with image and frame styles in an ODT document.
 

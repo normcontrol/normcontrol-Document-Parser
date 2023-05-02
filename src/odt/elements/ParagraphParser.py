@@ -5,7 +5,7 @@
 """
 from src.odt.elements.ODTDocument import ODTDocument
 
-class ParagraphsParser:
+class ParagraphParser:
     """
     Description: A class containing methods for working with paragraphs styles in an ODT document.
 

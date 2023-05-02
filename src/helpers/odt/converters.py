@@ -5,6 +5,18 @@ from src.classes.TableCell import TableCell
 from dacite import from_dict
 
 def convert_to_list(list_name: str, list_data: dict):
+    """Converts the list data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        list_name: str - name of the list style;
+        list_data: dict - list style data.
+    ----------
+    Конвертирует данные списка в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        list_name: str - название стиля списка;
+        list_data: dict - данные стиля списка.
+    """
     converted_data = {}
     data_keys = list(list_data.keys())
     if 'number' in data_keys[0]:
@@ -26,6 +38,18 @@ def convert_to_list(list_name: str, list_data: dict):
     return converted_data
 
 def convert_to_table(table_name: str, table_data: dict):
+    """Converts the table data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        table_name: str - name of the table style;
+        table_data: dict - table style data.
+    ----------
+    Конвертирует данные таблицы в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        table_name: str - название стиля таблицы;
+        table_data: dict - данные стиля таблицы.
+    """
     converted_data = {}
     data_keys = list(table_data.keys())
     converted_data.update({'_table_name': table_name})
@@ -45,6 +69,16 @@ def convert_to_table(table_name: str, table_data: dict):
     return converted_data
 
 def get_tables_objects(tables_data: dict):
+    """Returns a list of initialized table objects from the dictionary with prepared data.
+
+    Keyword arguments:
+        tables_data: dict - table cell style data.
+    ----------
+    Возвращает список инициализированных табличных объектов из словаря с подготовленными данными.
+
+    Аргументы:
+        tables_data: dict - данные стиля ячейки таблицы.
+    """
     table_objs = []
     for cur_style in tables_data:
         if cur_style.count('Column') > 0:
@@ -62,6 +96,18 @@ def get_tables_objects(tables_data: dict):
     return table_objs
 
 def convert_to_table_column(column_name: str, column_data: dict):
+    """Converts the table column data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        column_name: str - name of the table column style;
+        column_data: dict - table column style data.
+    ----------
+    Конвертирует данные столбца таблицы в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        column_name: str - название стиля столбца таблицы;
+        column_data: dict - данные стиля столбца таблицы.
+    """
     converted_data = {}
     data_keys = list(column_data.keys())
     converted_data.update({'_column_name': column_name})
@@ -77,6 +123,18 @@ def convert_to_table_column(column_name: str, column_data: dict):
     return converted_data
 
 def convert_to_table_row(row_name: str, row_data: dict):
+    """Converts the table row data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        row_name: str - name of the table row style;
+        row_data: dict - table row style data.
+    ----------
+    Конвертирует данные строки таблицы в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        row_name: str - название стиля строки таблицы;
+        row_data: dict - данные стиля строки таблицы.
+    """
     converted_data = {}
     data_keys = list(row_data.keys())
     converted_data.update({'_row_name': row_name})
@@ -92,6 +150,18 @@ def convert_to_table_row(row_name: str, row_data: dict):
     return converted_data
 
 def convert_to_table_cell(cell_name: str, cell_data: dict):
+    """Converts the table cell data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        cell_name: str - name of the table cell style;
+        cell_data: dict - table cell style data.
+    ----------
+    Конвертирует данные ячейки таблицы в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        cell_name: str - название стиля ячейки таблицы;
+        cell_data: dict - данные стиля ячейки таблицы.
+    """
     converted_data = {}
     data_keys = list(cell_data.keys())
     converted_data.update({'_cell_name': cell_name})
