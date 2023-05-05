@@ -1,8 +1,11 @@
-tabfrom dataclasses import dataclass
-from src.classes.superclass.Element import Element
+from dataclasses import dataclass
+from typing import Any
+
+from src.classes.superclass.StructuralElement import StructuralElement
+
 
 @dataclass
-class Table(Element):
+class Table(StructuralElement):
     """
     Description: Table class for ODT document.
 
@@ -16,58 +19,67 @@ class Table(Element):
         _table_properties_margin_left - attribute sets the left margin of a table.
         _table_properties_align - attribute specifies the horizontal alignment of a table (table:align).
     """
-
-    _table_name: str
-    _table_family: str
-    _table_master_page_name: str
-    _table_properties_width: float
-    _table_properties_margin_left: float
-    _table_properties_align: str
-
-    @property
-    def table_name(self):
-        return self._table_name
-
-    @table_name.setter
-    def table_name(self, value):
-        self._table_name = value
+    _inner_text: list
+    _master_page_number: int
+    _master_page: Any
+    _family: str = None
+    _width: float = None
+    _align: str = None
+    _bbox: tuple[int | float, int | float, int | float, int | float] = None
 
     @property
-    def table_family(self):
-        return self._table_family
+    def inner_text(self):
+        return self._inner_text
 
-    @table_family.setter
-    def table_family(self, value):
-        self._table_family = value
-
-    @property
-    def table_master_page_name(self):
-        return self._table_master_page_name
-
-    @table_master_page_name.setter
-    def table_master_page_name(self, value):
-        self._table_master_page_name = value
+    @inner_text.setter
+    def inner_text(self, value):
+        self._inner_text = value
 
     @property
-    def table_properties_width(self):
-        return self._table_properties_width
+    def master_page(self):
+        return self._master_page
 
-    @table_properties_width.setter
-    def table_properties_width(self, value):
-        self._table_properties_width = value
-
-    @property
-    def table_properties_margin_left(self):
-        return self._table_properties_margin_left
-
-    @table_properties_margin_left.setter
-    def table_properties_margin_left(self, value):
-        self._table_properties_margin_left = value
+    @master_page.setter
+    def master_page(self, value):
+        self._master_page = value
 
     @property
-    def table_properties_align(self):
-        return self._table_properties_align
+    def bbox(self):
+        return self._bbox
 
-    @table_properties_align.setter
-    def table_properties_align(self, value):
-        self._table_properties_align = value
+    @bbox.setter
+    def bbox(self, value):
+        self._bbox = value
+
+    @property
+    def family(self):
+        return self._family
+
+    @family.setter
+    def family(self, value):
+        self._family = value
+
+    @property
+    def master_page_number(self):
+        return self._master_page_number
+
+    @master_page_number.setter
+    def master_page_number(self, value):
+        self._master_page_number = value
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+
+
+    @property
+    def align(self):
+        return self._align
+
+    @align.setter
+    def align(self, value):
+        self._align = value

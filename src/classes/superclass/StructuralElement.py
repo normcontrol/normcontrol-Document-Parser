@@ -3,9 +3,36 @@ from src.helpers.enums.AlignmentEnum import AlignmentEnum
 
 
 @dataclass(kw_only=True)
-class Element:
-    _indent: float
-    _line_spacing: float
+class StructuralElement:
+    """
+    Description: an inified class representing a common data of structural element of text document
+
+    Attributes:
+    ----------
+        _indent: float
+                The attribute specifies indent from the red line
+        _alignment: AlignmentEnum
+                The attribute specifies text alignment
+        _line_spacing: float
+                The attribute specifies paragraph line spacing
+        _mrgrg: float
+                The attribute specifies indent from the right side of the page
+        _mrglf: float
+                The attribute specifies indent from the left side of the page
+        _mrgtop: float
+                The attribute specifies indent from the top side of the page
+        _mrgbtm: float
+                The attribute specifies indent from the bottom side of the page
+        _page_breake_before: bool
+                The attribute specifies start of a new page
+        _keep_lines_together: bool
+                The attribute specifies keeping the line style together
+        _keep_with_next: bool
+                The attribute specifies keeping paragraphs together
+    """
+
+    _indent: float = None
+    _line_spacing: float = None
     _alignment: AlignmentEnum = None
     _mrgrg: float = None
     _mrglf: float = None
@@ -90,3 +117,11 @@ class Element:
     @mrgbtm.setter
     def mrgbtm(self, mrgbtm):
         self._mrgbtm = mrgbtm
+
+    @property
+    def page_breake_before(self):
+        return self._page_breake_before
+
+    @page_breake_before.setter
+    def page_breake_before(self, page_breake_before):
+        self._page_breake_before = page_breake_before

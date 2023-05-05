@@ -1,12 +1,12 @@
 import re
 from dataclasses import dataclass, field
-from src.classes.superclass.Element import Element
+from .superclass.StructuralElement import StructuralElement
 
 
-@dataclass
-class Paragraph(Element):
+@dataclass(kw_only=True)
+class Paragraph(StructuralElement):
     """
-    Description: a inified class representing a text paragraph, its properties? styles and content
+    Description: an inified class representing a text paragraph, its properties? styles and content
 
     Attributes:
     ----------
@@ -24,20 +24,6 @@ class Paragraph(Element):
                 The attribute specifies last paragraph character
             _first_key: str
                 The attribute specifies first paragraph character
-            _alignment: AlignmentEnum
-                The attribute specifies text alignment
-            _indent: float
-                The attribute specifies indent from the red line
-            _mrgrg: float
-                The attribute specifies indent from the right side of the page
-            _mrglf: float
-                The attribute specifies indent from the left side of the page
-            _line_spacing: float
-                The attribute specifies paragraph line spacing
-            _mrgtop: float
-                The attribute specifies attribute specifies indent from the top side of the page
-            _mrgbtm: float
-                The attribute specifies attribute specifies indent from the bottom side of the page
             _font_name: str
                 The attribute specifies paragraph font
             _bold: bool
@@ -54,12 +40,6 @@ class Paragraph(Element):
                 The attribute specifies text size
             _color_text: str
                 The attribute specifies text color in HEX
-            _page_breake_before: bool
-                The attribute specifies start of a new page
-            _keep_lines_together: bool
-                The attribute specifies keeping the line style together
-            _keep_with_next: bool
-                The attribute specifies keeping paragraphs together
             _outline_level: str
                 The attribute specifies paragraph type
             _no_change_fontname: bool
@@ -218,20 +198,20 @@ class Paragraph(Element):
         return ''
 
     @property
-    def text(self):
-        return self._text
-
-    @text.setter
-    def text(self, text):
-        self._text = text
-
-    @property
     def font_name(self):
         return self._font_name
 
     @font_name.setter
     def font_name(self, font_name):
         self._font_name = font_name
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, text):
+        self._text = text
 
     @property
     def color_text(self):

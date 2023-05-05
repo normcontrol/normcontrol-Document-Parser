@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
-from src.classes.superclass.Element import Element
+from src.classes.superclass.StructuralElement import StructuralElement
 
 
 class InformalParserInterface(ABC):
@@ -9,15 +8,15 @@ class InformalParserInterface(ABC):
         pass
 
     @abstractmethod
-    def __get_tables(self) -> list[Element]:
+    def get_tables(self) -> list[StructuralElement]:
         pass
 
     @abstractmethod
-    def __get_pictures(self) -> list[Element]:
+    def get_pictures(self) -> list[StructuralElement]:
         pass
 
     @abstractmethod
-    def __get_formulas(self) -> list[Element]:
+    def get_formulas(self) -> list[StructuralElement]:
         pass
 
     @abstractmethod
@@ -25,9 +24,9 @@ class InformalParserInterface(ABC):
         pass
 
     @abstractmethod
-    def __get_paragraphs(self) -> list[Element]:
+    def get_paragraphs(self) -> list[StructuralElement]:
         pass
 
     @abstractmethod
-    def __get_lists(self) -> list[Element]:
+    def get_lists(self) -> list[StructuralElement]:
         pass
