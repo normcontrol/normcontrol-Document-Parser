@@ -10,12 +10,13 @@ class TestODTImage(unittest.TestCase):
         self.doc = ODTDocument(self.doc_path)
         self.odt_parser = ODTParser()
 
-    def test_extract_graphical_objects(self):
+    def test_get_image_styles(self):
         images_styles = self.odt_parser.image_parser.get_image_styles(self.doc)
         self.assertEqual(len(images_styles), 8)
         self.assertEqual(images_styles[0], Image(_image_href='media/image1.jpeg', _image_type='simple',
                                                  _image_show='embed', _image_actuate='onLoad'))
 
+    def test_get_frame_styles(self):
         frames_styles = self.odt_parser.image_parser.get_frame_styles(self.doc)
         self.assertEqual(len(frames_styles), 8)
         self.assertEqual(frames_styles[0], Frame(_frame_style_name='a0', _frame_name='Рисунок_20_13',
@@ -23,6 +24,12 @@ class TestODTImage(unittest.TestCase):
                                                  _frame_width='5.34515in', _frame_height='3.19999in',
                                                  _frame_rel_width='scale', _frame_rel_height='scale'))
 
-    def test_extract_graphical_parameters(self):
-        self.assertEqual(self.odt_parser.image_parser.get_image_parameter(self.doc, 'image1', 'actuate'), "onLoad")
-        self.assertEqual(self.odt_parser.image_parser.get_frame_parameter(self.doc, 'Рисунок_20_13', 'width'), "5.34515in")
+    def test_get_image_parameter(self):
+        self.assertEqual(self.odt_parser.image_parser.get_image_parameter(self.doc, 'image1', 'actuate'), 'onLoad')
+        self.assertEqual(self.odt_parser.image_parser.get_image_parameter(self.doc, 'image1', 'type'), 'simple')
+
+    def test_get_frame_parameter(self):
+        self.assertEqual(self.odt_parser.image_parser.get_frame_parameter(self.doc, 'Рисунок_20_13', 'width'),
+                         '5.34515in')
+        self.assertEqual(self.odt_parser.image_parser.get_frame_parameter(self.doc, 'Рисунок_20_13', 'height'),
+                         '3.19999in')

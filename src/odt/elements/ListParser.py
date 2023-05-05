@@ -54,12 +54,13 @@ class ListParser:
                 style = {}
                 if 'Абзацсписка' in name or 'WW' in name or 'LF' in name:
                     styles_dict[name] = style
+                    style['name'] = name
                     for node in ast.childNodes:
                         if node.qname[1] == "text-properties":
                             for key in node.attributes.keys():
-                                style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+                                style[key[1]] = node.attributes[key]
         for cur_style in styles_dict:
-            list_objs.append(from_dict(data_class=List, data=convert_to_list(cur_style, styles_dict[cur_style])))
+            list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
         return list_objs
 
     def get_list_styles_from_automatic_styles(self, doc: ODTDocument):
@@ -81,10 +82,11 @@ class ListParser:
             for node in ast.childNodes:
                 if "list-level" in node.qname[1]:
                     styles_dict[name] = style
+                    style['name'] = name
                     for key in node.attributes.keys():
-                        style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+                        style[key[1]] = node.attributes[key]
         for cur_style in styles_dict:
-            list_objs.append(from_dict(data_class=List, data=convert_to_list(cur_style, styles_dict[cur_style])))
+            list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
         return list_objs
 
     def get_list_parameter(self, style, parameter_name: str):

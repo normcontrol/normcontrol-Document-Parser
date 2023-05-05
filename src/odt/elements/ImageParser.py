@@ -72,9 +72,7 @@ class ImageParser:
                         style.append(node.attributes[node_keys])
                 styles_dict[name] = style
         for cur_frame in styles_dict.keys():
-            frame_objs.append(Frame(styles_dict[cur_frame][0], styles_dict[cur_frame][1], styles_dict[cur_frame][2],
-                                    styles_dict[cur_frame][3], styles_dict[cur_frame][4], styles_dict[cur_frame][5],
-                                    styles_dict[cur_frame][6], styles_dict[cur_frame][7], styles_dict[cur_frame][8]))
+            frame_objs.append(Frame(*[styles_dict[cur_frame][i] for i in range(9)]))
         return frame_objs
 
     def get_image_styles(self, doc: ODTDocument) -> [Image]:
@@ -105,8 +103,7 @@ class ImageParser:
                     style.append(ast.attributes[node])
                 styles_dict[name] = style
         for cur_image in styles_dict.keys():
-            image_objs.append(Image(styles_dict[cur_image][0], styles_dict[cur_image][1], styles_dict[cur_image][2],
-                                    styles_dict[cur_image][3]))
+            image_objs.append(Image(*[styles_dict[cur_image][i] for i in range(4)]))
         return image_objs
 
     def get_frame_parameter(self, doc: ODTDocument, style_name: str, parameter_name: str):

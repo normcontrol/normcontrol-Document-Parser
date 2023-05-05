@@ -67,13 +67,13 @@ class TableParser:
             if ast.qname[1] == "style":
                 name = ast.getAttribute('name')
                 style = {}
+                style['name'] = name
                 styles_dict[name] = style
-
                 for node in ast.childNodes:
                     if node.qname[1] == "table-properties" or node.qname[1] == "table-column-properties" \
                             or node.qname[1] == "table-row-properties" or node.qname[1] == "table-cell-properties":
                         for key in node.attributes.keys():
-                            style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+                            style[key[1]] = node.attributes[key]
         return get_tables_objects(styles_dict)
 
     def get_automatic_table_styles(self, doc: ODTDocument):
@@ -92,12 +92,13 @@ class TableParser:
             name = ast.getAttribute('name')
             if name.count('able') > 0:
                 style = {}
+                style['name'] = name
                 styles_dict[name] = style
                 for key in ast.attributes.keys():
-                    style[ast.qname[1] + "/" + key[1]] = ast.attributes[key]
+                    style[key[1]] = ast.attributes[key]
                 for node in ast.childNodes:
                     for key in node.attributes.keys():
-                        style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+                        style[key[1]] = node.attributes[key]
         return get_tables_objects(styles_dict)
 
     def get_table_parameter(self, style, parameter_name: str):
