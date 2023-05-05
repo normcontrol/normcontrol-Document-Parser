@@ -1,14 +1,20 @@
 import re
+from abc import ABC
+
 import pdfplumber
+
+from src.classes.Table import Table
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
 from src.classes.interfaces.InformalParserInterface import InformalParserInterface
+from src.classes.superclass.StructuralElement import StructuralElement
+from src.helpers.errors.errors import EmptyPathException
 from src.pdf.pdfclasses.Line import Line
 from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
 from src.pdf.pdfclasses.PDFTable import PDFTable
 
 
-class PDFParser(InformalParserInterface):
+class PDFParser(InformalParserInterface, ABC):
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
 
@@ -37,26 +43,35 @@ class PDFParser(InformalParserInterface):
         _pictures:list
             An attribute representing a list of all pictures in file
 
+        _paragraph_list:
+             An attribute representing a list of all paragraphs in file
+
     Methods:
     ----------
-        __get_tables(self):
+        get_tables(self):
             Extracts all pdf tables using the object of pdfplumber library.
 
-        __get_lines(self):
+        get_lines(self):
             Extracts all text rows using the object of pdfplumber library.
 
-        __get_pictures(self):
+        get_pictures(self):
             Extracts all images from a pdf document
 
-        __get_formules(self):
+        get_formules(self):
             Extracts all formules from a pdf document
 
-        add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
-            Adds a paragraph object containing its properties and attributes to the list of structural elements
-            of the document
+        get_lists(self):
+            Extracts all lists from a pdf document
+
+        @staticmethod
+        add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
+            Calculates and adds special attributes to a paragraph
 
         get_all_elements(self, lines, spaces, list_of_table):
             Forms structural elements of the document based on lines, line spacing, tables and pictures
+
+        get_paragraphs(self, lines, spaces, list_of_table):
+            Forms paragraphs of the document based on lines, line spacing and tables
 
         @classmethod
         get_space(lines):
@@ -73,15 +88,21 @@ class PDFParser(InformalParserInterface):
     """
 
     def __init__(self, path):
-        self._path = path
-        self.__pdf = pdfplumber.open(path)
-        self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
-                                             time=self.__pdf.metadata.get('CreationDate'))
-        self._pictures = self.__get_pictures()
-        self._lines = self.__get_lines()
-        self._line_spaces = self.get_space(self._lines)
-        self._list_of_table = self.__get_tables()
-        self._paragraph_list = self.__get_paragraphs(self.lines, self.line_spaces, self.list_of_table)
+        try:
+            if len(path) == 0:
+                raise EmptyPathException('Path is empty')
+            self._path = path
+            self.__pdf = pdfplumber.open(path)
+            self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
+                                                 time=self.__pdf.metadata.get('CreationDate'))
+            self._pictures = self.get_pictures()
+            self._lines = self.get_lines()
+            self._line_spaces = self.get_space(self._lines)
+            self._list_of_table = self.get_tables()
+            self._paragraph_list = self.get_paragraphs(self.lines, self.line_spaces, self.list_of_table)
+        except EmptyPathException as e:
+            print(e)
+
 
     @property
     def path(self):
@@ -131,7 +152,15 @@ class PDFParser(InformalParserInterface):
     def list_of_table(self, list_of_table: list):
         self._list_of_table = list_of_table
 
-    def __get_tables(self):
+    @property
+    def paragraph_list(self):
+        return self._paragraph_list
+
+    @paragraph_list.setter
+    def paragraph_list(self, value: str):
+        self._paragraph_list = value
+
+    def get_tables(self) -> list[StructuralElement]:
         """
 
         Extracts all table from a pdf document
@@ -148,12 +177,14 @@ class PDFParser(InformalParserInterface):
             tables = page.find_tables()
             tables_text = page.extract_tables()
             for number_of_table, table in enumerate(tables):
-                current_table = PDFTable(table)
-                current_table.addText(tables_text[number_of_table])
-                list_of_table.append(current_table)
+                list_of_table.append(Table(_inner_text=tables_text[number_of_table],
+                                           _master_page=table.page,
+                                           _master_page_number=table.page.page_number,
+                                           _width=table.bbox[2]-table.bbox[0],
+                                           _bbox=table.bbox))
         return list_of_table
 
-    def __get_lines(self):
+    def get_lines(self) -> list:
 
         """
 
@@ -262,7 +293,8 @@ class PDFParser(InformalParserInterface):
             i = i + 1
         return spaces
 
-    def add_special_paragraph_attribute(self, pdf_paragraph: PdfParagraph):
+    @staticmethod
+    def add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
 
         """
 
@@ -271,6 +303,8 @@ class PDFParser(InformalParserInterface):
         :param
             pdf_paragraph: PdfParagraph
                 An object representing a paragraph highlighted by the algorithm
+
+        :return pdf_paragraph: PdfParagraph
 
         """
         # Highlighting string attributes
@@ -290,8 +324,8 @@ class PDFParser(InformalParserInterface):
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
         return pdf_paragraph
 
-
-    def get_all_elements(self, lines: list, spaces: list, list_of_table: list, list_of_picture: list):
+    def get_all_elements(self, lines: list, spaces: list, list_of_table: list,
+                         list_of_picture: list) -> UnifiedDocumentView:
         """
 
         Generates paragraphs from a list of lines
@@ -304,6 +338,9 @@ class PDFParser(InformalParserInterface):
 
             list_of_table: list
                 List of all document tables
+
+            list_of_picture: list
+                List of all document pictures
 
         :return
             document: UnifiedDocumentView
@@ -348,7 +385,7 @@ class PDFParser(InformalParserInterface):
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None:
-                    if isinstance(element, PDFTable):
+                    if isinstance(element, Table):
                         self.document.add_content(paragraph_id, element)
                     else:
                         element = self.add_special_paragraph_attribute(element)
@@ -365,7 +402,26 @@ class PDFParser(InformalParserInterface):
             i = i + 1
         return self.document
 
-    def __get_paragraphs(self, lines: list, spaces: list, list_of_table: list):
+    def get_paragraphs(self, lines: list, spaces: list, list_of_table: list) -> list[StructuralElement]:
+        """
+
+        Generates paragraphs from a list of lines
+        :param
+            lines: list
+                List of all document lines
+
+            spaces: list
+                List of calculated line spacing
+
+            list_of_table: list
+                List of all document tables
+
+        :return
+            paragraph_list: list
+                List of all paragraphs in the document
+
+        """
+
         i = 1
         removed_tables = []
         list_of_table = list_of_table.copy()
@@ -395,7 +451,7 @@ class PDFParser(InformalParserInterface):
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None and isinstance(element, PdfParagraph):
-                    paragraph_list.append(self.add_special_paragraph_attribute(element))
+                    paragraph_list.append(self.get_standart_paragraph(self.add_special_paragraph_attribute(element)))
                 paragraph = PdfParagraph()
                 paragraph.lines.append(lines[i])
                 paragraph.spaces.append(spaces[i])
@@ -466,21 +522,21 @@ class PDFParser(InformalParserInterface):
         """
         # Checking that this paragraph is tabular and this table has already been added
         for remove_table in removed_tables:
-            if (remove_table.table.page.bbox[3] - remove_table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
-                    (remove_table.table.page.bbox[3] - remove_table.table.bbox[3]) and \
-                    remove_table.table.page.page_number == pdf_paragraph.lines[0].number_of_page:
+            if (remove_table.master_page.bbox[3] - remove_table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
+                    (remove_table.master_page.bbox[3] - remove_table.bbox[3]) and \
+                    remove_table.master_page_number == pdf_paragraph.lines[0].number_of_page:
                 return None, removed_tables, list_of_table
         # Checking that this paragraph is tabular and adding a table if it has not been completed yet
         for table in list_of_table:
-            if (table.table.page.bbox[3] - table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
-                    table.table.page.bbox[3] - table.table.bbox[3]) and table.table.page.page_number == \
+            if (table.master_page.bbox[3] - table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
+                    table.master_page.bbox[3] - table.bbox[3]) and table.master_page_number == \
                     pdf_paragraph.lines[0].number_of_page:
                 removed_tables.append(table)
                 list_of_table.remove(table)
                 return table, removed_tables, list_of_table
         return pdf_paragraph, removed_tables, list_of_table
 
-    def __get_pictures(self):
+    def get_pictures(self) -> list:
         """
 
         Extracts all images from a pdf document
@@ -496,5 +552,28 @@ class PDFParser(InformalParserInterface):
                 pictures.append(image)
         return pictures
 
-    def __get_formulas(self):
+    def get_formulas(self):
+        """
+
+        Extracts all formulas from a pdf document
+        :return
+            formulas: list
+                The list of formulas in PDF file
+
+        """
+
         print("In progress")
+        pass
+
+    def get_lists(self):
+        """
+
+        Extracts all formulas from a pdf document
+        :return
+            lists: list
+                The list of lists in PDF file
+
+        """
+
+        print("In progress")
+        pass
