@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Any
 from src.classes.TableCell import TableCell
-from src.classes.TableColumn import TableColumn
 from src.classes.TableRow import TableRow
 from src.classes.superclass.StructuralElement import StructuralElement
 
@@ -13,27 +12,25 @@ class Table(StructuralElement):
 
     Attributes:
         _table_name - attribute specifies the name of a table,
-        _table_family - attribute specifies the family of a style (style:family),
-        _table_master_page_name - attribute specifies the name of element that contains the content
+        _family - attribute specifies the family of a style (style:family),
+        _master_page_name - attribute specifies the name of element that contains the content
             of headers and footers,
-        _table_properties_width - attribute specifies the width of a table relative to the width of
+        _master_page - attribute specifies the element that contains the content
+            of headers and footers,
+        _width - attribute specifies the width of a table relative to the width of
             the area that the table is in (style:table-properties),
-        _table_properties_margin_left - attribute sets the left margin of a table,
-        _table_properties_align - attribute specifies the horizontal alignment of a table (table:align),
-        _table_cells - a list containing table cell objects,
-        _table_columns - a list containing table colum objects,
-        _table_rows - a list containing table row objects.
+        _cells - a list containing table cell objects,
+        _columns - a list containing table colum objects,
+        _rows - a list containing table row objects.
     """
-    _inner_text: list
-    _master_page_number: int
-    _master_page: Any
+    _inner_text: list = None
+    _master_page_number: int = None
+    _master_page: Any = None
     _family: str = None
     _width: float = None
-    _align: str = None
     _bbox: tuple[int | float, int | float, int | float, int | float] = None
-    _table_cells: List[TableCell] = field(default_factory=list)
-    _table_columns: List[TableColumn] = field(default_factory=list)
-    _table_rows: List[TableRow] = field(default_factory=list)
+    _cells: List[TableCell] = field(default_factory=list)
+    _rows: List[TableRow] = field(default_factory=list)
 
     @property
     def inner_text(self):
@@ -83,35 +80,18 @@ class Table(StructuralElement):
     def width(self, value):
         self._width = value
 
-
-    @property
-    def align(self):
-        return self._align
-
-    @align.setter
-    def align(self, value):
-        self._align = value
-
     @property
     def table_cells(self):
-        return self._table_cells
+        return self._cells
 
     @table_cells.setter
     def table_cells(self, value):
-        self._table_cells = value
-
-    @property
-    def table_columns(self):
-        return self._table_columns
-
-    @table_columns.setter
-    def table_columns(self, values):
-        self._table_columns = values
+        self._cells = value
 
     @property
     def table_rows(self):
-        return self._table_rows
+        return self._rows
 
     @table_rows.setter
     def table_rows(self, value):
-        self._table_rows = value
+        self._rows = value

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from src.classes.Image import Image
 from src.classes.superclass.StructuralElement import StructuralElement
+
 
 @dataclass
 class Frame(StructuralElement):
@@ -7,95 +9,97 @@ class Frame(StructuralElement):
     Description: Frame class for ODT document.
 
     Attributes:
-        _frame_style_name - attribute specifies the style of current frame,
-        _frame_name - attribute specifies the name of current frame,
-        _frame_anchor_type - attribute specifies how a frame is bound to a text document,
-        _frame_x - attribute specifies the position of the frame on the X axis,
-        _frame_y - attribute specifies the position of the frame on the Y axis,
-        _frame_width - attribute specifies the width of the frame,
-        _frame_height - attribute specifies the height of the frame,
-        _frame_rel_width - attribute specifies height of a drawing object as a relative value within a frame,
-        _frame_rel_height - attribute specifies the width of a drawing object as a relative value within a frame.
+        _style_name - attribute specifies the style of current frame,
+        _name - attribute specifies the name of current frame,
+        _anchor_type - attribute specifies how a frame is bound to a text document,
+        _x - attribute specifies the position of the frame on the X axis,
+        _y - attribute specifies the position of the frame on the Y axis,
+        _width - attribute specifies the width of the frame,
+        _height - attribute specifies the height of the frame,
+        _rel_width - attribute specifies height of a drawing object as a relative value within a frame,
+        _rel_height - attribute specifies the width of a drawing object as a relative value within a frame.
     """
 
-    _frame_style_name: str
-    _frame_name: str
-    _frame_anchor_type: str
-    _frame_x: float
-    _frame_y: float
-    _frame_width: float
-    _frame_height: float
-    _frame_rel_width: str
-    _frame_rel_height: str
+    _style_name: str = None
+    _anchor_type: str = None
+    _bbox: tuple[int | float, int | float, int | float, int | float] = None
+    _width: float = None
+    _height: float = None
+    _rel_width: str = None
+    _rel_height: str = None
+    _image: Image = None
+    _page_number: int = None
+
 
     @property
-    def frame_style_name(self):
-        return self._frame_style_name
+    def style_name(self):
+        return self._style_name
 
-    @frame_style_name.setter
-    def frame_style_name(self, value):
-        self._frame_style_name = value
+    @style_name.setter
+    def style_name(self, value):
+        self._style_name = value
 
-    @property
-    def frame_name(self):
-        return self._frame_name
-
-    @frame_name.setter
-    def frame_name(self, value):
-        self._frame_name = value
 
     @property
-    def frame_anchor_type(self):
-        return self._frame_anchor_type
+    def anchor_type(self):
+        return self._anchor_type
 
-    @frame_anchor_type.setter
-    def frame_anchor_type(self, value):
-        self._frame_anchor_type = value
-
-    @property
-    def frame_x(self):
-        return self._frame_x
-
-    @frame_x.setter
-    def frame_x(self, value):
-        self._frame_x = value
+    @anchor_type.setter
+    def anchor_type(self, value):
+        self._anchor_type = value
 
     @property
-    def frame_y(self):
-        return self._frame_y
+    def width(self):
+        return self._width
 
-    @frame_y.setter
-    def frame_y(self, value):
-        self._frame_y = value
-
-    @property
-    def frame_width(self):
-        return self._frame_width
-
-    @frame_width.setter
-    def frame_width(self, value):
-        self._frame_width = value
+    @width.setter
+    def width(self, value):
+        self._width = value
 
     @property
-    def frame_height(self):
-        return self._frame_height
+    def height(self):
+        return self._height
 
-    @frame_height.setter
-    def frame_height(self, value):
-        self._frame_height = value
-
-    @property
-    def frame_rel_width(self):
-        return self._frame_rel_width
-
-    @frame_rel_width.setter
-    def frame_rel_width(self, value):
-        self._frame_rel_width = value
+    @height.setter
+    def height(self, value):
+        self._height = value
 
     @property
-    def frame_rel_height(self):
-        return self._frame_rel_height
+    def rel_width(self):
+        return self._rel_width
 
-    @frame_rel_height.setter
-    def frame_rel_height(self, value):
-        self._frame_rel_height = value
+    @rel_width.setter
+    def rel_width(self, value):
+        self._rel_width = value
+
+    @property
+    def rel_height(self):
+        return self._rel_height
+
+    @rel_height.setter
+    def rel_height(self, value):
+        self._rel_height = value
+
+    @property
+    def bbox(self):
+        return self._bbox
+
+    @bbox.setter
+    def bbox(self, value):
+        self._bbox = value
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, value):
+        self._image = value
+
+    @property
+    def page_number(self):
+        return self._page_number
+
+    @page_number.setter
+    def page_number(self, value):
+        self._page_number = value

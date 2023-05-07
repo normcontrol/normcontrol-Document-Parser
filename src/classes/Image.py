@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.classes.Frame import Frame
+
 
 @dataclass
 class Image:
@@ -7,48 +7,47 @@ class Image:
     Description: Image class for ODT document.
 
     Attributes:
-        _image_href - attribute specifies the location of an embedded object,
-        _image_type - attribute always has the value simple in OpenDocument document instances,
-        _image_show - attribute is used to communicate the desired presentation of the ending resource on traversal
+        _href - attribute specifies the location of an embedded object,
+        _type - attribute always has the value simple in OpenDocument document instances,
+        _show - attribute is used to communicate the desired presentation of the ending resource on traversal
             from the starting resource,
-        _image_actuate - attribute is used to communicate the desired timing of traversal from the starting resource
+        _actuate - attribute is used to communicate the desired timing of traversal from the starting resource
             to the ending resource,
-        _image_frame - attribute storing the image frame.
     """
 
-    _image_href: str
-    _image_type: str
-    _image_show: str
-    _image_actuate: str
+    _href: str = None
+    _type: str = None
+    _show: str = None
+    _actuate: str = None
 
     @property
-    def image_href(self):
-        return self._image_href
+    def href(self):
+        return self._href
 
-    @image_href.setter
-    def image_href(self, value):
-        self._image_href = value
-
-    @property
-    def image_type(self):
-        return self._image_type
-
-    @image_type.setter
-    def image_type(self, value):
-        self._image_type = value
+    @href.setter
+    def href(self, value):
+        self._href = value
 
     @property
-    def image_show(self):
-        return self._image_show
+    def type(self):
+        return self._type
 
-    @image_show.setter
-    def image_show(self, value):
-        self._image_show = value
+    @type.setter
+    def type(self, value):
+        self._type = value
 
     @property
-    def image_actuate(self):
-        return self._image_actuate
+    def show(self):
+        return self._show
 
-    @image_actuate.setter
-    def image_actuate(self, value):
-        self._image_actuate = value
+    @show.setter
+    def show(self, value):
+        self._show = value
+
+    @property
+    def actuate(self):
+        return self._actuate
+
+    @actuate.setter
+    def actuate(self, value):
+        self._actuate = value

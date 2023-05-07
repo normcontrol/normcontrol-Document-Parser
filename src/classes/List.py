@@ -1,80 +1,72 @@
 from dataclasses import dataclass
 from src.classes.Paragraph import Paragraph
+
+
 @dataclass
 class List(Paragraph):
     """
     Description: List class for document.
 
     Attributes:
-        _list_type - attribute specifies the type of list - bulleted/numbered or other,
-        _list_name - attribute specifies the name of a list,
-        _list_level - attribute specifies the level of an outline or number list style,
-        _list_start_value - attribute specifies a value that restarts numbering at the current list level,
-        _list_style_char - attribute specifies a char in sequence,
-        _list_style_name - attribute specifies name of the family style,
-        _list_style_data - attribute specifies the style data.
+        _type - attribute specifies the type of list - bulleted/numbered or other,
+        _name - attribute specifies the name of a list,
+        _level - attribute specifies the level of an outline or number list style,
+        _start_value - attribute specifies a value that restarts numbering at the current list level,
+        _style_char - attribute specifies a char in sequence,
+        _style_name - attribute specifies name of the family style
     """
 
-    _list_type: str = None
-    _list_name: str = None
-    _list_level: str = None
-    _list_start_value: str = None
-    _list_style_char: str = None
-    _list_style_name: str = None
-    _list_style_data: str = None
+    _type: str = None
+    _name: str = None
+    _level: str = None
+    _start_value: str = None
+    _style_char: str = None
+    _style_name: str = None
 
     @property
-    def list_type(self):
-        return self._list_type
+    def type(self):
+        return self._type
 
-    @list_type.setter
-    def list_type(self, value):
-        self._list_type = value
-
-    @property
-    def list_name(self):
-        return self._list_name
-
-    @list_name.setter
-    def list_name(self, value):
-        self._list_name = value
+    @type.setter
+    def type(self, value):
+        self._type = value
 
     @property
-    def list_level(self):
-        return self._list_level
+    def name(self):
+        return self._name
 
-    @list_level.setter
-    def list_level(self, value):
-        self._list_level = value
-
-    @property
-    def list_start_value(self):
-        return self._list_start_value
-
-    @list_start_value.setter
-    def list_start_value(self, value):
-        self._list_start_value = value
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
-    def list_style_char(self):
-        return self._list_style_char
+    def level(self):
+        return self._level
 
-    @list_style_char.setter
-    def list_style_char(self, value):
-        self._list_style_char = value
-
-    @property
-    def list_style_name(self):
-        return self._list_style_name
-
-    @list_style_name.setter
-    def list_style_name(self, value):
-        self._list_style_name = value
+    @level.setter
+    def level(self, value):
+        self._level = value
 
     @property
-    def list_style_data(self):
-        return self._list_style_data
+    def start_value(self):
+        return self._start_value
 
-    @list_style_data.setter
-    def list_style_data(self, value):
-        self._list_style_data = value
+    @start_value.setter
+    def start_value(self, value):
+        self._start_value = value
+
+    @property
+    def style_char(self):
+        return self._style_char
+
+    @style_char.setter
+    def style_char(self, value):
+        self._style_char = value
+
+    @property
+    def style_name(self):
+        return self._style_name
+
+    @style_name.setter
+    def style_name(self, value):
+        self._style_name = value

@@ -125,3 +125,11 @@ class StructuralElement:
     @page_breake_before.setter
     def page_breake_before(self, page_breake_before):
         self._page_breake_before = page_breake_before
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, alignment):
+        self._alignment = alignment

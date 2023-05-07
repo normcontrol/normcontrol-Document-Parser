@@ -1,5 +1,4 @@
 from src.classes.Table import Table
-from src.classes.TableColumn import TableColumn
 from src.classes.TableRow import TableRow
 from src.classes.TableCell import TableCell
 from dacite import from_dict
@@ -77,10 +76,7 @@ def get_tables_objects(tables_data: dict):
     """
     table_objs = []
     for cur_style in tables_data:
-        if cur_style.count('Column') > 0:
-            table_objs.append(from_dict(data_class=TableColumn,
-                                        data=convert_to_table_column(tables_data[cur_style])))
-        elif cur_style.count('Row') > 0:
+        if cur_style.count('Row') > 0:
             table_objs.append(from_dict(data_class=TableRow,
                                         data=convert_to_table_row(tables_data[cur_style])))
         elif cur_style.count('Cell') > 0:
