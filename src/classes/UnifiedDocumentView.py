@@ -1,6 +1,7 @@
 import csv
 import dataclasses
 import json
+import csv
 from bestconfig import Config
 from .Paragraph import Paragraph
 from ..helpers.errors.errors import DocumentEmptyContentException

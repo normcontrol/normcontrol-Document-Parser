@@ -1,6 +1,4 @@
-
 from dataclasses import dataclass
-
 
 @dataclass
 class TableRow:
@@ -16,10 +14,10 @@ class TableRow:
             automatically if content in the row changes.
     """
 
-    _row_name:str
-    _row_family:str
-    _row_properties_min_row_height:float
-    _row_properties_use_optimal_row_height:float
+    _row_name: str = None
+    _row_family: str = None
+    _row_properties_min_row_height: float = None
+    _row_properties_use_optimal_row_height: float = None
 
     @property
     def row_name(self):

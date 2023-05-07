@@ -1,6 +1,4 @@
-
 from dataclasses import dataclass
-
 
 @dataclass
 class TableColumn:
@@ -15,18 +13,10 @@ class TableColumn:
             automatically if content in the column changes.
     """
 
-    _column_name: str
-    _column_family: str
-    _column_properties_column_width: float
-    _column_properties_use_optimal_column_width: float
-
-    @property
-    def column_name(self):
-        return self._column_name
-
-    @column_name.setter
-    def column_name(self, value):
-        self._column_name = value
+    _column_name: str = None
+    _column_family: str = None
+    _column_properties_column_width: float = None
+    _column_properties_use_optimal_column_width: bool = None
 
     @property
     def column_family(self):
@@ -35,6 +25,14 @@ class TableColumn:
     @column_family.setter
     def column_family(self, value):
         self._column_family = value
+
+    @property
+    def column_name(self):
+        return self._column_name
+
+    @column_name.setter
+    def column_name(self, value):
+        self._column_name = value
 
     @property
     def column_properties_column_width(self):
