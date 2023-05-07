@@ -9,9 +9,9 @@ from src.classes.Paragraph import Paragraph
 from src.classes.interfaces.InformalParserInterface import InformalParserInterface
 from src.classes.superclass.StructuralElement import StructuralElement
 from src.helpers.errors.errors import EmptyPathException
-from src.pdf.pdfclasses.Line import Line
-from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
-from src.pdf.pdfclasses.PDFTable import PDFTable
+from src.PDF.pdfclasses.Line import Line
+from src.PDF.pdfclasses.PdfParagraph import PdfParagraph
+from src.PDF.pdfclasses.PDFTable import PDFTable
 
 
 class PDFParser(InformalParserInterface, ABC):

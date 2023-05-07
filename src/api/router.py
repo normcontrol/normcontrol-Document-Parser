@@ -4,7 +4,7 @@ from starlette.requests import Request
 from src.api.schemas import DocumentData
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.helpers.errors.errors import NotAllowedFormatFileException
-from src.pdf.PDFParser import PDFParser
+from src.PDF.PDFParser import PDFParser
 parser_router = APIRouter(prefix="", tags=["parser"])
 
 
