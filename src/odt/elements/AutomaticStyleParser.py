@@ -4,10 +4,10 @@
     Описание: Модуль хранит класс, содержащий методы для работы с автоматическими стилями в документе формата ODT.
 """
 from src.odt.elements.ODTDocument import ODTDocument
-from src.odt.elements.RegularStylesParser import RegularStylesParser
-from src.odt.elements.ParagraphsParser import ParagraphsParser
+from src.odt.elements.RegularStyleParser import RegularStyleParser
+from src.odt.elements.ParagraphParser import ParagraphParser
 
-class AutomaticStylesParser:
+class AutomaticStyleParser:
     """
     Description: A class containing methods for working with automatic styles in an ODT document.
 
@@ -190,12 +190,12 @@ class AutomaticStylesParser:
             default - значение по умолчанию для искомого атрибута;
             property_type - строковое название искомого атрибута.
         """
-        paragraphs_parser = ParagraphsParser()
+        paragraphs_parser = ParagraphParser()
         param = paragraphs_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
             for key in style.attributes.keys():
                 if key[1] == "parent-style-name":
-                    parser_regular_styles = RegularStylesParser()
+                    parser_regular_styles = RegularStyleParser()
                     default = parser_regular_styles.get_parameter_from_regular_style(doc, default, style.attributes[key],
                                                                                      param_name, property_type)
                     break
@@ -223,7 +223,7 @@ class AutomaticStylesParser:
             property_type - строковое название искомого атрибута;
             default - значение по умолчанию для искомого атрибута.
         """
-        parser_regular_styles = RegularStylesParser()
+        parser_regular_styles = RegularStyleParser()
         style = self.get_automatic_style_object_by_name(doc, style_name)
         if style is None:
             return parser_regular_styles.get_parameter_from_regular_style(doc, default, style_name, param_name,

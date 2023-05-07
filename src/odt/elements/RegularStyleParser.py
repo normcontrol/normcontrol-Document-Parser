@@ -4,10 +4,10 @@
     Описание: Модуль хранит класс, содержащий методы для работы со стилями по умолчанию в документе формата ODT.
 """
 from src.odt.elements.ODTDocument import ODTDocument
-from src.odt.elements.DefaultStylesParser import DefaultStylesParser
-from src.odt.elements.ParagraphsParser import ParagraphsParser
+from src.odt.elements.DefaultStyleParser import DefaultStyleParser
+from src.odt.elements.ParagraphParser import ParagraphParser
 
-class RegularStylesParser:
+class RegularStyleParser:
     """
         Description: A class containing methods for working with regular styles in an ODT document.
 
@@ -173,7 +173,7 @@ class RegularStylesParser:
             param_name - строковое название искомого параметра;
             property_type - строковое название искомого атрибута.
         """
-        paragraph_parser = ParagraphsParser()
+        paragraph_parser = ParagraphParser()
         style = self.get_regular_style_object(doc, style_name)
         param = paragraph_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
@@ -207,11 +207,11 @@ class RegularStylesParser:
             param_name - строковое название искомого параметра;
             property_type - строковое название искомого атрибута.
         """
-        paragraph_parser = ParagraphsParser()
+        paragraph_parser = ParagraphParser()
         style = self.get_regular_style_object(doc, style_name)
         param = paragraph_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
-            parser_default_styles = DefaultStylesParser()
+            parser_default_styles = DefaultStyleParser()
             default = parser_default_styles.has_default_parameter(doc, default, style.getAttribute("family"),
                                                                   param_name, property_type)
         else:
@@ -238,7 +238,7 @@ class RegularStylesParser:
             param_name - строковое название искомого параметра;
             property_type - строковое название искомого атрибута.
         """
-        paragraph_parser = ParagraphsParser()
+        paragraph_parser = ParagraphParser()
         style = self.get_regular_style_object(doc, style_name)
         param = paragraph_parser.get_paragraph_parameters(style, param_name, property_type)
         if param is None:
@@ -250,7 +250,7 @@ class RegularStylesParser:
                    flag = 1
                    break
             if flag == 0:
-                parser_default_styles = DefaultStylesParser()
+                parser_default_styles = DefaultStyleParser()
                 default = parser_default_styles.has_default_parameter(doc, default, style.getAttribute("family"),
                                                                       param_name, property_type)
         else:

@@ -5,9 +5,9 @@
 """
 from src.helpers.odt import consts
 from src.odt.elements.ODTDocument import ODTDocument
-from src.odt.elements.AutomaticStylesParser import AutomaticStylesParser
+from src.odt.elements.AutomaticStyleParser import AutomaticStyleParser
 
-class NodesParser:
+class NodeParser:
     """
     Description: A class containing methods for traversing document style nodes.
 
@@ -79,7 +79,7 @@ class NodesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             level - уровень поиска и вложенности рекурсии.
         """
-        parser_auto_styles = AutomaticStylesParser()
+        parser_auto_styles = AutomaticStyleParser()
         if start_node.nodeType == 1:
             for key in start_node.attributes.keys():
                 if (key[1] == "style-name"):
@@ -123,7 +123,7 @@ class NodesParser:
             doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
             level - уровень поиска и вложенности рекурсии.
         """
-        parser_auto_styles = AutomaticStylesParser()
+        parser_auto_styles = AutomaticStyleParser()
         if start_node.nodeType == 1:
             for key in start_node.attributes.keys():
                 if (key[1] == "style-name"):

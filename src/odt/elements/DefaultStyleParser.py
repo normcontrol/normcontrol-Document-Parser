@@ -5,7 +5,7 @@
 """
 from src.odt.elements.ODTDocument import ODTDocument
 
-class DefaultStylesParser:
+class DefaultStyleParser:
     """
     Description: A class containing methods for working with default styles in an ODT document.
 

@@ -15,7 +15,7 @@ class List:
         _list_style_data - attribute specifies the style data.
     """
 
-    _list_type: str
+    _list_type: str = None
     _list_name: str = None
     _list_level: str = None
     _list_start_value: str = None
