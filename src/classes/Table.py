@@ -25,12 +25,13 @@ class Table(StructuralElement):
     """
     _inner_text: list = None
     _master_page_number: int = None
-    _master_page: Any = None
     _family: str = None
     _width: float = None
     _bbox: tuple[int | float, int | float, int | float, int | float] = None
+    _page_bbox: tuple[int | float, int | float] = None
     _cells: List[TableCell] = field(default_factory=list)
     _rows: List[TableRow] = field(default_factory=list)
+
 
     @property
     def inner_text(self):
@@ -39,14 +40,6 @@ class Table(StructuralElement):
     @inner_text.setter
     def inner_text(self, value):
         self._inner_text = value
-
-    @property
-    def master_page(self):
-        return self._master_page
-
-    @master_page.setter
-    def master_page(self, value):
-        self._master_page = value
 
     @property
     def bbox(self):
@@ -95,3 +88,11 @@ class Table(StructuralElement):
     @table_rows.setter
     def table_rows(self, value):
         self._rows = value
+
+    @property
+    def page_bbox(self):
+        return self._page_bbox
+
+    @page_bbox.setter
+    def page_bbox(self, value):
+        self._page_bbox = value

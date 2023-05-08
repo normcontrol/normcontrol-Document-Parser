@@ -64,7 +64,7 @@ class UnifiedDocumentView:
 
         """
         try:
-            if len(self.content):
+            if len(self.content) < 1:
                 raise DocumentEmptyContentException
             content = {}
             json_text = {'owner': self.owner, 'time': self.time}

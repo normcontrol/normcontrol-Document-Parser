@@ -31,6 +31,7 @@ class TableCell:
     _padding_left: float = None
     _padding_bottom: float = None
     _padding_right: float = None
+    _text: str = None
 
     @property
     def name(self):
@@ -95,3 +96,11 @@ class TableCell:
     @padding_right.setter
     def padding_right(self, value):
         self._padding_right = value
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
