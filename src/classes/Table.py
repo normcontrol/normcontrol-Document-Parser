@@ -15,13 +15,12 @@ class Table(StructuralElement):
         _family - attribute specifies the family of a style (style:family),
         _master_page_name - attribute specifies the name of element that contains the content
             of headers and footers,
-        _master_page - attribute specifies the element that contains the content
-            of headers and footers,
         _width - attribute specifies the width of a table relative to the width of
             the area that the table is in (style:table-properties),
         _cells - a list containing table cell objects,
-        _columns - a list containing table colum objects,
         _rows - a list containing table row objects.
+        _bbox - attribute specifies x0, y0, x1, y1 position of table in page
+        _page_bbox - attribute specifies size of page
     """
     _inner_text: list = None
     _master_page_number: int = None

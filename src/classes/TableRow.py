@@ -10,9 +10,7 @@ class TableRow:
         _name - attribute specifies the name of a row,
         _family - attribute specifies the family of a style (style:family),
         _properties_min_height - attribute specifies a fixed minimum height for a row
-            (style:table-row-properties),
-        _properties_use_optimal_height - attribute specifies that a row height should be recalculated
-            automatically if content in the row changes.
+            (style:table-row-properties)
     """
 
     _name: str = None

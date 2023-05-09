@@ -12,12 +12,13 @@ class Frame(StructuralElement):
         _style_name - attribute specifies the style of current frame,
         _name - attribute specifies the name of current frame,
         _anchor_type - attribute specifies how a frame is bound to a text document,
-        _x - attribute specifies the position of the frame on the X axis,
-        _y - attribute specifies the position of the frame on the Y axis,
         _width - attribute specifies the width of the frame,
         _height - attribute specifies the height of the frame,
         _rel_width - attribute specifies height of a drawing object as a relative value within a frame,
         _rel_height - attribute specifies the width of a drawing object as a relative value within a frame.
+        _bbox - attribute specifies x0, y0, x1, y1 position of frame in page
+        _image - attribute specifies all image in frame
+        _page_number - attribute specifies number of page, witch contains this frame
     """
 
     _style_name: str = None

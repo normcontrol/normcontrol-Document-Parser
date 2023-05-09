@@ -29,6 +29,8 @@ class StructuralElement:
                 The attribute specifies keeping the line style together
         _keep_with_next: bool
                 The attribute specifies keeping paragraphs together
+        _outline_level: str
+                The attribute specifies element type
     """
 
     _indent: float = None

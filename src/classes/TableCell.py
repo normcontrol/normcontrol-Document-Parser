@@ -21,6 +21,7 @@ class TableCell:
             or inline-area,
         _padding_right - specifies the width of the padding on the right-edge of a block-area
             or inline-area.
+        _text - specifies the text in cell.
     """
 
     _name: str = None

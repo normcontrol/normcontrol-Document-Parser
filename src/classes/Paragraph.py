@@ -40,8 +40,6 @@ class Paragraph(StructuralElement):
                 The attribute specifies text size
             _color_text: str
                 The attribute specifies text color in HEX
-            _outline_level: str
-                The attribute specifies paragraph type
             _no_change_fontname: bool
                 The attribute specifies no change in text font inside a paragraph
             _no_change_text_size: bool
