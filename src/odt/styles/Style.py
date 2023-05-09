@@ -243,17 +243,38 @@ def get_image_param(filePath, stylename, paramname):
 # Получение стилей
 def get_styles_style_new(filePath):
     doc = load(filePath)
-    stylesDict = {}
+    styles = {}
     for ast in doc.styles.childNodes:
         if ast.qname[1] == "style":
             name = ast.getAttribute('name')
             style = {}
-            stylesDict[name] = style
-
+            styles[name] = style
+            style["text-align"] = None
+            style["text-indent"] = None
+            style["margin-right"] = None
+            style["margin-left"] = None
+            style["line-height"] = None
+            style["margin-top"] = None
+            style["margin-bottom"] = None
+            style["keep-together"] = None
+            style["keep-with-next"] = None
+            style["widows"] = None
+            style["orphans"] = None
+            style["font-name"] = None
+            style["font-weight"] = None
+            style["font-style"] = None
+            style["text-underline-mode"] = None
+            style["text-underline-width"] = None
+            style["text-underline-style"] = None
+            style["text-underlinea-type"] = None
+            style["text-position"] = None
+            style["font-size"] = None
+            style["color"] = None
+            style["hyphenate"] = None
             for k in ast.attributes.keys():
                 style[k[1]] = ast.attributes[k]
             for n in ast.childNodes:
                 for k in n.attributes.keys() :
                     if k[1] in const.DEFAULT_PARAM.keys():
                         style[k[1]] = n.attributes[k]
-    return stylesDict
+    return styles

@@ -133,10 +133,34 @@ def get_styles_automatic_listsText(self):
 def get_styles_new(filePath):
     doc = load(filePath)
     styles = {}
+
     for ast in doc.automaticstyles.childNodes:
 
         name = ast.getAttribute('name')
         style = {}
+        style["text-align"] = None
+        style["text-indent"] = None
+        style["margin-right"] = None
+        style["margin-left"] = None
+        style["line-height"] = None
+        style["margin-top"] = None
+        style["margin-bottom"] = None
+        style["keep-together"] = None
+        style["keep-with-next"] = None
+        style["widows"] = None
+        style["orphans"] = None
+        style["font-name"] = None
+        style["font-weight"] = None
+        style["font-style"] = None
+        style["text-underline-mode"] = None
+        style["text-underline-width"] = None
+        style["text-underline-style"] = None
+        style["text-underlinea-type"] = None
+        style["text-position"] = None
+        style["font-size"] = None
+        style["color"] = None
+        style["hyphenate"] = None
+
         styles[name] = style
 
         for k in ast.attributes.keys():

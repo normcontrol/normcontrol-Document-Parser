@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from odf.opendocument import load
 from odf.style import Style
 from odf.table import Table
@@ -395,16 +397,81 @@ class DocumentParser:
 
     # общее
 
-    def check(self):
-        print(self.default_styles_dict)
-        print(self.styles_dict)
-        print(self.auto_styles_dict)
+    def build_dict(self):
+        self.default_styles_dict = doc.default_inher()
+        self.styles_dict = doc.styles_inher()
+        self.auto_styles_dict = doc.auto_inher()
+        #print()
+
+    def styles_inher(self):
+        while True :
+            flag = 0
+            for k in self.styles_dict.keys():
+                if self.styles_dict[k] is not None:
+                    if "parent-style-name" in self.styles_dict[k].keys():
+                        parent = self.styles_dict[k]["parent-style-name"]
+                        att = self.styles_dict[parent]
+                    else:
+                        if self.styles_dict[k]["family"] in self.default_styles_dict.keys():
+                            parent = self.styles_dict[k]["family"]
+                            att = self.default_styles_dict[parent]
+                        else: att = const.DEFAULT_PARAM
+                    for kk in self.styles_dict[k].keys():
+                        if self.styles_dict[k][kk] is None:
+                            print("!!!!!!!!!!!!")
+                            print(self.styles_dict[k][kk])
+                            if att[kk] is None:
+                                flag = 1
+                            else: self.styles_dict[k][kk] = att[kk]
+                            print(self.styles_dict[k][kk])
+
+            if flag == 0:
+                break
+        return self.styles_dict
+
+    def default_inher(self):
+        for k in self.default_styles_dict.keys():
+            for kk in self.default_styles_dict[k].keys():
+                if self.default_styles_dict[k][kk] is None:
+                    print(self.default_styles_dict[k][kk])
+                    self.default_styles_dict[k][kk] = const.DEFAULT_PARAM[kk]
+                    print(self.default_styles_dict[k][kk])
+        return self.default_styles_dict
+
+    def auto_inher(self):
+        for k in self.auto_styles_dict.keys():
+            for kk in self.auto_styles_dict[k].keys():
+                if self.auto_styles_dict[k][kk] is None:
+                    if "parent-style-name" in self.auto_styles_dict[k].keys():
+                        parent = self.auto_styles_dict[k]["parent-style-name"]
+                        att = self.styles_dict[parent][kk]
+                    else: att = const.DEFAULT_PARAM[kk]
+                    print(self.auto_styles_dict[k][kk])
+                    self.auto_styles_dict[k][kk] = att
+                    print(self.auto_styles_dict[k][kk])
+        return self.auto_styles_dict
+
+    def inher_start6(self, stylename):
+        if stylename in self.auto_styles_dict:
+            return self.auto_styles_dict[stylename]
+        else:
+            return self.styles_dict[stylename]
 
     def inher_start(self, doc, stylename, paramname):
         if stylename in self.auto_styles_dict.keys():
             return doc.style_inherit(stylename, paramname)
         else:
             return doc.style_inherit2(stylename, paramname)
+
+    def style_inherit_common(self, parent, paramname):
+        if paramname in self.styles_dict[parent]:
+            return self.styles_dict[parent][paramname]
+        else:
+            if 'parent-style-name' in self.styles_dict[parent]:
+                parent2 = self.styles_dict[parent]['parent-style-name']
+                return self.style_inherit_common(parent2, paramname)
+            else:
+                return None
 
     def style_inherit(self, stylename, paramname):
         if paramname in self.auto_styles_dict[stylename]:
@@ -414,76 +481,41 @@ class DocumentParser:
             if 'parent-style-name' in self.auto_styles_dict[stylename]:
                 parent = self.auto_styles_dict[stylename]['parent-style-name']
                 #print(parent)
-                if paramname in self.styles_dict[parent]:
+                param_from_common = self.style_inherit_common(parent, paramname)
+                if param_from_common is not None:
                     #print(self.styles_dict[parent][paramname])
-                    return self.styles_dict[parent][paramname]
+                    return param_from_common
                 else:
                     family = self.auto_styles_dict[stylename]['family']
-                    if 'parent-style-name' in self.styles_dict[parent]:
-                        parent2 = self.styles_dict[parent]['parent-style-name']
-                        #print(parent2)
-                        if paramname in self.styles_dict[parent2]:
-                            #print(self.styles_dict[parent2][paramname])
-                            return self.styles_dict[parent2][paramname]
+                    if family in self.default_styles_dict:
+                        # print("       " + self.default_styles_dict[family]['family'])
+                        if paramname in self.default_styles_dict[family]:
+                            # print(self.default_styles_dict[family][paramname])
+                            return self.default_styles_dict[family][paramname]
                         else:
-                            if family in self.default_styles_dict:
-                                #print("       "+self.default_styles_dict[family]['family'])
-                                if paramname in self.default_styles_dict[family]:
-                                    #print(self.default_styles_dict[family][paramname])
-                                    return self.default_styles_dict[family][paramname]
-                                else:
-                                    #print(self.default_styles_dict[family]['family'])
-                                    return None
-                            else:
-                                return None
-                    else:
-                        if family in self.default_styles_dict:
-                            #print("       " + self.default_styles_dict[family]['family'])
-                            if paramname in self.default_styles_dict[family]:
-                                #print(self.default_styles_dict[family][paramname])
-                                return self.default_styles_dict[family][paramname]
-                            else:
-                                #print(self.default_styles_dict[family]['family'])
-                                return None
-                        else:
+                            # print(self.default_styles_dict[family]['family'])
                             return None
+                    else:
+                        return None
             else:
                 return None
 
     def style_inherit2(self, stylename, paramname):
-        if paramname in self.styles_dict[stylename]:
-            #print(self.styles_dict[stylename][paramname])
-            return self.styles_dict[stylename][paramname]
+        param_from_common = self.style_inherit_common(stylename, paramname)
+        if param_from_common is not None:
+            return param_from_common
         else:
             family = self.styles_dict[stylename]['family']
-            if 'parent-style-name' in self.styles_dict[stylename]:
-                parent2 = self.styles_dict[stylename]['parent-style-name']
-                #print(parent2)
-                if paramname in self.styles_dict[parent2]:
-                    #print(self.styles_dict[parent2][paramname])
-                    return self.styles_dict[parent2][paramname]
+            if family in self.default_styles_dict:
+                # print("       " + self.default_styles_dict[family]['family'])
+                if paramname in self.default_styles_dict[family]:
+                    # print(self.default_styles_dict[family][paramname])
+                    return self.default_styles_dict[family][paramname]
                 else:
-                    if family in self.default_styles_dict:
-                        #print("       " + self.default_styles_dict[family]['family'])
-                        if paramname in self.default_styles_dict[family]:
-                           # print(self.default_styles_dict[family][paramname])
-                            return self.default_styles_dict[family][paramname]
-                        else:
-                            #print(self.default_styles_dict[family]['family'])
-                            return None
-                    else:
-                        return None
-            else:
-                if family in self.default_styles_dict:
-                    #print("       " + self.default_styles_dict[family]['family'])
-                    if paramname in self.default_styles_dict[family]:
-                        #print(self.default_styles_dict[family][paramname])
-                        return self.default_styles_dict[family][paramname]
-                    else:
-                        #print(self.default_styles_dict[family]['family'])
-                        return None
-                else:
+                    # print(self.default_styles_dict[family]['family'])
                     return None
+            else:
+                return None
 
 
 
@@ -619,21 +651,40 @@ def get_nodes_with_style_full5(start_node, doc, style_val, level=0):
         for k in start_node.attributes.keys():
             if (k[1] == "style-name"):
                 #print(start_node.attributes[k])
+
                 par_detail = doc.inher_start(doc, start_node.attributes[k], "text-align")
                 if par_detail is None:
                     par_detail = style_val
                 else:
                     style_val = par_detail
+
                 print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
                       ") ", str(start_node), "параметр ", par_detail, "   ", style_val)
         for n in start_node.childNodes:
             get_nodes_with_style_full5(n, doc, style_val, level + 1)
     return
+#новый новый
+def get_nodes_with_style_full6(start_node, doc, parent_node, level=0):
+    #if level == 0:
+     #   doc.build_dict()
+    if start_node.nodeType == 1:
+        for k in start_node.attributes.keys():
+            if (k[1] == "style-name"):
+                #print(start_node.attributes[k])
+                #doc.check()
+                att= doc.inher_start6(start_node.attributes[k])
+                for kk in att.keys():
+                    if att[kk] is None:
+                        att[kk] = parent_node[kk]
+                parent_node = att
+                print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
+                      ") ", str(start_node), "параметр ", att)
+        for n in start_node.childNodes:
+            get_nodes_with_style_full6(n, doc, parent_node, level + 1)
+    return
 
 
 if __name__ == '__main__':
-    h = hpy()
-    h1 = h.heap()
 
     script_path = os.path.abspath(__file__)
     rel_path = "documents/dipbac.odt"
@@ -715,14 +766,32 @@ if __name__ == '__main__':
 
 
     print(get_nodes_with_style_full(doc2.text, "", doc))
-    h2 = h.heap()
-    print(h2)
-    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")'''
+    '''
     #print(Default.get_styles_new(doc))
     for key in const.DEFAULT_PARAM.keys():
         print(key)
-    doc.check()
+    #doc.check()
     doc.style_inherit('P12', "text-align")
+    now3 = datetime.now()
+
+    current_time3 = now3.strftime("%H:%M:%S")
+    print("Current Time =", current_time3)
+
+    h = hpy()
+    h1 = h.heap()
+    doc3 = DocumentParser('C:/Users/lario/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt')
     doc2 = load("C:/Users/lario/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt")
-    print(get_nodes_with_style_full5(doc2.text,doc,"ttt"))
-    print(get_nodes_with_style_full(doc2.text, "", doc))
+
+    #print(get_nodes_with_style_full5(doc2.text,doc3, const.DEFAULT_PARAM["text-align"]))
+
+
+   # doc.styles_inher(doc3)
+    doc3.build_dict()
+    print(get_nodes_with_style_full6(doc2.text,doc3, const.DEFAULT_PARAM))
+    h2 = h.heap()
+    print(h2)
+    print("\nMemory Usage After Creation Of Objects : ", h2.size - h1.size, " bytes")
+    now4 = datetime.now()
+    current_time4 = now4.strftime("%H:%M:%S")
+    print("Current Time =", current_time4)
+    print(now4-now3)
