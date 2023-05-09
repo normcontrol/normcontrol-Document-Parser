@@ -674,8 +674,9 @@ def get_nodes_with_style_full6(start_node, doc, parent_node, level=0):
                 #doc.check()
                 att= doc.inher_start6(start_node.attributes[k])
                 for kk in att.keys():
-                    if att[kk] is None:
-                        att[kk] = parent_node[kk]
+                    if kk in const.DEFAULT_PARAM.keys():
+                        if att[kk] is const.DEFAULT_PARAM[kk]:
+                            att[kk] = parent_node[kk]
                 parent_node = att
                 print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(", k[1] + ':' + start_node.attributes[k],
                       ") ", str(start_node), "параметр ", att)
