@@ -69,11 +69,10 @@ class UnifiedDocumentView:
             content = {}
             json_text = {'owner': self.owner, 'time': self.time}
             for key, values in self.content.items():
-                if isinstance(values, Paragraph):
-                    temp = {}
-                    for attribute_name, value in dataclasses.asdict(values).items():
-                        temp[attribute_name[1::]] = value
-                    content[key] = temp
+                temp = {'element_class': type(values).__name__}
+                for attribute_name, value in dataclasses.asdict(values).items():
+                    temp[attribute_name[1::]] = value
+                content[key] = temp
             json_text['content'] = content
             json_text = json.loads(json.dumps(json_text))
             return json_text

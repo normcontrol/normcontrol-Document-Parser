@@ -1,9 +1,10 @@
 import re
 from abc import ABC
-
 import pdfplumber
-
+from src.classes.Frame import Frame
+from src.classes.Image import Image
 from src.classes.Table import Table
+from src.classes.TableCell import TableCell
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
 from src.classes.interfaces.InformalParserInterface import InformalParserInterface
@@ -11,7 +12,6 @@ from src.classes.superclass.StructuralElement import StructuralElement
 from src.helpers.errors.errors import EmptyPathException
 from src.PDF.pdfclasses.Line import Line
 from src.PDF.pdfclasses.PdfParagraph import PdfParagraph
-from src.PDF.pdfclasses.PDFTable import PDFTable
 
 
 class PDFParser(InformalParserInterface, ABC):
@@ -103,7 +103,6 @@ class PDFParser(InformalParserInterface, ABC):
         except EmptyPathException as e:
             print(e)
 
-
     @property
     def path(self):
         return self._path
@@ -171,17 +170,25 @@ class PDFParser(InformalParserInterface, ABC):
 
         """
 
+        from tabula import read_pdf
         list_of_table = []
         for page in self.__pdf.pages:
             # Extracting tables and tabular text
+            tables_check = read_pdf(
+                self.path,
+                pages=str(page.page_number), encoding='ansi', stream=True, multiple_tables=True)
+
             tables = page.find_tables()
-            tables_text = page.extract_tables()
-            for number_of_table, table in enumerate(tables):
-                list_of_table.append(Table(_inner_text=tables_text[number_of_table],
-                                           _master_page=table.page,
-                                           _master_page_number=table.page.page_number,
-                                           _width=table.bbox[2]-table.bbox[0],
-                                           _bbox=table.bbox))
+            if len(tables_check) == len(tables):
+                tables_text = page.extract_tables()
+                for number_of_table, table in enumerate(tables):
+                    list_of_table.append(Table(_inner_text=tables_text[number_of_table],
+                                               _master_page_number=table.page.page_number,
+                                               _width=table.bbox[2] - table.bbox[0],
+                                               _bbox=table.bbox, _page_bbox=table.page.bbox,
+                                               _cells=[TableCell(
+                                                   _text=[item for sublist in tables_text[0] for item in sublist][i])
+                                                   for i in range(len(table.cells))]))
         return list_of_table
 
     def get_lines(self) -> list:
@@ -199,70 +206,61 @@ class PDFParser(InformalParserInterface, ABC):
         y0 = -1
         x1 = 0
         y1 = 0
-        font_names = []
-        text_sizes = []
-        chars = []
-        no_change_font_name = True
-        no_change_text_size = True
+        chars = list()
         lines = []
-        for number_of_page, page in enumerate(self.__pdf.pages):
+        for page in self.__pdf.pages:
             # Selecting text strings
             text = ""
+            font_names = [page.chars[0]['fontname']]
+            text_sizes = [page.chars[0]['size']]
+            no_change_font_name = True
+            no_change_text_size = True
+
             for i, char in enumerate(page.chars):
                 if y0 is not None:
                     y0 = round(y0)
                 # Condition for adding a character to a string
-                if (round(char.get('y0')) == y0) or (int(char.get('y0')) == y0) \
-                        or text == '−' or text == '–' or text == "•":
+                if (round(char['y0']) == y0) or (int(char['y0']) == y0) or not re.match(r'^[−–•]$', text) is None:
                     chars.append(char)
-                    text = text + char.get('text')
-                    x1 = char.get('x1')
-                    if i != 0:
-                        # Font and line size selection
-                        if char.get('fontname') not in font_names:
-                            no_change_font_name = False
-                            font_names.append(char.get('fontname'))
-                        if char.get('size') not in text_sizes:
-                            no_change_text_size = False
-                            text_sizes.append(char.get('size'))
-                        y1 = char.get('y1')
-                    else:
-                        font_names.append(char.get('fontname'))
-                        text_sizes.append(char.get('size'))
-                        y1 = char.get('y1')
+                    text += char['text']
+                    x1 = char['x1']
+                    y1 = char['y1']
+                    # Font and line size selection
+                    if not char['fontname'] in font_names:
+                        no_change_font_name = False
+                        font_names.append(char['fontname'])
+                    if not char['size'] in text_sizes:
+                        no_change_text_size = False
+                        text_sizes.append(char['size'])
                 else:
                     if i != 0:
                         # Deleting headers and footers
                         if re.search(r'^\d+ $', text) is None and y0 > 60 and text != '':
                             if len(chars) != 0:
-                                x0 = chars[0].get('x0')
+                                x0 = chars[0]['x0']
                             else:
                                 x0 = 0
                             lines.append(
                                 Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names,
                                      _text_sizes=text_sizes, _no_change_font_name=no_change_font_name,
-                                     _no_change_text_size=no_change_text_size, _number_of_page=number_of_page + 1,
+                                     _no_change_text_size=no_change_text_size, _number_of_page=page.page_number,
                                      _chars=chars))
-                    chars = []
-                    text = ""
-                    y0 = char.get('y0')
-                    font_names = []
-                    text_sizes = []
+
+                    y0 = char['y0']
+                    font_names = [page.chars[0]['fontname']]
+                    text_sizes = [page.chars[0]['size']]
                     no_change_font_name = True
                     no_change_text_size = True
-                    # Deleting empty lines
-                    if text == "" and char.get('text') == ' ':
-                        continue
-                    chars.append(char)
-                    text = text + char.get('text')
+                    chars = [char]
+                    text = char['text']
             if len(chars) != 0:
-                x0 = chars[0].get('x0')
+                x0 = chars[0]['x0']
             else:
                 x0 = 0
             lines.append(
                 Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names, _text_sizes=text_sizes,
                      _no_change_font_name=no_change_font_name, _no_change_text_size=no_change_text_size,
-                     _number_of_page=number_of_page + 1, _chars=chars))
+                     _number_of_page=page.page_number, _chars=chars))
         return lines
 
     @staticmethod
@@ -353,11 +351,10 @@ class PDFParser(InformalParserInterface, ABC):
         removed_tables = []
         removed_pictures = []
         list_of_table = list_of_table.copy()
-
+        list_of_picture = list_of_picture.copy()
         paragraph = PdfParagraph()
         paragraph.lines.append(lines[0])
         paragraph.spaces.append(spaces[0])
-
         while i < len(lines):
             mean = 0
             j = 0
@@ -372,11 +369,11 @@ class PDFParser(InformalParserInterface, ABC):
             if spaces[i - 1] == 0:
                 spaces[i - 1] = mean
             # Condition for paragraph selection
-            if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 520 or abs(spaces[i - 1] - mean) > 2 or (
+            if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 500 or abs(spaces[i - 1] - mean) > 2 or (
                     len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
                 for picture in list_of_picture:
-                    if paragraph.lines[0].number_of_page == picture.get("page_number") and paragraph.lines[0].y0 > \
-                            picture.get("y0"):
+                    if paragraph.lines[0].number_of_page == picture.page_number and paragraph.lines[0].y0 > \
+                            picture.bbox[1]:
                         self.document.add_content(paragraph_id, picture)
                         removed_pictures.append(picture)
                         list_of_picture.remove(picture)
@@ -385,12 +382,15 @@ class PDFParser(InformalParserInterface, ABC):
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None:
-                    if isinstance(element, Table):
+                    if not isinstance(element, PdfParagraph):
                         self.document.add_content(paragraph_id, element)
+                        paragraph_id += 1
                     else:
-                        element = self.add_special_paragraph_attribute(element)
-                        self.document.content[paragraph_id] = self.get_standart_paragraph(element)
-                    paragraph_id += 1
+                        check_text = ' '.join(line.text for line in element.lines)
+                        if check_text != '' and check_text != ' ':
+                            self.document.add_content(paragraph_id, self.get_standart_paragraph(
+                                self.add_special_paragraph_attribute(element)))
+                            paragraph_id += 1
                 paragraph = PdfParagraph()
                 paragraph.lines.append(lines[i])
                 paragraph.spaces.append(spaces[i])
@@ -451,7 +451,10 @@ class PDFParser(InformalParserInterface, ABC):
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None and isinstance(element, PdfParagraph):
-                    paragraph_list.append(self.get_standart_paragraph(self.add_special_paragraph_attribute(element)))
+                    check_text = ' '.join(line.text for line in element.lines)
+                    if check_text != '' and check_text != ' ':
+                        paragraph_list.append(
+                            self.get_standart_paragraph(self.add_special_paragraph_attribute(element)))
                 paragraph = PdfParagraph()
                 paragraph.lines.append(lines[i])
                 paragraph.spaces.append(spaces[i])
@@ -522,14 +525,14 @@ class PDFParser(InformalParserInterface, ABC):
         """
         # Checking that this paragraph is tabular and this table has already been added
         for remove_table in removed_tables:
-            if (remove_table.master_page.bbox[3] - remove_table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
-                    (remove_table.master_page.bbox[3] - remove_table.bbox[3]) and \
+            if (remove_table.page_bbox[3] - remove_table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
+                    (remove_table.page_bbox[3] - remove_table.bbox[3]) and \
                     remove_table.master_page_number == pdf_paragraph.lines[0].number_of_page:
                 return None, removed_tables, list_of_table
         # Checking that this paragraph is tabular and adding a table if it has not been completed yet
         for table in list_of_table:
-            if (table.master_page.bbox[3] - table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
-                    table.master_page.bbox[3] - table.bbox[3]) and table.master_page_number == \
+            if (table.page_bbox[3] - table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
+                    table.page_bbox[3] - table.bbox[3]) and table.master_page_number == \
                     pdf_paragraph.lines[0].number_of_page:
                 removed_tables.append(table)
                 list_of_table.remove(table)
@@ -549,7 +552,9 @@ class PDFParser(InformalParserInterface, ABC):
         pictures = []
         for page in self.__pdf.pages:
             for image in page.images:
-                pictures.append(image)
+                pictures.append(Frame(_bbox=(image['x0'], image['y0'], image['x1'], image['y1']),
+                                      _width=image['width'], _height=image['width'], _page_number=image['page_number'],
+                                      _image=Image(_type=image['object_type'])))
         return pictures
 
     def get_formulas(self):
