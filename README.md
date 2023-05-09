@@ -31,6 +31,11 @@ PyOPWParse requires the following:
 - pdfplumber==0.7.5
 - requests==2.28.1
 - python-docx==0.8.11
+- uvicorn~=0.22.0
+- tabula-py
+- pydantic~=1.10.7
+- bestconfig==1.3.6
+- fastapi~=0.95.1
 
 ## Installation
 
