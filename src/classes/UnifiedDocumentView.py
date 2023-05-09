@@ -1,8 +1,10 @@
-import csv
+import dataclasses
 import json
-import requests
+import csv
 from bestconfig import Config
-from src.classes.Paragraph import Paragraph
+from .Paragraph import Paragraph
+from ..helpers.errors.errors import DocumentEmptyContentException
+
 
 class UnifiedDocumentView:
     """
@@ -20,16 +22,13 @@ class UnifiedDocumentView:
 
     Methods:
     ----------
-        add_content(id, paragraph)
+        add_content(self, id, paragraph)
             Adds a paragraph to the content list
 
-        create_json_to_clasifier(listOfAttr)
+        create_json(self)
             Creates and returns a json string, which will later be sent to the classifier
 
-        request_to_clasify(jsonText, api =)
-            Sends a request to the classification module
-
-        write_CSV(path):
+        write_CSV(seld, path, **kwargs):
             Generates csv file based on content
 
     """
@@ -54,64 +53,32 @@ class UnifiedDocumentView:
         """
         self.content[element_id] = element
 
-    def create_json_to_clasifier(self, **kwargs):
+    def create_json(self):
         """
 
-        Creates and returns a json string, which will later be sent to the classifier
-
-        :param:
-            **kwargs:
-                list_of_attr: list[str]
-                    List of attributes included in json string
+        Creates and returns a json string, which will later be sent to another api
 
         :return
-            json_text: json
+            json_text: JSON
                 Generated Json string
 
         """
-
-        if 'list_of_attr' in kwargs.keys():
-            list_of_attr = kwargs['list_of_attr']
-        else:
-            list_of_attr = ["countn_of_sp_sbl", "count_sbl", "lowercase", "uppercase",
-                            "last_sbl", "first_key", "bold", "italics", "keep_lines_together",
-                            "keep_with_next", "outline_level", "page_breake_before"]
-        json_string = "{"
-        for attribute in dir(self):
-            if attribute in ("time", "owner"):
-                json_string += "\"" + attribute + "\": \"" + str(getattr(self, attribute)) + "\", "
-        json_string += "\"paragraphs\": {"
-        for i, p in self.content.items():
-            if p.__class__ == Paragraph:
-                json_string += "\"" + str(i) + "\": {\""
-                for attribute in dir(p):
-                    if not attribute.startswith('_') and attribute in list_of_attr:
-                        json_string += attribute + "\": \"" + str(getattr(p, attribute)) + "\",\""
-                json_str_len = len(json_string)
-                json_string = json_string[:json_str_len - 2] + "}, "
-        length = len(json_string)
-        json_string = json_string[:length - 2] + "}}"
-        json_text = json.loads(json_string)
-        return json_text
-
-    @classmethod
-    def request_to_clasify(cls, json_text: str):
-        """
-
-        Sends a request to the classification module
-
-        :param
-            json_text: json
-                The json string to send
-
-        :return
-            response: Response
-                Response received from the API
-
-        """
-
-        response = requests.post(cls.__config['CommonData']['clasify_ip'], json=json_text)
-        return response
+        try:
+            if len(self.content) < 1:
+                raise DocumentEmptyContentException
+            content = {}
+            json_text = {'owner': self.owner, 'time': self.time}
+            for key, values in self.content.items():
+                temp = {'element_class': type(values).__name__}
+                for attribute_name, value in dataclasses.asdict(values).items():
+                    temp[attribute_name[1::]] = value
+                content[key] = temp
+            json_text['content'] = content
+            json_text = json.loads(json.dumps(json_text))
+            return json_text
+        except DocumentEmptyContentException as e:
+            print(e)
+            raise
 
     def write_CSV(self, path: str = 'pdftocsv.csv', **kwargs):
 
@@ -132,12 +99,15 @@ class UnifiedDocumentView:
         else:
             output_attributes = ["text", "count_of_sp_sbl", "count_sbl", "uppercase", "lowercase", "font_name",
                                  "last_sbl", "first_key", "indent", "line_spacing", "text_size"]
-        with open(path, 'w', newline='', encoding="utf-8") as csvfile:
-            filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(output_attributes)
-            for key, value in self.content.items():
-                if isinstance(value, Paragraph):
-                    filewriter.writerow([value.__getattribute__('_' + attribute) for attribute in output_attributes])
+        try:
+            with open(path, 'w', newline='', encoding="utf-8") as csvfile:
+                filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                filewriter.writerow(output_attributes)
+                for key, value in self.content.items():
+                    if isinstance(value, Paragraph):
+                        filewriter.writerow([value.__getattribute__('_' + attribute) for attribute in output_attributes])
+        except (FileExistsError,FileNotFoundError) as e:
+            print(e)
 
     @property
     def content(self):

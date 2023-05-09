@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-
-from src.pdf.pdfclasses.Line import Line
+from src.PDF.pdfclasses.Line import Line
 
 
 @dataclass()

@@ -2,7 +2,6 @@ import unittest
 from src.odt.ODTParser import ODTParser
 from src.odt.elements.ODTDocument import ODTDocument
 from src.classes.Table import Table
-from src.classes.TableColumn import TableColumn
 from src.classes.TableRow import TableRow
 from src.classes.TableCell import TableCell
 
@@ -27,9 +26,6 @@ class TestODTTable(unittest.TestCase):
                                                  _table_master_page_name='MP0', _table_properties_width=6.8437,
                                                  _table_properties_margin_left=0.0, _table_properties_align='right',
                                                  _table_cells=[], _table_columns=[], _table_rows=[]))
-        self.assertEqual(tables_styles[0], TableColumn(_column_name='TableColumn2', _column_family='table-column',
-                                                       _column_properties_column_width=1.277,
-                                                       _column_properties_use_optimal_column_width=False))
         self.assertEqual(tables_styles[6], TableRow(_row_name='TableRow7', _row_family='table-row',
                                                     _row_properties_min_row_height=0.6729,
                                                     _row_properties_use_optimal_row_height=False))

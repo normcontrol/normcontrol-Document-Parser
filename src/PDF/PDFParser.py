@@ -1,13 +1,20 @@
 import re
+from abc import ABC
 import pdfplumber
+from src.classes.Frame import Frame
+from src.classes.Image import Image
+from src.classes.Table import Table
+from src.classes.TableCell import TableCell
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
-from src.pdf.pdfclasses.Line import Line
-from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
-from src.pdf.pdfclasses.PDFTable import PDFTable
+from src.classes.interfaces.InformalParserInterface import InformalParserInterface
+from src.classes.superclass.StructuralElement import StructuralElement
+from src.helpers.errors.errors import EmptyPathException
+from src.PDF.pdfclasses.Line import Line
+from src.PDF.pdfclasses.PdfParagraph import PdfParagraph
 
 
-class PDFParser:
+class PDFParser(InformalParserInterface, ABC):
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
 
@@ -36,23 +43,35 @@ class PDFParser:
         _pictures:list
             An attribute representing a list of all pictures in file
 
+        _paragraph_list:
+             An attribute representing a list of all paragraphs in file
+
     Methods:
     ----------
-        __get_tables(self):
+        get_tables(self):
             Extracts all pdf tables using the object of pdfplumber library.
 
-        __get_lines(self):
+        get_lines(self):
             Extracts all text rows using the object of pdfplumber library.
 
-        __get_all_pictures(self):
+        get_pictures(self):
             Extracts all images from a pdf document
 
-        add_paragraph_in_document_with_attribute(self, pdf_paragraph, paragraph_id):
-            Adds a paragraph object containing its properties and attributes to the list of structural elements
-            of the document
+        get_formules(self):
+            Extracts all formules from a pdf document
 
-        get_elements(self, lines, spaces, list_of_table):
+        get_lists(self):
+            Extracts all lists from a pdf document
+
+        @staticmethod
+        add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
+            Calculates and adds special attributes to a paragraph
+
+        get_all_elements(self, lines, spaces, list_of_table):
             Forms structural elements of the document based on lines, line spacing, tables and pictures
+
+        get_paragraphs(self, lines, spaces, list_of_table):
+            Forms paragraphs of the document based on lines, line spacing and tables
 
         @classmethod
         get_space(lines):
@@ -69,14 +88,20 @@ class PDFParser:
     """
 
     def __init__(self, path):
-        self._path = path
-        self.__pdf = pdfplumber.open(path)
-        self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
-                                             time=self.__pdf.metadata.get('CreationDate'))
-        self._pictures = self.__get_all_pictures()
-        self._lines = self.__get_lines()
-        self._line_spaces = self.get_space(self._lines)
-        self._list_of_table = self.__get_tables()
+        try:
+            if len(path) == 0:
+                raise EmptyPathException('Path is empty')
+            self._path = path
+            self.__pdf = pdfplumber.open(path)
+            self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
+                                                 time=self.__pdf.metadata.get('CreationDate'))
+            self._pictures = self.get_pictures()
+            self._lines = self.get_lines()
+            self._line_spaces = self.get_space(self._lines)
+            self._list_of_table = self.get_tables()
+            self._paragraph_list = self.get_paragraphs(self.lines, self.line_spaces, self.list_of_table)
+        except EmptyPathException as e:
+            print(e)
 
     @property
     def path(self):
@@ -126,7 +151,15 @@ class PDFParser:
     def list_of_table(self, list_of_table: list):
         self._list_of_table = list_of_table
 
-    def __get_tables(self):
+    @property
+    def paragraph_list(self):
+        return self._paragraph_list
+
+    @paragraph_list.setter
+    def paragraph_list(self, value: str):
+        self._paragraph_list = value
+
+    def get_tables(self) -> list[StructuralElement]:
         """
 
         Extracts all table from a pdf document
@@ -137,18 +170,28 @@ class PDFParser:
 
         """
 
+        from tabula import read_pdf
         list_of_table = []
         for page in self.__pdf.pages:
             # Extracting tables and tabular text
+            tables_check = read_pdf(
+                self.path,
+                pages=str(page.page_number), encoding='ansi', stream=True, multiple_tables=True)
+
             tables = page.find_tables()
-            tables_text = page.extract_tables()
-            for number_of_table, table in enumerate(tables):
-                current_table = PDFTable(table)
-                current_table.addText(tables_text[number_of_table])
-                list_of_table.append(current_table)
+            if len(tables_check) == len(tables):
+                tables_text = page.extract_tables()
+                for number_of_table, table in enumerate(tables):
+                    list_of_table.append(Table(_inner_text=tables_text[number_of_table],
+                                               _master_page_number=table.page.page_number,
+                                               _width=table.bbox[2] - table.bbox[0],
+                                               _bbox=table.bbox, _page_bbox=table.page.bbox,
+                                               _cells=[TableCell(
+                                                   _text=[item for sublist in tables_text[0] for item in sublist][i])
+                                                   for i in range(len(table.cells))]))
         return list_of_table
 
-    def __get_lines(self):
+    def get_lines(self) -> list:
 
         """
 
@@ -163,70 +206,61 @@ class PDFParser:
         y0 = -1
         x1 = 0
         y1 = 0
-        font_names = []
-        text_sizes = []
-        chars = []
-        no_change_font_name = True
-        no_change_text_size = True
+        chars = list()
         lines = []
-        for number_of_page, page in enumerate(self.__pdf.pages):
+        for page in self.__pdf.pages:
             # Selecting text strings
             text = ""
+            font_names = [page.chars[0]['fontname']]
+            text_sizes = [page.chars[0]['size']]
+            no_change_font_name = True
+            no_change_text_size = True
+
             for i, char in enumerate(page.chars):
                 if y0 is not None:
                     y0 = round(y0)
                 # Condition for adding a character to a string
-                if (round(char.get('y0')) == y0) or (int(char.get('y0')) == y0) \
-                        or text == '−' or text == '–' or text == "•":
+                if (round(char['y0']) == y0) or (int(char['y0']) == y0) or not re.match(r'^[−–•]$', text) is None:
                     chars.append(char)
-                    text = text + char.get('text')
-                    x1 = char.get('x1')
-                    if i != 0:
-                        # Font and line size selection
-                        if char.get('fontname') not in font_names:
-                            no_change_font_name = False
-                            font_names.append(char.get('fontname'))
-                        if char.get('size') not in text_sizes:
-                            no_change_text_size = False
-                            text_sizes.append(char.get('size'))
-                        y1 = char.get('y1')
-                    else:
-                        font_names.append(char.get('fontname'))
-                        text_sizes.append(char.get('size'))
-                        y1 = char.get('y1')
+                    text += char['text']
+                    x1 = char['x1']
+                    y1 = char['y1']
+                    # Font and line size selection
+                    if not char['fontname'] in font_names:
+                        no_change_font_name = False
+                        font_names.append(char['fontname'])
+                    if not char['size'] in text_sizes:
+                        no_change_text_size = False
+                        text_sizes.append(char['size'])
                 else:
                     if i != 0:
                         # Deleting headers and footers
                         if re.search(r'^\d+ $', text) is None and y0 > 60 and text != '':
                             if len(chars) != 0:
-                                x0 = chars[0].get('x0')
+                                x0 = chars[0]['x0']
                             else:
                                 x0 = 0
                             lines.append(
                                 Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names,
                                      _text_sizes=text_sizes, _no_change_font_name=no_change_font_name,
-                                     _no_change_text_size=no_change_text_size, _number_of_page=number_of_page + 1,
+                                     _no_change_text_size=no_change_text_size, _number_of_page=page.page_number,
                                      _chars=chars))
-                    chars = []
-                    text = ""
-                    y0 = char.get('y0')
-                    font_names = []
-                    text_sizes = []
+
+                    y0 = char['y0']
+                    font_names = [page.chars[0]['fontname']]
+                    text_sizes = [page.chars[0]['size']]
                     no_change_font_name = True
                     no_change_text_size = True
-                    # Deleting empty lines
-                    if text == "" and char.get('text') == ' ':
-                        continue
-                    chars.append(char)
-                    text = text + char.get('text')
+                    chars = [char]
+                    text = char['text']
             if len(chars) != 0:
-                x0 = chars[0].get('x0')
+                x0 = chars[0]['x0']
             else:
                 x0 = 0
             lines.append(
                 Line(_x0=x0, _y0=y0, _x1=x1, _y1=y1, _text=text, _font_names=font_names, _text_sizes=text_sizes,
                      _no_change_font_name=no_change_font_name, _no_change_text_size=no_change_text_size,
-                     _number_of_page=number_of_page + 1, _chars=chars))
+                     _number_of_page=page.page_number, _chars=chars))
         return lines
 
     @staticmethod
@@ -257,7 +291,8 @@ class PDFParser:
             i = i + 1
         return spaces
 
-    def add_paragraph_in_document_with_attribute(self, pdf_paragraph: PdfParagraph, paragraph_id: int):
+    @staticmethod
+    def add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
 
         """
 
@@ -266,8 +301,8 @@ class PDFParser:
         :param
             pdf_paragraph: PdfParagraph
                 An object representing a paragraph highlighted by the algorithm
-            paragraph_id: int
-                Id of paragraph
+
+        :return pdf_paragraph: PdfParagraph
 
         """
         # Highlighting string attributes
@@ -285,9 +320,89 @@ class PDFParser:
         pdf_paragraph.no_change_font_name = no_change_font_name
         pdf_paragraph.no_change_text_size = no_change_text_size
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
-        self.document.content[paragraph_id] = self.get_standart_paragraph(pdf_paragraph)
+        return pdf_paragraph
 
-    def get_elements(self, lines: list, spaces: list, list_of_table: list, list_of_picture: list):
+    def get_all_elements(self, lines: list, spaces: list, list_of_table: list,
+                         list_of_picture: list) -> UnifiedDocumentView:
+        """
+
+        Generates paragraphs from a list of lines
+        :param
+            lines: list
+                List of all document lines
+
+            spaces: list
+                List of calculated line spacing
+
+            list_of_table: list
+                List of all document tables
+
+            list_of_picture: list
+                List of all document pictures
+
+        :return
+            document: UnifiedDocumentView
+                List of all structural elements in the document
+
+        """
+
+        i = 1
+        paragraph_id = 1
+        removed_tables = []
+        removed_pictures = []
+        list_of_table = list_of_table.copy()
+        list_of_picture = list_of_picture.copy()
+        paragraph = PdfParagraph()
+        paragraph.lines.append(lines[0])
+        paragraph.spaces.append(spaces[0])
+        while i < len(lines):
+            mean = 0
+            j = 0
+            while j < len(paragraph.lines) - 1:
+                mean = mean + paragraph.spaces[j]
+                j = j + 1
+            # Calculating the average value of the line spacing
+            if len(paragraph.lines) - 1 > 1:
+                mean = mean / (len(paragraph.lines) - 1)
+            if mean == 0:
+                mean = spaces[i - 1]
+            if spaces[i - 1] == 0:
+                spaces[i - 1] = mean
+            # Condition for paragraph selection
+            if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 500 or abs(spaces[i - 1] - mean) > 2 or (
+                    len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
+                for picture in list_of_picture:
+                    if paragraph.lines[0].number_of_page == picture.page_number and paragraph.lines[0].y0 > \
+                            picture.bbox[1]:
+                        self.document.add_content(paragraph_id, picture)
+                        removed_pictures.append(picture)
+                        list_of_picture.remove(picture)
+                        paragraph_id += 1
+                paragraph.line_spacing = mean
+                element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
+                                                                                     list_of_table)
+                if element is not None:
+                    if not isinstance(element, PdfParagraph):
+                        self.document.add_content(paragraph_id, element)
+                        paragraph_id += 1
+                    else:
+                        check_text = ' '.join(line.text for line in element.lines)
+                        if check_text != '' and check_text != ' ':
+                            self.document.add_content(paragraph_id, self.get_standart_paragraph(
+                                self.add_special_paragraph_attribute(element)))
+                            paragraph_id += 1
+                paragraph = PdfParagraph()
+                paragraph.lines.append(lines[i])
+                paragraph.spaces.append(spaces[i])
+            else:
+                paragraph.lines.append(lines[i])
+                if spaces[i] == 0:
+                    spaces[i] = mean
+                paragraph.spaces.append(spaces[i])
+            i = i + 1
+        return self.document
+
+    def get_paragraphs(self, lines: list, spaces: list, list_of_table: list) -> list[StructuralElement]:
         """
 
         Generates paragraphs from a list of lines
@@ -302,16 +417,15 @@ class PDFParser:
                 List of all document tables
 
         :return
-            document: UnifiedDocumentView
-                List of all structural elements in the document
+            paragraph_list: list
+                List of all paragraphs in the document
 
         """
 
         i = 1
-        paragraph_id = 1
         removed_tables = []
-        removed_pictures = []
         list_of_table = list_of_table.copy()
+        paragraph_list = []
 
         paragraph = PdfParagraph()
         paragraph.lines.append(lines[0])
@@ -333,22 +447,14 @@ class PDFParser:
             # Condition for paragraph selection
             if (lines[i - 1].x0 < lines[i].x0 or lines[i - 1].x1 <= 520 or abs(spaces[i - 1] - mean) > 2 or (
                     len(paragraph.lines) == 1 and paragraph.lines[0].x0 == lines[i].x0)):
-                for picture in list_of_picture:
-                    if paragraph.lines[0].number_of_page == picture.get("page_number") and paragraph.lines[0].y0 > \
-                            picture.get("y0"):
-                        self.document.add_content(paragraph_id, picture)
-                        removed_pictures.append(picture)
-                        list_of_picture.remove(picture)
-                        paragraph_id += 1
                 paragraph.line_spacing = mean
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
-                if element is not None:
-                    if isinstance(element, PDFTable):
-                        self.document.add_content(paragraph_id, element)
-                    else:
-                        self.add_paragraph_in_document_with_attribute(element, paragraph_id)
-                    paragraph_id += 1
+                if element is not None and isinstance(element, PdfParagraph):
+                    check_text = ' '.join(line.text for line in element.lines)
+                    if check_text != '' and check_text != ' ':
+                        paragraph_list.append(
+                            self.get_standart_paragraph(self.add_special_paragraph_attribute(element)))
                 paragraph = PdfParagraph()
                 paragraph.lines.append(lines[i])
                 paragraph.spaces.append(spaces[i])
@@ -358,7 +464,7 @@ class PDFParser:
                     spaces[i] = mean
                 paragraph.spaces.append(spaces[i])
             i = i + 1
-        return self.document
+        return paragraph_list
 
     @staticmethod
     def get_standart_paragraph(pdf_paragraph: PdfParagraph):
@@ -419,21 +525,21 @@ class PDFParser:
         """
         # Checking that this paragraph is tabular and this table has already been added
         for remove_table in removed_tables:
-            if (remove_table.table.page.bbox[3] - remove_table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
-                    (remove_table.table.page.bbox[3] - remove_table.table.bbox[3]) and \
-                    remove_table.table.page.page_number == pdf_paragraph.lines[0].number_of_page:
+            if (remove_table.page_bbox[3] - remove_table.bbox[1]) > pdf_paragraph.lines[0].y0 > \
+                    (remove_table.page_bbox[3] - remove_table.bbox[3]) and \
+                    remove_table.master_page_number == pdf_paragraph.lines[0].number_of_page:
                 return None, removed_tables, list_of_table
         # Checking that this paragraph is tabular and adding a table if it has not been completed yet
         for table in list_of_table:
-            if (table.table.page.bbox[3] - table.table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
-                    table.table.page.bbox[3] - table.table.bbox[3]) and table.table.page.page_number == \
+            if (table.page_bbox[3] - table.bbox[1]) > pdf_paragraph.lines[0].y0 > (
+                    table.page_bbox[3] - table.bbox[3]) and table.master_page_number == \
                     pdf_paragraph.lines[0].number_of_page:
                 removed_tables.append(table)
                 list_of_table.remove(table)
                 return table, removed_tables, list_of_table
         return pdf_paragraph, removed_tables, list_of_table
 
-    def __get_all_pictures(self):
+    def get_pictures(self) -> list:
         """
 
         Extracts all images from a pdf document
@@ -446,5 +552,33 @@ class PDFParser:
         pictures = []
         for page in self.__pdf.pages:
             for image in page.images:
-                pictures.append(image)
+                pictures.append(Frame(_bbox=(image['x0'], image['y0'], image['x1'], image['y1']),
+                                      _width=image['width'], _height=image['width'], _page_number=image['page_number'],
+                                      _image=Image(_type=image['object_type'])))
         return pictures
+
+    def get_formulas(self):
+        """
+
+        Extracts all formulas from a pdf document
+        :return
+            formulas: list
+                The list of formulas in PDF file
+
+        """
+
+        print("In progress")
+        pass
+
+    def get_lists(self):
+        """
+
+        Extracts all formulas from a pdf document
+        :return
+            lists: list
+                The list of lists in PDF file
+
+        """
+
+        print("In progress")
+        pass

@@ -6,92 +6,102 @@ class TableCell:
     Description: Table cell class for ODT document.
 
     Attributes:
-        _cell_name - attribute specifies the name of a cell,
-        _cell_family - attribute specifies the family of a style (style:family),
-        _cell_properties_border - attribute specifies the property for setting the same width, color, and style for
+        _name - attribute specifies the name of a cell,
+        _family - attribute specifies the family of a style (style:family),
+        _border - attribute specifies the property for setting the same width, color, and style for
             all four borders, top, bottom, left, and right, of a box (style:table-cell-properties),
-        _cell_properties_writing_mode - the property applies only to formatting objects that set up a reference-area.
+        _writing_mode - the property applies only to formatting objects that set up a reference-area.
             Each value of writing-mode sets all three of the direction traits indicated in each of the value
             descriptions above on the reference-area,
-        _cell_properties_padding_top - specifies the width of the padding on the top-edge of a block-area
+        _padding_top - specifies the width of the padding on the top-edge of a block-area
             or inline-area,
-        _cell_properties_padding_left - Specifies the width of the padding on the left-edge of a block-area
+        _padding_left - Specifies the width of the padding on the left-edge of a block-area
             or inline-area,
-        _cell_properties_padding_bottom - specifies the width of the padding on the bottom-edge of a block-area
+        _padding_bottom - specifies the width of the padding on the bottom-edge of a block-area
             or inline-area,
-        _cell_properties_padding_right - specifies the width of the padding on the right-edge of a block-area
+        _padding_right - specifies the width of the padding on the right-edge of a block-area
             or inline-area.
+        _text - specifies the text in cell.
     """
 
-    _cell_name: str = None
-    _cell_family: str = None
-    _cell_properties_border: float = None
-    _cell_properties_writing_mode: str = None
-    _cell_properties_padding_top: float = None
-    _cell_properties_padding_left: float = None
-    _cell_properties_padding_bottom: float = None
-    _cell_properties_padding_right: float = None
+    _name: str = None
+    _family: str = None
+    _border: float = None
+    _writing_mode: str = None
+    _padding_top: float = None
+    _padding_left: float = None
+    _padding_bottom: float = None
+    _padding_right: float = None
+    _text: str = None
 
     @property
-    def cell_name(self):
-        return self._cell_name
+    def name(self):
+        return self._name
 
-    @cell_name.setter
-    def cell_name(self, value):
-        self._cell_name = value
-
-    @property
-    def cell_family(self):
-        return self._cell_family
-
-    @cell_family.setter
-    def cell_family(self, value):
-        self._cell_family = value
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
-    def cell_properties_border(self):
-        return self._cell_properties_border
+    def family(self):
+        return self._family
 
-    @cell_properties_border.setter
-    def cell_properties_border(self, value):
-        self._cell_properties_border = value
-
-    @property
-    def cell_properties_writing_mode(self):
-        return self._cell_properties_writing_mode
-
-    @cell_properties_writing_mode.setter
-    def cell_properties_writing_mode(self, value):
-        self._cell_properties_writing_mode = value
+    @family.setter
+    def family(self, value):
+        self._family = value
 
     @property
-    def cell_properties_padding_top(self):
-        return self._cell_properties_padding_top
+    def border(self):
+        return self._border
 
-    @cell_properties_padding_top.setter
-    def cell_properties_padding_top(self, value):
-        self._cell_properties_padding_top = value
-
-    @property
-    def cell_properties_padding_left(self):
-        return self._cell_properties_padding_left
-
-    @cell_properties_padding_left.setter
-    def cell_properties_padding_left(self, value):
-        self._cell_properties_padding_left = value
+    @border.setter
+    def border(self, value):
+        self._border = value
 
     @property
-    def cell_properties_padding_bottom(self):
-        return self._cell_properties_padding_bottom
+    def writing_mode(self):
+        return self._writing_mode
 
-    @cell_properties_padding_bottom.setter
-    def cell_properties_padding_bottom(self, value):
-        self._cell_properties_padding_bottom = value
+    @writing_mode.setter
+    def writing_mode(self, value):
+        self._writing_mode = value
 
     @property
-    def cell_properties_padding_right(self):
-        return self._cell_properties_padding_right
+    def padding_top(self):
+        return self._padding_top
 
-    @cell_properties_padding_right.setter
-    def cell_properties_padding_right(self, value):
-        self._cell_properties_padding_right = value
+    @padding_top.setter
+    def padding_top(self, value):
+        self._padding_top = value
+
+    @property
+    def padding_left(self):
+        return self._padding_left
+
+    @padding_left.setter
+    def padding_left(self, value):
+        self._padding_left = value
+
+    @property
+    def padding_bottom(self):
+        return self._padding_bottom
+
+    @padding_bottom.setter
+    def padding_bottom(self, value):
+        self._padding_bottom = value
+
+    @property
+    def padding_right(self):
+        return self._padding_right
+
+    @padding_right.setter
+    def padding_right(self, value):
+        self._padding_right = value
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value

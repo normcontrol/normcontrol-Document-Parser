@@ -1,11 +1,12 @@
 import re
 from dataclasses import dataclass, field
-from src.helpers.enums import AlignmentEnum
+from .superclass.StructuralElement import StructuralElement
 
-@dataclass
-class Paragraph:
+
+@dataclass(kw_only=True)
+class Paragraph(StructuralElement):
     """
-    Description: a inified class representing a text paragraph, its properties? styles and content
+    Description: an inified class representing a text paragraph, its properties? styles and content
 
     Attributes:
     ----------
@@ -23,20 +24,6 @@ class Paragraph:
                 The attribute specifies last paragraph character
             _first_key: str
                 The attribute specifies first paragraph character
-            _alignment: AlignmentEnum
-                The attribute specifies text alignment
-            _indent: float
-                The attribute specifies indent from the red line
-            _mrgrg: float
-                The attribute specifies indent from the right side of the page
-            _mrglf: float
-                The attribute specifies indent from the left side of the page
-            _line_spacing: float
-                The attribute specifies paragraph line spacing
-            _mrgtop: float
-                The attribute specifies attribute specifies indent from the top side of the page
-            _mrgbtm: float
-                The attribute specifies attribute specifies indent from the bottom side of the page
             _font_name: str
                 The attribute specifies paragraph font
             _bold: bool
@@ -53,14 +40,6 @@ class Paragraph:
                 The attribute specifies text size
             _color_text: str
                 The attribute specifies text color in HEX
-            _page_breake_before: bool
-                The attribute specifies start of a new page
-            _keep_lines_together: bool
-                The attribute specifies keeping the line style together
-            _keep_with_next: bool
-                The attribute specifies keeping paragraphs together
-            _outline_level: str
-                The attribute specifies paragraph type
             _no_change_fontname: bool
                 The attribute specifies no change in text font inside a paragraph
             _no_change_text_size: bool
@@ -87,7 +66,8 @@ class Paragraph:
                 Calculates the type of the first character of a paragraph
 
     """
-    _line_spacing: float
+    _font_name: str
+    _text_size: float
     _text: str
     _count_of_sp_sbl: int = field(init=False)
     _count_sbl: int = field(init=False)
@@ -95,25 +75,12 @@ class Paragraph:
     _uppercase: bool = field(init=False)
     _last_sbl: str = field(init=False)
     _first_key: str = field(init=False)
-    _indent: float
-    _font_name: str
-    _text_size: float
-
-    _alignment: AlignmentEnum = None
-    _mrgrg: float = None
-    _mrglf: float = None
-    _mrgtop: float = None
-    _mrgbtm: float = None
     _bold: bool = None
     _italics: bool = None
     _underlining: bool = None
     _sub_text: bool = None
     _super_text: bool = None
     _color_text: str = None
-    _page_breake_before: bool = None
-    _keep_lines_together: bool = None
-    _keep_with_next: bool = None
-    _outline_level: str = None
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
 
@@ -229,78 +196,6 @@ class Paragraph:
         return ''
 
     @property
-    def text(self):
-        return self._text
-
-    @text.setter
-    def text(self, text):
-        self._text = text
-
-    @property
-    def keep_lines_together(self):
-        return self._keep_lines_together
-
-    @keep_lines_together.setter
-    def keep_lines_together(self, keep_lines_together):
-        self._keep_lines_together = keep_lines_together
-
-    @property
-    def outline_level(self):
-        return self._outline_level
-
-    @outline_level.setter
-    def outline_level(self, outline_level):
-        self._outline_level = outline_level
-
-    @property
-    def keep_with_next(self):
-        return self._keep_with_next
-
-    @keep_with_next.setter
-    def keep_with_next(self, keep_with_next):
-        self._keep_with_next = keep_with_next
-
-    @property
-    def indent(self):
-        return self._indent
-
-    @indent.setter
-    def indent(self, indent):
-        self._indent = indent
-
-    @property
-    def mrgrg(self):
-        return self._mrgrg
-
-    @mrgrg.setter
-    def mrgrg(self, mrgrg):
-        self._mrgrg = mrgrg
-
-    @property
-    def mrglf(self):
-        return self._mrglf
-
-    @mrglf.setter
-    def mrglf(self, mrglf):
-        self._mrglf = mrglf
-
-    @property
-    def mrgtop(self):
-        return self._mrgtop
-
-    @mrgtop.setter
-    def mrgtop(self, mrgtop):
-        self._mrgtop = mrgtop
-
-    @property
-    def mrgbtm(self):
-        return self._mrgbtm
-
-    @mrgbtm.setter
-    def mrgbtm(self, mrgbtm):
-        self._mrgbtm = mrgbtm
-
-    @property
     def font_name(self):
         return self._font_name
 
@@ -309,23 +204,20 @@ class Paragraph:
         self._font_name = font_name
 
     @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, text):
+        self._text = text
+
+    @property
     def color_text(self):
         return self._color_text
 
     @color_text.setter
     def color_text(self, color_text):
         self._color_text = color_text
-
-    @property
-    def line_spacing(self):
-        return self._line_spacing
-
-    @line_spacing.setter
-    def line_spacing(self, value):
-        if value >= 0:
-            self._line_spacing = value
-        else:
-            raise ValueError
 
     @property
     def bold(self):
