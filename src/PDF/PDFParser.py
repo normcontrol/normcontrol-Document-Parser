@@ -94,7 +94,8 @@ class PDFParser(InformalParserInterface, ABC):
             self._path = path
             self.__pdf = pdfplumber.open(path)
             self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
-                                                 time=self.__pdf.metadata.get('CreationDate'))
+                                                 time=self.__pdf.metadata.get('CreationDate'),
+                                                 page_count=len(self.__pdf.pages))
             self._pictures = self.get_pictures()
             self._lines = self.get_lines()
             self._line_spaces = self.get_space(self._lines)
@@ -484,13 +485,38 @@ class PDFParser(InformalParserInterface, ABC):
         text = ""
         for line in pdf_paragraph.lines:
             text = text + line.text
+        bbox = {
+
+        }
+        if len(pdf_paragraph.lines) == 1:
+            bbox[pdf_paragraph.lines[0].number_of_page] = (pdf_paragraph.lines[0].x0, pdf_paragraph.lines[0].y1,
+                                                           pdf_paragraph.lines[0].x1,
+                                                           pdf_paragraph.lines[0].y0)
+        else:
+            for i in range(len(pdf_paragraph.lines)):
+                if pdf_paragraph.lines[i].number_of_page != pdf_paragraph.lines[0].number_of_page and\
+                        len(pdf_paragraph.lines) != 1:
+                    bbox[pdf_paragraph.lines[i].number_of_page] = (pdf_paragraph.lines[i].x0, pdf_paragraph.lines[i].y1,
+                                                                   pdf_paragraph.lines[0].x1,
+                                                                   pdf_paragraph.lines[len(pdf_paragraph.lines) - 1].y0)
+                    bbox[pdf_paragraph.lines[0].number_of_page] = (pdf_paragraph.lines[1].x0, pdf_paragraph.lines[0].y1,
+                                                                   pdf_paragraph.lines[0].x1,
+                                                                   pdf_paragraph.lines[i - 1].y0)
+                    break
+        if len(bbox.keys()) == 0:
+            bbox[pdf_paragraph.lines[0].number_of_page] = (pdf_paragraph.lines[1].x0, pdf_paragraph.lines[0].y1,
+                                                           pdf_paragraph.lines[0].x1,
+                                                           pdf_paragraph.lines[len(pdf_paragraph.lines)-1].y0)
+
+
         paragraph = Paragraph(_text=text, _indent=round(pt_to_sm(pdf_paragraph.indent) - 3, 2),
                               _font_name=pdf_paragraph.font_name,
                               _text_size=round(pdf_paragraph.text_size)
                               if isinstance(pdf_paragraph.text_size, float) else None,
                               _line_spacing=round(pt_to_sm(pdf_paragraph.line_spacing), 2),
                               _no_change_text_size=pdf_paragraph.no_change_text_size,
-                              _no_change_fontname=pdf_paragraph.no_change_font_name)
+                              _no_change_fontname=pdf_paragraph.no_change_font_name,
+                              _bbox=bbox)
         return paragraph
 
     @classmethod
