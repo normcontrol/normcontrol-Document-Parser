@@ -286,3 +286,20 @@ class RegularStyleParser:
                         parent = style["parent-style-name"]
                         return self.get_regular_style(doc, parent)
         return None
+
+    def regular_style_dict(self, doc: ODTDocument, attrs: dict):
+        styles = {}
+        for ast in doc.document.styles.childNodes:
+            if ast.qname[1] == "style":
+                name = ast.getAttribute('name')
+                style = {}
+                styles[name] = style
+                for attr in attrs:
+                    style[attr] = None
+                for k in ast.attributes.keys():
+                    style[k[1]] = ast.attributes[k]
+                for n in ast.childNodes:
+                    for k in n.attributes.keys():
+                        if k[1] in attrs:
+                            style[k[1]] = n.attributes[k]
+        return styles

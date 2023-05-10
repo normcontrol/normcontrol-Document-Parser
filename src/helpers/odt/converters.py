@@ -17,19 +17,24 @@ def convert_to_list(list_data: dict):
     """
     converted_data = {}
     data_keys = list(list_data.keys())
+    list_type = {}
+    if 'bullet-char' in data_keys:
+        list_type = {'_type': 'bulleted'}
+    else: list_type = {'type': 'numbered'}
+    converted_data.update(list_type)
     for element in data_keys:
         converted_data_key = {}
         match element:
             case 'name':
-                converted_data_key['_list_name'] = list_data[element]
+                converted_data_key['_name'] = list_data[element]
             case 'level':
-                converted_data_key['_list_level'] = list_data[element]
+                converted_data_key['_level'] = list_data[element]
             case 'start-value':
-                converted_data_key['_list_start_value'] = list_data[element]
+                converted_data_key['_start_value'] = list_data[element]
             case 'bullet-char':
-                converted_data_key['_list_style_char'] = list_data[element]
+                converted_data_key['_style_char'] = list_data[element]
             case 'style-name':
-                converted_data_key['_list_style_name'] = list_data[element]
+                converted_data_key['_style_name'] = list_data[element]
         converted_data.update(converted_data_key)
     return converted_data
 

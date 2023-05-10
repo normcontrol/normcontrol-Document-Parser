@@ -10,6 +10,7 @@ from src.helpers.odt import path
 from odf.text import P
 import os
 
+
 class ODTDocument:
     """
     Description: A class that stores the data of the file to be parsed. This object is accessed by library methods.
