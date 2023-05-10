@@ -83,6 +83,7 @@ class Paragraph(StructuralElement):
     _color_text: str = None
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
+    _bbox: dict[int, tuple] = None
 
     def __post_init__(self):
         self.count_of_sp_sbl = Paragraph.get_countn_of_sp_sbl(self.text)
@@ -183,7 +184,7 @@ class Paragraph(StructuralElement):
 
         """
         first_key = text.split(' ')[0]
-        if re.match(r'^(\d+\.)$|^(\d+\))$|^(-)$|^(–)$', first_key):
+        if re.match(r'^(\d+\.)$|^(\d+\))$|^(-)$|^(–)$|^(−)$', first_key):
             return 'listLevel1'
         if re.match(r'^\d+$', first_key):
             return 'TitleLevel1'
@@ -332,3 +333,11 @@ class Paragraph(StructuralElement):
     @first_key.setter
     def first_key(self, first_key):
         self._first_key = first_key
+
+    @property
+    def bbox(self):
+        return self._bbox
+
+    @bbox.setter
+    def bbox(self, bbox):
+        self._bbox = bbox
