@@ -248,8 +248,8 @@ class PDFParser(InformalParserInterface, ABC):
                                      _chars=chars))
 
                     y0 = char['y0']
-                    font_names = [page.chars[0]['fontname']]
-                    text_sizes = [page.chars[0]['size']]
+                    font_names = [char['fontname']]
+                    text_sizes = [char['size']]
                     no_change_font_name = True
                     no_change_text_size = True
                     chars = [char]
@@ -309,15 +309,31 @@ class PDFParser(InformalParserInterface, ABC):
         # Highlighting string attributes
         no_change_font_name = pdf_paragraph.lines[0].no_change_font_name
         no_change_text_size = pdf_paragraph.lines[0].no_change_text_size
+        text_size = set()
+        font_name = set()
         for line in pdf_paragraph.lines:
+            for size in line.text_sizes:
+                text_size.add(round(size))
+            for font in line.font_names:
+                font_name.add(font)
             if len(line.font_names) > 1 or line.no_change_font_name is False:
                 no_change_font_name = False
             if len(line.text_sizes) > 1 or line.no_change_text_size is False:
                 no_change_text_size = False
-        if len(pdf_paragraph.lines[0].text_sizes) != 0:
-            pdf_paragraph.text_size = pdf_paragraph.lines[0].text_sizes[0]
-        if len(pdf_paragraph.lines[0].font_names) != 0:
-            pdf_paragraph.font_name = pdf_paragraph.lines[0].font_names[0]
+        pdf_paragraph.font_name = list(font_name)
+        pdf_paragraph.text_size = list(text_size)
+        # if len(pdf_paragraph.lines[0].text_sizes) != 0:
+        #     pdf_paragraph.text_size = pdf_paragraph.lines[0].text_sizes[0]
+        # if len(pdf_paragraph.lines[0].font_names) != 0:
+        #     pdf_paragraph.font_name = pdf_paragraph.lines[0].font_names[0]
+
+        if len(pdf_paragraph.font_name) > 1:
+            pdf_paragraph.full_bold = False
+            pdf_paragraph.full_italics = False
+        else:
+            for font in pdf_paragraph.font_name:
+                pdf_paragraph.full_italics = True if 'Italics' in font else  False
+                pdf_paragraph.full_bold = True if 'Bold' in font else False
         pdf_paragraph.no_change_font_name = no_change_font_name
         pdf_paragraph.no_change_text_size = no_change_text_size
         pdf_paragraph.indent = pdf_paragraph.lines[0].x0
@@ -510,9 +526,8 @@ class PDFParser(InformalParserInterface, ABC):
 
 
         paragraph = Paragraph(_text=text, _indent=round(pt_to_sm(pdf_paragraph.indent) - 3, 2),
-                              _font_name=pdf_paragraph.font_name,
-                              _text_size=round(pdf_paragraph.text_size)
-                              if isinstance(pdf_paragraph.text_size, float) else None,
+                              _font_name=pdf_paragraph.font_name, _text_size=pdf_paragraph.text_size,
+                              _bold=pdf_paragraph.full_bold, _italics=pdf_paragraph.full_italics,
                               _line_spacing=round(pt_to_sm(pdf_paragraph.line_spacing), 2),
                               _no_change_text_size=pdf_paragraph.no_change_text_size,
                               _no_change_fontname=pdf_paragraph.no_change_font_name,

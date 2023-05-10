@@ -66,9 +66,8 @@ class Paragraph(StructuralElement):
                 Calculates the type of the first character of a paragraph
 
     """
-    _font_name: str
-    _text_size: float
-    _text: str
+
+    _text: str = None
     _count_of_sp_sbl: int = field(init=False)
     _count_sbl: int = field(init=False)
     _lowercase: bool = field(init=False)
@@ -84,6 +83,8 @@ class Paragraph(StructuralElement):
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
     _bbox: dict[int, tuple] = None
+    _font_name: list[str] = field(default_factory=list)
+    _text_size: list[float] = field(default_factory=list)
 
     def __post_init__(self):
         self.count_of_sp_sbl = Paragraph.get_countn_of_sp_sbl(self.text)

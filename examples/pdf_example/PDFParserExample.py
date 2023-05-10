@@ -24,3 +24,4 @@ for dir_path, dir_names, file_names in walk('.\\documents'):
         use the create_json_to_clasifier method, which takes a list of required fields as parameters
         '''
         json = document.create_json()
+        print("ok")
