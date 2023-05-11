@@ -56,11 +56,13 @@ class ListParser:
                     styles_dict[name] = style
                     style['name'] = name
                     for node in ast.childNodes:
-                        if node.qname[1] == "text-properties":
-                            for key in node.attributes.keys():
-                                style[key[1]] = node.attributes[key]
-        for cur_style in styles_dict:
-            list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
+                        for key in node.attributes.keys():
+                            style[key[1]] = node.attributes[key]
+                        for deep in node.childNodes:
+                            for key1 in deep.attributes.keys():
+                                style[key[1]] = deep.attributes[key1]
+        #for cur_style in styles_dict:
+            #list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
         return list_objs
 
     def get_list_styles_from_automatic_styles(self, doc: ODTDocument):
@@ -80,11 +82,14 @@ class ListParser:
             name = ast.getAttribute('name')
             style = {}
             for node in ast.childNodes:
-                if "list-level" in node.qname[1]:
+                if "list" in node.qname[1]:
                     styles_dict[name] = style
                     style['name'] = name
                     for key in node.attributes.keys():
                         style[key[1]] = node.attributes[key]
+                    for deep in node.childNodes:
+                        for key1 in deep.attributes.keys():
+                            style[key[1]] = deep.attributes[key1]
         for cur_style in styles_dict:
             list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
         return list_objs

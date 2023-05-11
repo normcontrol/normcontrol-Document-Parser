@@ -1,5 +1,6 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
+from src.odt.elements.StylesContainer import StylesContainer
 
 if __name__ == '__main__':
     doc_path = "documents/listsimages.odt"
@@ -36,3 +37,10 @@ if __name__ == '__main__':
 
     print("Печать всех узлов документа:")
     print(odt_parser.node_parser.print_all_document_nodes_with_style_data(doc.document.text, "", doc))
+    print("-------------------------------------------\n")
+
+    print("Печать всех стилей документа:")
+    styles_container = StylesContainer(doc)
+    print(styles_container.all_automatic_styles)
+    print(styles_container.all_default_styles)
+    print(styles_container.all_regular_styles)

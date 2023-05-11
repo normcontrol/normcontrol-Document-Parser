@@ -7,6 +7,8 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.classes.Frame import Frame
 from src.classes.Image import Image
+from dacite import from_dict
+from src.helpers.odt.converters import convert_to_frame, convert_to_image
 
 class ImageParser:
     """
@@ -64,15 +66,21 @@ class ImageParser:
         for ast in objs:
             if ast.qname[1] == "frame":
                 name = ast.getAttribute('name')
-                style = []
+                style = {}
+                style['name'] = name
                 for key in ast.attributes.keys():
-                    style.append(ast.attributes[key])
+                    style[key[1]] = ast.attributes[key]
+                    #help = ast.attributes.keys()
                 for node in ast.childNodes:
                     for node_keys in node.attributes.keys():
-                        style.append(node.attributes[node_keys])
+                        style[node_keys[1]] = node.attributes[node_keys]
                 styles_dict[name] = style
-        for cur_frame in styles_dict.keys():
-            frame_objs.append(Frame(*[styles_dict[cur_frame][i] for i in range(9)]))
+        images_objs = self.get_image_styles(doc)
+        image_ind = 0
+        for cur_frame in styles_dict:
+            frame_objs.append(from_dict(data_class=Frame, data=convert_to_frame(styles_dict[cur_frame],
+                                                                                images_objs[image_ind])))
+            image_ind += 1
         return frame_objs
 
     def get_image_styles(self, doc: ODTDocument) -> [Image]:
@@ -98,12 +106,17 @@ class ImageParser:
         for ast in objs:
             if ast.qname[1] == "image":
                 name = ast.getAttribute('href')
-                style = []
-                for node in ast.attributes.keys():
-                    style.append(ast.attributes[node])
+                style = {}
                 styles_dict[name] = style
-        for cur_image in styles_dict.keys():
-            image_objs.append(Image(*[styles_dict[cur_image][i] for i in range(4)]))
+                style['name'] = name
+                for key in ast.attributes.keys():
+                    style[key[1]] = ast.attributes[key]
+                for node in ast.childNodes:
+                    for node_keys in node.attributes.keys():
+                        style[node_keys[1]] = node.attributes[node_keys]
+                styles_dict[name] = style
+        for cur_image in styles_dict:
+            image_objs.append(from_dict(data_class=Image, data=convert_to_image(styles_dict[cur_image])))
         return image_objs
 
     def get_frame_parameter(self, doc: ODTDocument, style_name: str, parameter_name: str):

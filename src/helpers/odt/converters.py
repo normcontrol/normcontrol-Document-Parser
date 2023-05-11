@@ -1,3 +1,4 @@
+from src.classes.Image import Image
 from src.classes.Table import Table
 from src.classes.TableRow import TableRow
 from src.classes.TableCell import TableCell
@@ -16,19 +17,24 @@ def convert_to_list(list_data: dict):
     """
     converted_data = {}
     data_keys = list(list_data.keys())
+    list_type = {}
+    if 'bullet-char' in data_keys:
+        list_type = {'_type': 'bulleted'}
+    else: list_type = {'type': 'numbered'}
+    converted_data.update(list_type)
     for element in data_keys:
         converted_data_key = {}
         match element:
             case 'name':
-                converted_data_key['_list_name'] = list_data[element]
+                converted_data_key['_name'] = list_data[element]
             case 'level':
-                converted_data_key['_list_level'] = list_data[element]
+                converted_data_key['_level'] = list_data[element]
             case 'start-value':
-                converted_data_key['_list_start_value'] = list_data[element]
+                converted_data_key['_start_value'] = list_data[element]
             case 'bullet-char':
-                converted_data_key['_list_style_char'] = list_data[element]
+                converted_data_key['_style_char'] = list_data[element]
             case 'style-name':
-                converted_data_key['_list_style_name'] = list_data[element]
+                converted_data_key['_style_name'] = list_data[element]
         converted_data.update(converted_data_key)
     return converted_data
 
@@ -173,5 +179,74 @@ def convert_to_table_cell(cell_data: dict):
                 converted_data_key['_cell_properties_padding_right'] = float(cell_data[element].split('i')[0])
             case 'padding-right':
                 converted_data_key['_cell_properties_padding_bottom'] = float(cell_data[element].split('i')[0])
+        converted_data.update(converted_data_key)
+    return converted_data
+
+def convert_to_image(image_data: dict):
+    """Converts the image data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        image_data: dict - dictionary with image data.
+    ----------
+    Конвертирует данные изображения в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        image_data: dict - словарь с данными изображения.
+    """
+    converted_data = {}
+    data_keys = list(image_data.keys())
+    for element in data_keys:
+        converted_data_key = {}
+        match element:
+            case 'href':
+                converted_data_key['_href'] = image_data[element]
+            case 'type':
+                converted_data_key['_type'] = image_data[element]
+            case 'show':
+                converted_data_key['_show'] = image_data[element]
+            case 'actuate':
+                converted_data_key['_actuate'] = image_data[element]
+        converted_data.update(converted_data_key)
+    return converted_data
+
+def convert_to_frame(frame_data: dict, image_data: Image):
+    """Converts the frame data into a dictionary for further initialization of the object.
+
+    Keyword arguments:
+        frame_data: dict - dictionary with frame data;
+        image_data: dict - dictionary with image data.
+    ----------
+    Конвертирует данные фрейма в словарь для дальнейшей инициализации объекта.
+
+    Аргументы:
+        frame_data: dict - словарь с данными фрейма;
+        image_data: dict - словарь с данными изображения.
+    """
+    converted_data = {}
+    converted_data_key = {}
+    data_keys = list(frame_data.keys())
+    for element in data_keys:
+        converted_data_key = {}
+        match element:
+            case 'style-name':
+                converted_data_key['_style_name'] = frame_data[element]
+            case 'anchor-type':
+                converted_data_key['_anchor_type'] = frame_data[element]
+            case 'width':
+                converted_data_key['_width'] = float(frame_data[element].split('i')[0])
+            case 'height':
+                converted_data_key['_height'] = float(frame_data[element].split('i')[0])
+            case 'rel-width':
+                converted_data_key['_rel_width'] = frame_data[element]
+            case 'rel-height':
+                converted_data_key['_rel_height'] = frame_data[element]
+            case 'page-number':
+                converted_data_key['_page_number'] = int(frame_data[element])
+            case _:
+                converted_data_key['_bbox'] = (float(frame_data['x'].split('i')[0]),
+                                               float(frame_data['height'].split('i')[0]) * 138.9,
+                                               float(frame_data['width'].split('i')[0]) * 138.9,
+                                               float(frame_data['y'].split('i')[0]))
+                converted_data_key['_image'] = image_data
         converted_data.update(converted_data_key)
     return converted_data
