@@ -10,4 +10,4 @@ if __name__ == '__main__':
     styles_container = StylesContainer(doc)
 
     styles_container.build_dict()
-    print(styles_container.get_nodes_with_style_full6(doc.document.text, styles_container, consts.DEFAULT_PARAM))
+    print(styles_container.get_nodes_with_style_full6(doc.document.text, consts.DEFAULT_PARAM))
