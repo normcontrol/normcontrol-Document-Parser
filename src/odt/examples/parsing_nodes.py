@@ -4,10 +4,12 @@ from src.odt.ODTParser import ODTParser
 from src.odt.elements.StylesContainer import StylesContainer
 
 if __name__ == '__main__':
-    doc_path = "documents/dipbac.odt"
+    doc_path = "documents/tabl1.odt"
     doc = ODTDocument(doc_path)
     odt_parser = ODTParser()
     styles_container = StylesContainer(doc)
 
     styles_container.build_dict()
-    print(styles_container.get_nodes_with_style_full6(doc.document.text, consts.DEFAULT_PARAM))
+    list = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    print(list)
+    print(list["0", 'text'])
