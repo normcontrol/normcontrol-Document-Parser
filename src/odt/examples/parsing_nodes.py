@@ -12,4 +12,4 @@ if __name__ == '__main__':
     styles_container.build_dict()
     list = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
     print(list)
-    print(list["0", 'text'])
+    print(list["0"])
