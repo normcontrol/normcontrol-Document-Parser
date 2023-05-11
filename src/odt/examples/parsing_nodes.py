@@ -4,7 +4,7 @@ from src.odt.ODTParser import ODTParser
 from src.odt.elements.StylesContainer import StylesContainer
 
 if __name__ == '__main__':
-    doc_path = "documents/listexmaple.odt"
+    doc_path = "documents/dipbac.odt"
     doc = ODTDocument(doc_path)
     odt_parser = ODTParser()
     styles_container = StylesContainer(doc)

@@ -1,6 +1,8 @@
+from src.classes.Paragraph import Paragraph
 from src.odt.ODTParser import ODTParser
 from src.odt.elements.ODTDocument import ODTDocument
 from src.helpers.odt import consts
+
 
 class StylesContainer:
     def __init__(self, doc: ODTDocument):
@@ -94,19 +96,77 @@ class StylesContainer:
         else:
             return self._all_regular_styles[stylename]
 
-    def get_nodes_with_style_full6(self, start_node, doc, parent_node, level=0):
+    def get_nodes_with_style_full6(self, start_node, parent_node, list=None, level=0):
+        if list is None:
+            list = {}
+        if start_node.nodeType == 1:
+            if start_node.qname[1] == "list":
+                for k in start_node.attributes.keys():
+                    if (k[1] == "style-name"):
+                        att = self.inher_start6(start_node.attributes[k])
+                        for kk in att.keys():
+                            if kk in consts.DEFAULT_PARAM.keys():
+                                if att[kk] is consts.DEFAULT_PARAM[kk]:
+                                    att[kk] = parent_node[kk]
+                        att["text"] = str(start_node)
+                        parent_node = att
+                        list[start_node.attributes[k]] = self.get_nodes_with_style_full_list(start_node, parent_node,
+                                                                                             {})
+                        print(list)
+                        print("  " * level, "Список:", start_node.qname[1], " Аттрибуты:(",
+                              k[1] + ':' + start_node.attributes[k],
+                              ") ", str(start_node), "параметр ", att)
+            else:
+                if start_node.qname[1] == "p":
+                    for k in start_node.attributes.keys():
+                        if (k[1] == "style-name"):
+                            att = self.inher_start6(start_node.attributes[k])
+                            for kk in att.keys():
+                                if kk in consts.DEFAULT_PARAM.keys():
+                                    if att[kk] is consts.DEFAULT_PARAM[kk]:
+                                        att[kk] = parent_node[kk]
+                            att["text"] = str(start_node)
+                            parent_node = att
+                            par = Paragraph(_text=str(start_node), _font_name=att["font-name"],
+                                            _text_size=att["font-size"])
+                            if att["font-weight"] != "bold":
+                                par.bold = False
+                            else:
+                                par.bold = True
+                            print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
+                                  k[1] + ':' + start_node.attributes[k],
+                                  ") ", str(start_node), "параметр ", att)
+                else:
+                    for k in start_node.attributes.keys():
+                        if (k[1] == "style-name"):
+                            att = self.inher_start6(start_node.attributes[k])
+                            for kk in att.keys():
+                                if kk in consts.DEFAULT_PARAM.keys():
+                                    if att[kk] is consts.DEFAULT_PARAM[kk]:
+                                        att[kk] = parent_node[kk]
+                            att["text"] = str(start_node)
+                            parent_node = att
+                            print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
+                                  k[1] + ':' + start_node.attributes[k],
+                                  ") ", str(start_node), "параметр ", att)
+                    for n in start_node.childNodes:
+                        self.get_nodes_with_style_full6(n, parent_node, list, level + 1)
+        return
+
+    def get_nodes_with_style_full_list(self, start_node, parent_node, list=None, level=0):
+        if list is None:
+            list = {}
         if start_node.nodeType == 1:
             for k in start_node.attributes.keys():
                 if (k[1] == "style-name"):
-                    att = doc.inher_start6(start_node.attributes[k])
+                    att = self.inher_start6(start_node.attributes[k])
                     for kk in att.keys():
                         if kk in consts.DEFAULT_PARAM.keys():
                             if att[kk] is consts.DEFAULT_PARAM[kk]:
                                 att[kk] = parent_node[kk]
+                    att["text"] = str(start_node)
                     parent_node = att
-                    print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                          k[1] + ':' + start_node.attributes[k],
-                          ") ", str(start_node), "параметр ", att)
+                    list[start_node.attributes[k]] = att
             for n in start_node.childNodes:
-                self.get_nodes_with_style_full6(n, doc, parent_node, level + 1)
-        return
+                self.get_nodes_with_style_full_list(n, parent_node, list, level + 1)
+        return list
