@@ -3,9 +3,10 @@
     ----------
     Описание: Модуль хранит класс, содержащий методы для работы со стилями списков в документе формата ODT.
 """
+from src.helpers.enums.AlignmentEnum import AlignmentEnum
 from src.odt.elements.ODTDocument import ODTDocument
 from src.classes.List import List
-from src.helpers.odt.converters import convert_to_list
+from src.helpers.odt.converters import convert_to_list, convert_to_paragraph
 from dacite import from_dict
 
 class ListParser:
@@ -65,7 +66,7 @@ class ListParser:
             #list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
         return list_objs
 
-    def get_list_styles_from_automatic_styles(self, doc: ODTDocument):
+    def get_list_styles_from_automatic_styles(self, doc: ODTDocument, all_styles):
         """Returns a list of all list styles from automatic document styles with their attributes.
 
         Keyword arguments:
@@ -91,7 +92,10 @@ class ListParser:
                         for key1 in deep.attributes.keys():
                             style[key[1]] = deep.attributes[key1]
         for cur_style in styles_dict:
-            list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
+            paragraph_prop = self.get_current_list_paragraph(cur_style, all_styles)
+            if paragraph_prop is not None:
+                paragraph_prop.update(convert_to_list(styles_dict[cur_style]))
+                list_objs.append(from_dict(data_class=List, data=paragraph_prop))
         return list_objs
 
     def get_list_parameter(self, style, parameter_name: str):
@@ -113,3 +117,11 @@ class ListParser:
                     if key[1] == parameter_name:
                         return node.attributes[key]
         return None
+
+    def get_current_list_paragraph(self, list_name, styles_data):
+        for style in styles_data.keys():
+            for objs in styles_data[style]['nodes']:
+                if 'list' in objs:
+                    par_props = styles_data[style]['nodes'][objs]
+                    if par_props['name'] == list_name:
+                        return convert_to_paragraph(par_props)
