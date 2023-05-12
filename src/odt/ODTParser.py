@@ -11,6 +11,7 @@ from src.odt.elements.ListParser import ListParser
 from src.odt.elements.ParagraphParser import ParagraphParser
 from src.odt.elements.ImageParser import ImageParser
 from src.odt.elements.NodeParser import NodeParser
+from src.classes.UnifiedDocumentView import UnifiedDocumentView
 
 class ODTParser:
     """

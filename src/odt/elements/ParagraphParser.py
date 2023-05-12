@@ -4,6 +4,10 @@
     Описание: Модуль хранит класс, содержащий методы для работы со стилями абзацев в документе формата ODT.
 """
 from src.odt.elements.ODTDocument import ODTDocument
+from src.helpers.odt.converters import convert_to_paragraph
+from src.classes.Paragraph import Paragraph
+from dacite import from_dict
+
 
 class ParagraphParser:
     """
@@ -99,6 +103,14 @@ class ParagraphParser:
                 for node in ast.childNodes:
                     if node.qname[1] == "paragraph-properties":
                         for key in node.attributes.keys():
-                            if key[1] == "text-align":
-                                style[node.qname[1] + "/" + key[1]] = node.attributes[key]
+                            style[node.qname[1] + "/" + key[1]] = node.attributes[key]
         print(styles_dict)
+
+    def paragraphs_helper(self, styles_data):
+        par_objs = []
+        for style in styles_data.keys():
+            for objs in styles_data[style]['nodes']:
+                if 'p' in objs:
+                    help = styles_data[style]['nodes'][objs]
+                    par_objs.append(from_dict(data_class=Paragraph, data=convert_to_paragraph(help)))
+        return par_objs

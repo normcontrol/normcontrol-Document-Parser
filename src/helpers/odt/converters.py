@@ -4,6 +4,9 @@ from src.classes.TableRow import TableRow
 from src.classes.TableCell import TableCell
 from dacite import from_dict
 
+from src.helpers.enums.AlignmentEnum import AlignmentEnum
+
+
 def convert_to_list(list_data: dict):
     """Converts the list data into a dictionary for further initialization of the object.
 
@@ -248,5 +251,88 @@ def convert_to_frame(frame_data: dict, image_data: Image):
                                                float(frame_data['width'].split('i')[0]) * 138.9,
                                                float(frame_data['y'].split('i')[0]))
                 converted_data_key['_image'] = image_data
+        converted_data.update(converted_data_key)
+    return converted_data
+
+def convert_to_paragraph(par_props):
+    converted_data = {}
+    converted_data_key = {}
+    for key in par_props.keys():
+        converted_data_key = {}
+        match key:
+            case 'text-indent':
+                converted_data_key['_indent'] = float(par_props[key].split('i')[0]) * 138.9
+            case 'line-height':
+                converted_data_key['_line_spacing'] = float(par_props[key].split('%')[0]) / 107
+            # case 'text-align':
+            #     if par_props[key] == 'start':
+            #         converted_data_key['_alignment'] = AlignmentEnum.LEFT
+            #     elif par_props[key] == 'center':
+            #         converted_data_key['_alignment'] = AlignmentEnum.CENTER
+            #     elif par_props[key] == 'justify':
+            #         converted_data_key['_alignment'] = AlignmentEnum.JUSTIFY
+            #     else:
+            #         converted_data_key['_alignment'] = AlignmentEnum.RIGHT
+            case 'margin-right':
+                converted_data_key['_mrgrg'] = float(par_props[key].split('i')[0]) * 138.9
+            case 'margin-top':
+                converted_data_key['_mrgtop'] = float(par_props[key].split('i')[0]) * 138.9
+            case 'margin-left':
+                converted_data_key['_mrglf'] = float(par_props[key].split('i')[0]) * 138.9
+            case 'margin-bottom':
+                converted_data_key['_mrgbtm'] = float(par_props[key].split('i')[0]) * 138.9
+            case 'keep-together':
+                keep_together = False
+                if par_props[key] == 'true':
+                    keep_together = True
+                converted_data_key['_keep_lines_together'] = keep_together
+            case 'keep-with-next':
+                keep_with_next = False
+                if par_props[key] == 'true':
+                    keep_with_next = True
+                converted_data_key['_keep_with_next'] = keep_with_next
+            case 'font-name':
+                converted_data_key['_font_name'] = [par_props[key]]
+            case 'text':
+                converted_data_key['_text'] = par_props[key]
+            case 'font-size':
+                if isinstance(par_props[key], int):
+                    converted_data_key['_text_size'] = [float(par_props[key])]
+                else:
+                    converted_data_key['_text_size'] = [float(par_props[key][:2])]
+            # case '_count_of_sp_sbl':
+            # case '_count_sbl':
+            # case '_lowercase':
+            # case '_uppercase':
+            # case '_last_sbl':
+            # case 'first-key':
+            case 'font-weight':
+                current_weight = True
+                if par_props[key] == 'normal':
+                    current_weight = False
+                converted_data_key['_bold'] = current_weight
+            case 'font-style':
+                current_style = True
+                if par_props[key] == 'normal':
+                    current_style = False
+                converted_data_key['_italics'] = current_style
+            case 'text-underline-mode':
+                current_underline = True
+                if par_props[key] == 'false':
+                    current_underline = False
+                converted_data_key['_underlining'] = current_underline
+            case 'text-position':
+                current_position = par_props[key].split(' ')[0]
+                if 'super' in current_position:
+                    converted_data_key['_sub_text'] = False
+                    converted_data_key['_super_text'] = True
+                elif 'sub' in current_position:
+                    converted_data_key['_sub_text'] = True
+                    converted_data_key['_super_text'] = False
+                else:
+                    converted_data_key['_sub_text'] = False
+                    converted_data_key['_super_text'] = False
+            case 'color':
+                converted_data_key['_color_text'] = par_props[key]
         converted_data.update(converted_data_key)
     return converted_data

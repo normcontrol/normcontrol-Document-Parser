@@ -1,5 +1,7 @@
+from src.helpers.odt import consts
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
+from src.odt.elements.StylesContainer import StylesContainer
 
 if __name__ == '__main__':
     doc_path = "documents/tabl1.odt"
@@ -42,3 +44,10 @@ if __name__ == '__main__':
     ast = odt_parser.automatic_style_parser.get_automatic_style_object_by_name(doc, 'TableColumn6')
     print(odt_parser.table_parser.get_table_column_parameter(ast, 'column-width'))
     print("-------------------------------------------\n")
+
+    styles_container = StylesContainer(doc)
+
+    styles_container.build_dict()
+    all_doc_info = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    auto_pars = odt_parser.paragraph_parser.paragraphs_helper(all_doc_info)
+    print(auto_pars)

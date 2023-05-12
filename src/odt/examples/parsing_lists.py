@@ -1,10 +1,18 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
+from src.odt.elements.StylesContainer import StylesContainer
+from src.helpers.odt import consts
 
 if __name__ == '__main__':
-    doc_path = "documents/listsimages.odt"
+    doc_path = "documents/dipbac.odt"
     doc = ODTDocument(doc_path)
     odt_parser = ODTParser()
+    styles_container = StylesContainer(doc)
+
+    styles_container.build_dict()
+    all_doc_info = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    print(list)
+    print(list["0"])
 
     print("Получение текста и автоматических стилей:\n")
     print(odt_parser.automatic_style_parser.get_automatic_styles(doc))
@@ -20,7 +28,8 @@ if __name__ == '__main__':
     print(odt_parser.list_parser.get_lists_styles(doc), '\n')
 
     print("--------------------3-1---------------------")
-    print(odt_parser.list_parser.get_list_styles_from_automatic_styles(doc), '\n')
+    new_styles = odt_parser.list_parser.get_list_styles_from_automatic_styles(doc, all_doc_info)
+    print((new_styles), '\n')
 
     print("--------------------3-2---------------------")
     print(odt_parser.automatic_style_parser.get_automatic_style_by_name(doc, 'WW_CharLFO5LVL1'))
@@ -38,5 +47,8 @@ if __name__ == '__main__':
     print(odt_parser.list_parser.get_list_parameter(ast, 'num-letter-sync'))
 
     ast = odt_parser.regular_style_parser.get_regular_style_object(doc, 'WW_CharLFO17LVL9')
-    print(odt_parser.list_parser.get_list_parameter(ast, 'font-size'))
+    #print(odt_parser.list_parser.get_list_parameter(ast, 'font-size'))
     print("-------------------------------------------\n")
+
+    auto_pars = odt_parser.paragraph_parser.paragraphs_helper(all_doc_info)
+    print(auto_pars)
