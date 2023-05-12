@@ -115,7 +115,7 @@ class StylesContainer:
                         print(list)
                         print("  " * level, "Список:", start_node.qname[1], " Аттрибуты:(",
                               k[1] + ':' + start_node.attributes[k],
-                              ") ", str(start_node), "параметр ", att)
+                              ") ", str(start_node), "параметр ", att["text-align"])
             else:
                 if start_node.qname[1] == "p":
                     for k in start_node.attributes.keys():
@@ -135,7 +135,7 @@ class StylesContainer:
                                 par.bold = True
                             print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
                                   k[1] + ':' + start_node.attributes[k],
-                                  ") ", str(start_node), "параметр ", att)
+                                  ") ", str(start_node), "параметр ", att["text-align"])
                 else:
                     for k in start_node.attributes.keys():
                         if (k[1] == "style-name"):
@@ -148,7 +148,7 @@ class StylesContainer:
                             parent_node = att
                             print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
                                   k[1] + ':' + start_node.attributes[k],
-                                  ") ", str(start_node), "параметр ", att)
+                                  ") ", str(start_node), "параметр ", att["text-align"])
                     for n in start_node.childNodes:
                         self.get_nodes_with_style_full6(n, parent_node, list, level + 1)
         return
@@ -171,7 +171,6 @@ class StylesContainer:
                 self.get_nodes_with_style_full_list(n, parent_node, list, level + 1)
         return list
 
-
     def get_nodes_with_style_full7(self, start_node, parent_node, level=0, list=None):
         if list is None:
             list = {}
@@ -183,16 +182,17 @@ class StylesContainer:
                         if kk in consts.DEFAULT_PARAM.keys():
                             if att[kk] is consts.DEFAULT_PARAM[kk]:
                                 att[kk] = parent_node[kk]
-                    att["text"] = str(start_node)
+                    list["text"] = str(start_node)
                     parent_node = att
-                    list[start_node.qname[1] + " " + str(level)] = att
+                    list["data"] = att
                     print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
                           k[1] + ':' + start_node.attributes[k],
                           ") ", str(start_node), "параметр ", att)
             for n in range(0, len(start_node.childNodes)):
+                print(n)
                 list1 = {}
                 list1["nodes"] = self.get_nodes_with_style_full7(start_node.childNodes[n], parent_node, level + 1)
-                list1["type"] = start_node.qname[1]
-                list[str(n)] = list1
-                self.get_nodes_with_style_full7(start_node.childNodes[n], parent_node, level + 1)
+                if len(list1["nodes"]) > 0:
+                    list1["type"] = start_node.qname[1]
+                    list[str(n)] = list1
         return list
