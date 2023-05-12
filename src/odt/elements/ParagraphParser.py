@@ -5,6 +5,9 @@
 """
 from src.odt.elements.ODTDocument import ODTDocument
 from src.helpers.odt.converters import convert_to_paragraph
+from src.classes.Paragraph import Paragraph
+from dacite import from_dict
+
 
 class ParagraphParser:
     """
@@ -109,5 +112,5 @@ class ParagraphParser:
             for objs in styles_data[style]['nodes']:
                 if 'p' in objs:
                     help = styles_data[style]['nodes'][objs]
-                    par_objs.append(convert_to_paragraph(help))
+                    par_objs.append(from_dict(data_class=Paragraph, data=convert_to_paragraph(help)))
         return par_objs

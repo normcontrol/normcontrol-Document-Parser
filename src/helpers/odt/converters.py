@@ -264,15 +264,15 @@ def convert_to_paragraph(par_props):
                 converted_data_key['_indent'] = float(par_props[key].split('i')[0]) * 138.9
             case 'line-height':
                 converted_data_key['_line_spacing'] = float(par_props[key].split('%')[0]) / 107
-            case 'text-align':
-                if par_props[key] == 'start':
-                    converted_data_key['_alignment'] = AlignmentEnum.LEFT
-                elif par_props[key] == 'center':
-                    converted_data_key['_alignment'] = AlignmentEnum.CENTER
-                elif par_props[key] == 'justify':
-                    converted_data_key['_alignment'] = AlignmentEnum.JUSTIFY
-                else:
-                    converted_data_key['_alignment'] = AlignmentEnum.RIGHT
+            # case 'text-align':
+            #     if par_props[key] == 'start':
+            #         converted_data_key['_alignment'] = AlignmentEnum.LEFT
+            #     elif par_props[key] == 'center':
+            #         converted_data_key['_alignment'] = AlignmentEnum.CENTER
+            #     elif par_props[key] == 'justify':
+            #         converted_data_key['_alignment'] = AlignmentEnum.JUSTIFY
+            #     else:
+            #         converted_data_key['_alignment'] = AlignmentEnum.RIGHT
             case 'margin-right':
                 converted_data_key['_mrgrg'] = float(par_props[key].split('i')[0]) * 138.9
             case 'margin-top':
@@ -296,7 +296,10 @@ def convert_to_paragraph(par_props):
             case 'text':
                 converted_data_key['_text'] = par_props[key]
             case 'font-size':
-                converted_data_key['_text_size'] = par_props[key]
+                if isinstance(par_props[key], int):
+                    converted_data_key['_text_size'] = float(par_props[key])
+                else:
+                    converted_data_key['_text_size'] = float(par_props[key][:2])
             # case '_count_of_sp_sbl':
             # case '_count_sbl':
             # case '_lowercase':
@@ -332,10 +335,4 @@ def convert_to_paragraph(par_props):
             case 'color':
                 converted_data_key['_color_text'] = par_props[key]
         converted_data.update(converted_data_key)
-    converted_data_key['_count_of_sp_sbl'] = 0
-    converted_data_key['_count_sbl'] = 0
-    converted_data_key['_lowercase'] = False
-    converted_data_key['_uppercase'] = False
-    converted_data_key['_last_sbl'] = ""
-    converted_data_key['_first_key'] = ""
     return converted_data

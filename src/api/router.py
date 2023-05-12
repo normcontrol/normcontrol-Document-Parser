@@ -5,6 +5,9 @@ from src.api.schemas import DocumentData
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.helpers.errors.errors import NotAllowedFormatFileException
 from src.PDF.PDFParser import PDFParser
+from src.odt.elements.ODTDocument import ODTDocument
+from src.odt.elements.ParsingReport import ParsingReport
+
 parser_router = APIRouter(prefix="", tags=["parser"])
 
 
@@ -40,6 +43,12 @@ async def parse_document(
         '''
         return document.create_json()
 
+    def parse_odt():
+        doc = ODTDocument(document_data.path)
+        parsing_report = ParsingReport(doc)
+        document = parsing_report.create_odt_report(doc)
+        return document.create_json()
+
     if request.method == 'POST':
         if document_data.path == '':
             raise HTTPException(status_code=404, detail="Path not found")
@@ -54,7 +63,7 @@ async def parse_document(
                 if document_data.document_type == 'pdf':
                     return parse_pdf()
                 if document_data.document_type == 'odt':
-                    pass
+                    return parse_odt()
                 if document_data.document_type == 'docx':
                     pass
             else:
