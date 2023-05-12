@@ -292,14 +292,14 @@ def convert_to_paragraph(par_props):
                     keep_with_next = True
                 converted_data_key['_keep_with_next'] = keep_with_next
             case 'font-name':
-                converted_data_key['_font_name'] = par_props[key]
+                converted_data_key['_font_name'] = [par_props[key]]
             case 'text':
                 converted_data_key['_text'] = par_props[key]
             case 'font-size':
                 if isinstance(par_props[key], int):
-                    converted_data_key['_text_size'] = float(par_props[key])
+                    converted_data_key['_text_size'] = [float(par_props[key])]
                 else:
-                    converted_data_key['_text_size'] = float(par_props[key][:2])
+                    converted_data_key['_text_size'] = [float(par_props[key][:2])]
             # case '_count_of_sp_sbl':
             # case '_count_sbl':
             # case '_lowercase':
