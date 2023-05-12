@@ -30,12 +30,14 @@ class PdfParagraph:
 
     _indent: float = None
     _line_spacing: float = None
-    _font_name: str = None
-    _text_size: float = None
+    _font_name: list = field(default_factory=list)
+    _text_size: list = field(default_factory=list)
     _no_change_font_name: bool = None
     _no_change_text_size: bool = None
     _spaces: list = field(default_factory=list)
     _lines: list[Line] = field(default_factory=list)
+    _full_italics: bool = None
+    _full_bold: bool = None
 
     @property
     def lines(self):
@@ -100,3 +102,19 @@ class PdfParagraph:
     @no_change_text_size.setter
     def no_change_text_size(self, value: bool):
         self._no_change_text_size = value
+
+    @property
+    def full_bold(self):
+        return self._full_bold
+
+    @full_bold.setter
+    def full_bold(self, value: bool):
+        self._full_bold = value
+
+    @property
+    def full_italics(self):
+        return self._full_italics
+
+    @full_italics.setter
+    def full_italics(self, value: bool):
+        self._full_italics = value

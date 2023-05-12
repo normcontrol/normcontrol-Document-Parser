@@ -185,7 +185,7 @@ class Paragraph(StructuralElement):
 
         """
         first_key = text.split(' ')[0]
-        if re.match(r'^(\d+\.)$|^(\d+\))$|^(-)$|^(–)$|^(−)$', first_key):
+        if re.match(r'^(\d+\.)$|^(\d+\))$|^(-)$|^(–)$|^(−)|^(⎯)$|^([a-z]\))$', first_key):
             return 'listLevel1'
         if re.match(r'^\d+$', first_key):
             return 'TitleLevel1'

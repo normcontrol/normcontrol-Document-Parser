@@ -316,16 +316,11 @@ class PDFParser(InformalParserInterface, ABC):
                 text_size.add(round(size))
             for font in line.font_names:
                 font_name.add(font)
-            if len(line.font_names) > 1 or line.no_change_font_name is False:
-                no_change_font_name = False
-            if len(line.text_sizes) > 1 or line.no_change_text_size is False:
-                no_change_text_size = False
+            no_change_font_name = False if len(font_name) > 1 or line.no_change_font_name is False else True
+            no_change_text_size = False if len(text_size) > 1 or line.no_change_text_size is False else True
+
         pdf_paragraph.font_name = list(font_name)
         pdf_paragraph.text_size = list(text_size)
-        # if len(pdf_paragraph.lines[0].text_sizes) != 0:
-        #     pdf_paragraph.text_size = pdf_paragraph.lines[0].text_sizes[0]
-        # if len(pdf_paragraph.lines[0].font_names) != 0:
-        #     pdf_paragraph.font_name = pdf_paragraph.lines[0].font_names[0]
 
         if len(pdf_paragraph.font_name) > 1:
             pdf_paragraph.full_bold = False
@@ -450,10 +445,8 @@ class PDFParser(InformalParserInterface, ABC):
 
         while i < len(lines):
             mean = 0
-            j = 0
-            while j < len(paragraph.lines) - 1:
-                mean = mean + paragraph.spaces[j]
-                j = j + 1
+            for j in range(len(paragraph.lines)):
+                mean += paragraph.spaces[j]
             # Calculating the average value of the line spacing
             if len(paragraph.lines) - 1 > 1:
                 mean = mean / (len(paragraph.lines) - 1)
