@@ -4,6 +4,7 @@ from src.odt.elements.ODTDocument import ODTDocument
 from src.helpers.odt import consts
 
 
+
 class StylesContainer:
     def __init__(self, doc: ODTDocument):
         odt_parser = ODTParser()
@@ -185,14 +186,83 @@ class StylesContainer:
                     list["text"] = str(start_node)
                     parent_node = att
                     list["data"] = att
+                    par = self.create_paragraph(att, str(start_node))
+                    list["paragraph"] = par
                     print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
                           k[1] + ':' + start_node.attributes[k],
                           ") ", str(start_node), "параметр ", att)
-            for n in range(0, len(start_node.childNodes)):
+            for n in range(0, len(start_node.childNodes)-1):
                 print(n)
                 list1 = {}
                 list1["nodes"] = self.get_nodes_with_style_full7(start_node.childNodes[n], parent_node, level + 1)
                 if len(list1["nodes"]) > 0:
                     list1["type"] = start_node.qname[1]
+                    if len(list1["nodes"])>3:
+                        arr = self.is_change(list1["nodes"])
+                        par = list1["nodes"]["paragraph"]
+                        par._no_change_fontname = not arr[0]
+                        par._no_change_text_size = not arr[1]
+                        list1["nodes"]["paragraph"] = par
                     list[str(n)] = list1
         return list
+    def create_paragraph(self, attrs: dict, text: str):
+        par = Paragraph(_text=text, _font_name=attrs["font-name"],
+                        _text_size=attrs["font-size"])
+        if attrs["font-weight"] == "normal":
+            par.bold = False
+        else:
+            par.bold = True
+        if attrs["font-style"] == "normal":
+            par.italics = False
+        else:
+            par.italics = True
+        if "sub" in attrs["text-position"]:
+            par.sub_text = True
+        else:
+            par.sub_text = False
+        if "super" in attrs["text-position"]:
+            par.super_text = True
+        else:
+            par.super_text = False
+        par.color_text = attrs["color"]
+        if attrs["text-align"] == "start" :
+            par.alignment = "left"
+        else:
+            if attrs["text-align"] == "end":
+                par.alignment = "right"
+            else:
+                par.alignment = attrs["text-align"]
+        par.indent = float(attrs["text-indent"].replace('in', ''))
+        if attrs["keep-together"] == "always":
+            par.keep_lines_together = True
+        if attrs["keep-with-next"] == "always":
+            par.keep_with_next = True
+        par.mrglf = float(attrs["margin-left"].replace('in', ''))
+        par.mrgrg = float(attrs["margin-right"].replace('in', ''))
+        par.mrgbtm = float(attrs["margin-bottom"].replace('in', ''))
+        par.mrgtop = float(attrs["margin-top"].replace('in', ''))
+        if attrs["text-underline-type"] == "none":
+            par.underlining = False
+        else:
+            par.underlining = True
+        return par
+
+    def is_change(self, nodes: dict):
+        parent_font = nodes["data"]["font-name"]
+        parent_size = nodes["data"]["font-size"]
+        font = False
+        size = False
+        for n in nodes:
+            if n != 'text' and n != 'data' and n != 'paragraph':
+                if "data" in nodes[n]["nodes"]:
+                    data = nodes[n]["nodes"]["data"]
+                    if data["font-name"]!= parent_font:
+                        font = True
+                    if data["font-size"]!= parent_size:
+                        size = True
+
+        return [font, size]
+
+    #_no_change_fontname: bool = None
+    #_no_change_text_size: bool = None
+    #_bbox: dict[int, tuple] = None
