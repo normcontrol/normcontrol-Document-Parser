@@ -18,9 +18,10 @@ for dir_path, dir_names, file_names in walk('.\\documents'):
         '''
         document = pdf_parser.get_all_elements(lines, spaces, tables, list_of_picture)
         # To write information about structural elements, use the write_CSV method, specifying the save path
-        # document.write_CSV(dir_path + '\\csv\\' + filename + '.csv')
+        document.write_CSV(dir_path + '\\csv\\' + filename + '.csv')
         '''
         To create a JSON string from data about structural elements, which will later be sent to the classifier,
         use the create_json_to_clasifier method, which takes a list of required fields as parameters
         '''
         json = document.create_json()
+        print("ok")
