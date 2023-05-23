@@ -1,50 +1,42 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class TableRow:
     """
     Description: Table row class for ODT document.
 
-    Parameters:
-        _row_name - attribute specifies the name of a row,
-        _row_family - attribute specifies the family of a style (style:family),
-        _row_properties_min_row_height - attribute specifies a fixed minimum height for a row
-            (style:table-row-properties),
-        _row_properties_use_optimal_row_height - attribute specifies that a row height should be recalculated
-            automatically if content in the row changes.
+    Attributes:
+        _name - attribute specifies the name of a row,
+        _family - attribute specifies the family of a style (style:family),
+        _properties_min_height - attribute specifies a fixed minimum height for a row
+            (style:table-row-properties)
     """
 
-    def __init__(self, row_name:str, row_family:str, row_properties_min_row_height:float, row_properties_use_optimal_row_height:float):
-        self._row_name = row_name
-        self._row_family = row_family
-        self._row_properties_min_row_height = row_properties_min_row_height
-        self._row_properties_use_optimal_row_height = row_properties_use_optimal_row_height
+    _name: str = None
+    _family: str = None
+    _properties_min_height: float = None
 
     @property
-    def row_name(self):
-        return self._row_name
+    def name(self):
+        return self._name
 
-    @row_name.setter
-    def row_name(self, value):
-        self._row_name = value
-
-    @property
-    def row_family(self):
-        return self._row_family
-
-    @row_family.setter
-    def row_family(self, value):
-        self._row_family = value
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
-    def row_properties_min_row_height(self):
-        return self._row_properties_min_row_height
+    def family(self):
+        return self._family
 
-    @row_properties_min_row_height.setter
-    def row_properties_min_row_height(self, value):
-        self._row_properties_min_row_height = value
+    @family.setter
+    def family(self, value):
+        self._family = value
 
     @property
-    def row_properties_use_optimal_row_height(self):
-        return self._row_properties_use_optimal_row_height
+    def properties_min_height(self):
+        return self._properties_min_height
 
-    @row_properties_use_optimal_row_height.setter
-    def row_properties_use_optimal_row_height(self, value):
-        self._row_properties_use_optimal_row_height = value
+    @properties_min_height.setter
+    def properties_min_height(self, value):
+        self._properties_min_height = value
