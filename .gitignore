@@ -1,3 +1,6 @@
-# created by virtualenv automatically
 venv
+
 .idea
+
+.pytest_cache
+**.pyc
