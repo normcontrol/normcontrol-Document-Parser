@@ -1,8 +1,12 @@
 import re
 from abc import ABC
 import pdfplumber
+from pdfplumber import PDF
+
+from src.classes.Formula import Formula
 from src.classes.Frame import Frame
 from src.classes.Image import Image
+from src.classes.List import List
 from src.classes.Table import Table
 from src.classes.TableCell import TableCell
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
@@ -10,8 +14,8 @@ from src.classes.Paragraph import Paragraph
 from src.classes.interfaces.InformalParserInterface import InformalParserInterface
 from src.classes.superclass.StructuralElement import StructuralElement
 from src.helpers.errors.errors import EmptyPathException
-from src.PDF.pdfclasses.Line import Line
-from src.PDF.pdfclasses.PdfParagraph import PdfParagraph
+from src.pdf.pdfclasses.Line import Line
+from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
 
 
 class PDFParser(InformalParserInterface, ABC):
@@ -21,67 +25,66 @@ class PDFParser(InformalParserInterface, ABC):
     Attributes:
     ----------
         _path:str
-            Attribute specifies file path
+            The attribute specifies file path
 
         __pdf: pdfplumber.pdf
-            Attribute representing an object obtained by using the pdfplumber library that models a pdf file
-            and its internal objects
+            The attribute represents an object obtained by using the pdfplumber library that models a pdf file
+                and its internal objects
 
         _document: UnifiedDocumentView
-            Attribute representing a unified text document object containing structural elements and
-            their properties
+            The attribute represents a unified text document object containing structural elements and
+                their properties
 
         _lines: list
-            An attribute representing a list of all formed lines
+            The attribute represents a list of all formed lines
 
         _list_of_table: list
-            An attribute representing a list of all extracted tables
+            The attribute represents a list of all extracted tables
 
         _line_spaces: list
-            An attribute representing a list of spaces between lines
+            The attribute represents a list of spaces between lines
 
         _pictures:list
-            An attribute representing a list of all pictures in file
+            The attribute represents a list of all pictures in file
 
         _paragraph_list:
-             An attribute representing a list of all paragraphs in file
+            The attribute represents a list of all paragraphs in file
 
     Methods:
     ----------
-        get_tables(self):
+        load_data_source(self, path: str) -> PDF:
+            Loads raw data from a document
+
+        extract_tables(self) -> list[Table]:
             Extracts all pdf tables using the object of pdfplumber library.
 
-        get_lines(self):
+        extract_lines(self) -> list[Line]:
             Extracts all text rows using the object of pdfplumber library.
 
-        get_pictures(self):
+        extract_pictures(self) -> list[Frame]:
             Extracts all images from a pdf document
 
-        get_formules(self):
+        extract_formulas(self) -> list[Formula]:
             Extracts all formules from a pdf document
 
-        get_lists(self):
+        extract_lists(self) -> list[List]:
             Extracts all lists from a pdf document
 
-        @staticmethod
-        add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
-            Calculates and adds special attributes to a paragraph
-
-        get_all_elements(self, lines, spaces, list_of_table):
-            Forms structural elements of the document based on lines, line spacing, tables and pictures
-
-        get_paragraphs(self, lines, spaces, list_of_table):
+        extract_paragraphs(self, lines, spaces, list_of_table) -> list[Paragraph]:
             Forms paragraphs of the document based on lines, line spacing and tables
 
-        @classmethod
-        get_space(lines):
+        get_all_elements(self, lines, spaces, list_of_table) -> UnifiedDocumentView:
+            Forms structural elements of the document based on lines, line spacing, tables and pictures
+
+        add_special_paragraph_attribute(pdf_paragraph: PdfParagraph) -> PdfParagraph:
+            Calculates and adds special attributes to a paragraph
+
+        extract_spaces(lines) -> list[float]:
             Based on the properties of the document lines, generates a line spacing for each line
 
-        @staticmethod
-        get_standart_paragraph(pdf_paragraph):
+        get_standart_paragraph(pdf_paragraph) -> Paragraph:
             Converts the resulting paragraph and its attributes into a unified view
 
-        @classmethod
         delete_dublicates(cls, pdf_paragraph, removed_tables, list_of_table):
             Removes duplicate table text lines, forms their properties and adds them to the paragraph object
 
@@ -92,15 +95,16 @@ class PDFParser(InformalParserInterface, ABC):
             if len(path) == 0:
                 raise EmptyPathException('Path is empty')
             self._path = path
-            self.__pdf = pdfplumber.open(path)
+            self.__pdf = self.load_data_source(path)
             self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
                                                  time=self.__pdf.metadata.get('CreationDate'),
                                                  page_count=len(self.__pdf.pages))
-            self._pictures = self.get_pictures()
-            self._lines = self.get_lines()
-            self._line_spaces = self.get_space(self._lines)
-            self._list_of_table = self.get_tables()
-            self._paragraph_list = self.get_paragraphs(self.lines, self.line_spaces, self.list_of_table)
+            self._pictures = self.__extract_pictures()
+            self._lines = self.__extract_lines()
+            self._line_spaces = self.extract_spaces(self._lines)
+            self._tables = self.__extract_tables()
+            self._paragraphs = self.__extract_paragraphs(self.lines, self.line_spaces, self.tables)
+
         except EmptyPathException as e:
             print(e)
 
@@ -125,7 +129,7 @@ class PDFParser(InformalParserInterface, ABC):
         return self._pictures
 
     @pictures.setter
-    def pictures(self, value: list):
+    def pictures(self, value: list[Frame]):
         self._pictures = value
 
     @property
@@ -141,26 +145,40 @@ class PDFParser(InformalParserInterface, ABC):
         return self._lines
 
     @lines.setter
-    def lines(self, lines: list):
+    def lines(self, lines: list[Line]):
         self._lines = lines
 
     @property
-    def list_of_table(self):
-        return self._list_of_table
+    def tables(self):
+        return self._tables
 
-    @list_of_table.setter
-    def list_of_table(self, list_of_table: list):
-        self._list_of_table = list_of_table
+    @tables.setter
+    def tables(self, tables: list[Table]):
+        self._tables = tables
 
     @property
-    def paragraph_list(self):
-        return self._paragraph_list
+    def paragraphs(self):
+        return self._paragraphs
 
-    @paragraph_list.setter
-    def paragraph_list(self, value: str):
-        self._paragraph_list = value
+    @paragraphs.setter
+    def paragraphs(self, value: list[Paragraph]):
+        self._paragraphs = value
 
-    def get_tables(self) -> list[StructuralElement]:
+    def load_data_source(self, path: str) -> PDF:
+        """
+        Loads raw data from a document
+        :param
+            path:str
+                Path to source file
+        :return
+            pdf: PDF
+                A variable representing an object that stores the primary extracted data from the document,
+                for example: symbols, rectangles, pictures
+
+        """
+        return pdfplumber.open(path)
+
+    def extract_tables(self) -> list[Table]:
         """
 
         Extracts all table from a pdf document
@@ -187,12 +205,12 @@ class PDFParser(InformalParserInterface, ABC):
                                                _master_page_number=table.page.page_number,
                                                _width=table.bbox[2] - table.bbox[0],
                                                _bbox=table.bbox, _page_bbox=table.page.bbox,
-                                               _cells=[TableCell(
-                                                   _text=[item for sublist in tables_text[0] for item in sublist][i])
-                                                   for i in range(len(table.cells))]))
+                                               _cells=[TableCell()]))
+                    # _text = [item for sublist in tables_text[0] for item in sublist][i])
+                    # for i in range(len(table.cells))])
         return list_of_table
 
-    def get_lines(self) -> list:
+    def extract_lines(self) -> list[Line]:
 
         """
 
@@ -265,7 +283,7 @@ class PDFParser(InformalParserInterface, ABC):
         return lines
 
     @staticmethod
-    def get_space(lines: list):
+    def extract_spaces(lines: list) -> list[float]:
 
         """
 
@@ -293,7 +311,7 @@ class PDFParser(InformalParserInterface, ABC):
         return spaces
 
     @staticmethod
-    def add_special_paragraph_attribute(pdf_paragraph: PdfParagraph):
+    def add_special_paragraph_attribute(pdf_paragraph: PdfParagraph) -> PdfParagraph:
 
         """
 
@@ -414,7 +432,7 @@ class PDFParser(InformalParserInterface, ABC):
             i = i + 1
         return self.document
 
-    def get_paragraphs(self, lines: list, spaces: list, list_of_table: list) -> list[StructuralElement]:
+    def extract_paragraphs(self, lines: list, spaces: list, list_of_table: list) -> list[Paragraph]:
         """
 
         Generates paragraphs from a list of lines
@@ -477,7 +495,7 @@ class PDFParser(InformalParserInterface, ABC):
         return paragraph_list
 
     @staticmethod
-    def get_standart_paragraph(pdf_paragraph: PdfParagraph):
+    def get_standart_paragraph(pdf_paragraph: PdfParagraph) -> Paragraph:
         """
 
         Brings the resulting paragraph to the standard form
@@ -573,7 +591,7 @@ class PDFParser(InformalParserInterface, ABC):
                 return table, removed_tables, list_of_table
         return pdf_paragraph, removed_tables, list_of_table
 
-    def get_pictures(self) -> list:
+    def extract_pictures(self) -> list[Frame]:
         """
 
         Extracts all images from a pdf document
@@ -591,7 +609,7 @@ class PDFParser(InformalParserInterface, ABC):
                                       _image=Image(_type=image['object_type'])))
         return pictures
 
-    def get_formulas(self):
+    def extract_formulas(self) -> list[Formula]:
         """
 
         Extracts all formulas from a pdf document
@@ -604,7 +622,7 @@ class PDFParser(InformalParserInterface, ABC):
         print("In progress")
         pass
 
-    def get_lists(self):
+    def extract_lists(self) -> list[List]:
         """
 
         Extracts all formulas from a pdf document

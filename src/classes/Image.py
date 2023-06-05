@@ -7,11 +7,16 @@ class Image:
     Description: Image class for ODT document.
 
     Attributes:
-        _href - attribute specifies the location of an embedded object,
-        _type - attribute always has the value simple in OpenDocument document instances,
-        _show - attribute is used to communicate the desired presentation of the ending resource on traversal
+    ----------
+        _href: str
+            attribute specifies the location of an embedded object,
+        _type: str
+            attribute always has the value simple in OpenDocument document instances,
+        _show: str
+            attribute is used to communicate the desired presentation of the ending resource on traversal
             from the starting resource,
-        _actuate - attribute is used to communicate the desired timing of traversal from the starting resource
+        _actuate: str
+            attribute is used to communicate the desired timing of traversal from the starting resource
             to the ending resource,
     """
 

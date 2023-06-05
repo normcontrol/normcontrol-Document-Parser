@@ -1,4 +1,4 @@
-from src.PDF.PDFParser import PDFParser
+from src.pdf.PDFParser import PDFParser
 from os import walk
 
 for dir_path, dir_names, file_names in walk('.\\documents'):
@@ -24,4 +24,3 @@ for dir_path, dir_names, file_names in walk('.\\documents'):
         use the create_json_to_clasifier method, which takes a list of required fields as parameters
         '''
         json = document.create_json()
-        print("ok")

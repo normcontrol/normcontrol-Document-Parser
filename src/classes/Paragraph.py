@@ -82,7 +82,6 @@ class Paragraph(StructuralElement):
     _color_text: str = None
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
-    _bbox: dict[int, tuple] = None
     _font_name: list[str] = field(default_factory=list)
     _text_size: list[float] = field(default_factory=list)
 

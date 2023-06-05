@@ -27,8 +27,8 @@ class Line:
             The attribute describing that the font of the string has not changed
         _no_change_text_size: bool
             The attribute describing that the size of the string has not changed
-        _page: int
-            The attribute describes the page on which the line is located
+        _number_of_page: int
+            The attribute describes the number of page on which the line is located
         _chars: list
             The attribute list of characters that make up the string
 
