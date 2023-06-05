@@ -4,7 +4,7 @@ from starlette.requests import Request
 from src.api.schemas import DocumentData
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.helpers.errors.errors import NotAllowedFormatFileException
-from src.PDF.PDFParser import PDFParser
+from src.pdf.PDFParser import PDFParser
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.elements.ParsingReport import ParsingReport
 
