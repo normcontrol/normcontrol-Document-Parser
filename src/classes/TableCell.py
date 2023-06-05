@@ -6,22 +6,27 @@ class TableCell:
     Description: Table cell class for ODT document.
 
     Attributes:
-        _name - attribute specifies the name of a cell,
-        _family - attribute specifies the family of a style (style:family),
-        _border - attribute specifies the property for setting the same width, color, and style for
+        _name: str
+            The attribute specifies the name of a cell,
+        _family: str
+            The attribute specifies the family of a style (style:family),
+        _border: float
+            The attribute specifies the property for setting the same width, color, and style for
             all four borders, top, bottom, left, and right, of a box (style:table-cell-properties),
-        _writing_mode - the property applies only to formatting objects that set up a reference-area.
+        _writing_mode: str
+            The property applies only to formatting objects that set up a reference-area.
             Each value of writing-mode sets all three of the direction traits indicated in each of the value
             descriptions above on the reference-area,
-        _padding_top - specifies the width of the padding on the top-edge of a block-area
-            or inline-area,
-        _padding_left - Specifies the width of the padding on the left-edge of a block-area
-            or inline-area,
-        _padding_bottom - specifies the width of the padding on the bottom-edge of a block-area
-            or inline-area,
-        _padding_right - specifies the width of the padding on the right-edge of a block-area
-            or inline-area.
-        _text - specifies the text in cell.
+        _padding_top: float
+            The attribute specifies the width of the padding on the top-edge of a block-area or inline-area,
+        _padding_left: float
+            The attribute specifies the width of the padding on the left-edge of a block-area or inline-area,
+        _padding_bottom: float
+            The attribute specifies the width of the padding on the bottom-edge of a block-area or inline-area,
+        _padding_right: float
+            The attribute specifies the width of the padding on the right-edge of a block-area or inline-area.
+        _text: str
+            The attribute specifies the text in cell.
     """
 
     _name: str = None

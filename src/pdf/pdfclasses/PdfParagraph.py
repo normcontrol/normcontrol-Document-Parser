@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from src.PDF.pdfclasses.Line import Line
+from src.pdf.pdfclasses.Line import Line
 
 
 @dataclass()
@@ -26,6 +26,10 @@ class PdfParagraph:
             Attribute describing that the font of the paragraph has not changed
         _no_change_text_size: bool
             Attribute describing that the size of the paragraph has not changed
+        _full_bold: bool
+            The attribute specifies paragraph text boldness
+        _full_italics: bool
+            The attribute specifies paragraph text italics
     """
 
     _indent: float = None

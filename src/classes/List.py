@@ -5,15 +5,22 @@ from src.classes.Paragraph import Paragraph
 @dataclass
 class List(Paragraph):
     """
-    Description: List class for document.
+    Description: The class is an abstraction of an enumeration object that is contained in text documents
 
-    Attributes:
-        _type - attribute specifies the type of list - bulleted/numbered or other,
-        _name - attribute specifies the name of a list,
-        _level - attribute specifies the level of an outline or number list style,
-        _start_value - attribute specifies a value that restarts numbering at the current list level,
-        _style_char - attribute specifies a char in sequence,
-        _style_name - attribute specifies name of the family style
+    Attributes
+    ----------
+        _type: str
+            attribute specifies the type of list - bulleted/numbered or other,
+        _name: str
+            attribute specifies the name of a list,
+        _level:str
+            attribute specifies the level of an outline or number list style,
+        _start_value:str
+            attribute specifies a value that restarts numbering at the current list level,
+        _style_char:str
+            attribute specifies a char in sequence,
+        _style_name:str
+            attribute specifies name of the family style
     """
 
     _type: str = None

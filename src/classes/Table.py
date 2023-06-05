@@ -8,19 +8,27 @@ from src.classes.superclass.StructuralElement import StructuralElement
 @dataclass
 class Table(StructuralElement):
     """
-    Description: Table class for document.
+    Description: The class is an abstraction of a table object that is contained in text documents
 
     Attributes:
-        _table_name - attribute specifies the name of a table,
-        _family - attribute specifies the family of a style (style:family),
-        _master_page_name - attribute specifies the name of element that contains the content
-            of headers and footers,
-        _width - attribute specifies the width of a table relative to the width of
-            the area that the table is in (style:table-properties),
-        _cells - a list containing table cell objects,
-        _rows - a list containing table row objects.
-        _bbox - attribute specifies x0, y0, x1, y1 position of table in page
-        _page_bbox - attribute specifies size of page
+    ----------
+        _inner_text: str
+            attribute specifies the text of all table cells
+        _master_page_number: int
+            attribute specifies the number of page
+        _family: str
+            attribute specifies the family of a style (style:family),
+        _width: float
+            attribute specifies the width of a table relative to the width
+            of the area that the table is in (style:table-properties),
+        _cells : list[TableCell]
+            a list containing table cell objects,
+        _rows: list[TableRow]
+            a list containing table row objects.
+        _bbox: tuple
+            attribute specifies x0, y0, x1, y1 position of table in page
+        _page_bbox: tuple
+            attribute specifies size of page
     """
     _inner_text: list = None
     _master_page_number: int = None

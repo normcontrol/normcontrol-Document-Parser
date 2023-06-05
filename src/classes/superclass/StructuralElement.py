@@ -31,6 +31,8 @@ class StructuralElement:
                 The attribute specifies keeping paragraphs together
         _outline_level: str
                 The attribute specifies element type
+        _bbox: dict[int, tuple]
+                The attribute specifies position of element on page
     """
 
     _indent: float = None
@@ -44,6 +46,7 @@ class StructuralElement:
     _keep_lines_together: bool = None
     _keep_with_next: bool = None
     _outline_level: str = None
+    _bbox: dict[int, tuple] = None
 
     @property
     def line_spacing(self):
