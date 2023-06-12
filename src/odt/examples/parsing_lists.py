@@ -1,16 +1,13 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
-from src.odt.elements.StylesContainer import StylesContainer
 from src.helpers.odt import consts
 
 if __name__ == '__main__':
-    doc_path = "documents/dipbac.odt"
+    doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt"
     doc = ODTDocument(doc_path)
-    odt_parser = ODTParser()
-    styles_container = StylesContainer(doc)
+    odt_parser = ODTParser(doc)
 
-    styles_container.build_dict()
-    all_doc_info = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    all_doc_info = odt_parser.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
     print(list)
     print(list["0"])
 
