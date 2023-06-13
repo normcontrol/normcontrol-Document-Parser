@@ -6,10 +6,7 @@
         осуществляется с помощью библиотечных методов.
 """
 from odf.opendocument import load
-from src.classes.UnifiedDocumentView import UnifiedDocumentView
-from src.helpers.odt import path
 from odf.text import P
-import os
 
 
 class ODTDocument:
@@ -39,7 +36,6 @@ class ODTDocument:
     """
 
     def __init__(self, file_path: str):
-        script_path = os.path.abspath(__file__)
         self._file_path = file_path
         self._document = load(self._file_path)
         self._file_text = self.all_odt_text()
@@ -60,8 +56,7 @@ class ODTDocument:
 
     @file_path.setter
     def file_path(self, value):
-        script_path = os.path.abspath(__file__)
-        self._file_path = path.create_path(script_path, value)
+        self._file_path = value
 
     @property
     def document(self):

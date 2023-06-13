@@ -264,15 +264,6 @@ def convert_to_paragraph(par_props):
                 converted_data_key['_indent'] = float(par_props[key].split('i')[0]) * 138.9
             case 'line-height':
                 converted_data_key['_line_spacing'] = float(par_props[key].split('%')[0]) / 107
-            # case 'text-align':
-            #     if par_props[key] == 'start':
-            #         converted_data_key['_alignment'] = AlignmentEnum.LEFT
-            #     elif par_props[key] == 'center':
-            #         converted_data_key['_alignment'] = AlignmentEnum.CENTER
-            #     elif par_props[key] == 'justify':
-            #         converted_data_key['_alignment'] = AlignmentEnum.JUSTIFY
-            #     else:
-            #         converted_data_key['_alignment'] = AlignmentEnum.RIGHT
             case 'margin-right':
                 converted_data_key['_mrgrg'] = float(par_props[key].split('i')[0]) * 138.9
             case 'margin-top':
@@ -300,12 +291,6 @@ def convert_to_paragraph(par_props):
                     converted_data_key['_text_size'] = [float(par_props[key])]
                 else:
                     converted_data_key['_text_size'] = [float(par_props[key][:2])]
-            # case '_count_of_sp_sbl':
-            # case '_count_sbl':
-            # case '_lowercase':
-            # case '_uppercase':
-            # case '_last_sbl':
-            # case 'first-key':
             case 'font-weight':
                 current_weight = True
                 if par_props[key] == 'normal':
