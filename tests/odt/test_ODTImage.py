@@ -6,9 +6,9 @@ from src.classes.Frame import Frame
 
 class TestODTImage(unittest.TestCase):
     def setUp(self) -> None:
-        self.doc_path = "documents/listsimages.odt"
+        self.doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt"
         self.doc = ODTDocument(self.doc_path)
-        self.odt_parser = ODTParser()
+        self.odt_parser = ODTParser(self.doc)
 
     def test_get_image_styles(self):
         images_styles = self.odt_parser.image_parser.get_image_styles(self.doc)

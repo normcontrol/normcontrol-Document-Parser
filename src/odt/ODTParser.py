@@ -324,12 +324,10 @@ class ODTParser(InformalParserInterface, ABC):
                             att = consts.DEFAULT_PARAM
                     for style_key in self._all_regular_styles[key].keys():
                         if self._all_regular_styles[key][style_key] is None:
-                            print(self._all_regular_styles[key][style_key])
                             if att[style_key] is None:
                                 flag = 1
                             else:
                                 self._all_regular_styles[key][style_key] = att[style_key]
-                            print(self._all_regular_styles[key][style_key])
 
             if flag == 0:
                 break
@@ -347,9 +345,7 @@ class ODTParser(InformalParserInterface, ABC):
         for key in self._all_default_styles.keys():
             for style_key in self._all_default_styles[key].keys():
                 if self._all_default_styles[key][style_key] is None:
-                    print(self._all_default_styles[key][style_key])
                     self._all_default_styles[key][style_key] = consts.DEFAULT_PARAM[style_key]
-                    print(self._all_default_styles[key][style_key])
         return self._all_default_styles
 
     def build_automatic_styles_inheritance(self):
@@ -369,9 +365,7 @@ class ODTParser(InformalParserInterface, ABC):
                         att = self._all_regular_styles[parent][style_key]
                     else:
                         att = consts.DEFAULT_PARAM[style_key]
-                    print(self.all_automatic_styles[key][style_key])
                     self.all_automatic_styles[key][style_key] = att
-                    print(self.all_automatic_styles[key][style_key])
         return self._all_automatic_styles
 
     def find_style_with_inheritance(self, style_name):
@@ -452,10 +446,6 @@ class ODTParser(InformalParserInterface, ABC):
                         parent_node = att
                         list_of_nodes[start_node.attributes[key]] = self.get_document_nodes_with_style_full_list(
                             start_node, parent_node, {})
-                        print(list_of_nodes)
-                        print("  " * level, "Список:", start_node.qname[1], " Аттрибуты:(",
-                              key[1] + ':' + start_node.attributes[key],
-                              ") ", str(start_node), "параметр ", att)
             else:
                 if start_node.qname[1] == "p":
                     for key in start_node.attributes.keys():
@@ -473,9 +463,6 @@ class ODTParser(InformalParserInterface, ABC):
                                 par.bold = False
                             else:
                                 par.bold = True
-                            print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                                  key[1] + ':' + start_node.attributes[key],
-                                  ") ", str(start_node), "параметр ", att)
                 else:
                     for key in start_node.attributes.keys():
                         if (key[1] == "style-name"):
@@ -486,9 +473,6 @@ class ODTParser(InformalParserInterface, ABC):
                                         att[style_key] = parent_node[style_key]
                             att["text"] = str(start_node)
                             parent_node = att
-                            print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                                  key[1] + ':' + start_node.attributes[key],
-                                  ") ", str(start_node), "параметр ", att)
                     for child_node in start_node.childNodes:
                         self.get_document_nodes_with_styles(child_node, parent_node, list_of_nodes, level + 1)
         return
@@ -529,9 +513,6 @@ class ODTParser(InformalParserInterface, ABC):
                     att["text"] = str(start_node)
                     parent_node = att
                     list_of_nodes[start_node.qname[1] + " " + str(level)] = att
-                    print("  " * level, "Узел:", start_node.qname[1], " Аттрибуты:(",
-                          key[1] + ':' + start_node.attributes[key],
-                          ") ", str(start_node), "параметр ", att)
             for n in range(0, len(start_node.childNodes)):
                 assistance_list = {}
                 assistance_list["nodes"] = self.get_document_nodes_with_higher_style_data(start_node.childNodes[n],

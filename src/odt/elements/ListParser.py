@@ -36,16 +36,18 @@ class ListParser:
             Возвращает параметр стиля по атрибуту среди стилей списков.
     """
 
-    def get_lists_styles(self, doc: ODTDocument):
+    def get_lists_styles(self, doc: ODTDocument, all_styles):
         """Returns a list of all text styles with their attributes from the lists styles of document.
 
         Keyword arguments:
-            doc - an instance of the ODTDocument class containing the data of the document under study.
+            doc - an instance of the ODTDocument class containing the data of the document under study;
+            all_styles - all document_styles.
         ----------
         Возвращает список всех текстовых стилей с их атрибутами из списка стилей документа.
 
         Аргументы:
-            doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
+            doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
+            all_styles - все стили документа.
         """
         styles_dict = {}
         list_objs = []
@@ -62,20 +64,25 @@ class ListParser:
                         for deep in node.childNodes:
                             for key1 in deep.attributes.keys():
                                 style[key[1]] = deep.attributes[key1]
-        #for cur_style in styles_dict:
-            #list_objs.append(from_dict(data_class=List, data=convert_to_list(styles_dict[cur_style])))
+        for cur_style in styles_dict:
+            paragraph_prop = self.get_current_list_paragraph(cur_style, all_styles)
+            if paragraph_prop is not None:
+                paragraph_prop.update(convert_to_list(styles_dict[cur_style]))
+                list_objs.append(from_dict(data_class=List, data=paragraph_prop))
         return list_objs
 
     def get_list_styles_from_automatic_styles(self, doc: ODTDocument, all_styles):
         """Returns a list of all list styles from automatic document styles with their attributes.
 
         Keyword arguments:
-            doc - an instance of the ODTDocument class containing the data of the document under study.
+            doc - an instance of the ODTDocument class containing the data of the document under study;
+            all_styles - all document_styles.
         ----------
         Возвращает список всех стилей списков из автоматических стилей документа с их атрибутами.
 
         Аргументы:
-            doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа.
+            doc - экземпляр класса ODTDocument, содержащий данные исследуемого документа;
+            all_styles - все стили документа.
         """
         styles_dict = {}
         list_objs = []
