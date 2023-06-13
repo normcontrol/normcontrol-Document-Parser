@@ -44,6 +44,6 @@ if __name__ == '__main__':
     print(odt_parser.table_parser.get_table_column_parameter(ast, 'column-width'))
     print("-------------------------------------------\n")
 
-    all_doc_info = odt_parser.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    all_doc_info = odt_parser.get_document_nodes_with_higher_style_data(doc.document.text, consts.DEFAULT_PARAM)
     auto_pars = odt_parser.paragraph_parser.paragraphs_helper(all_doc_info)
     print(auto_pars)

@@ -7,6 +7,6 @@ if __name__ == '__main__':
     doc = ODTDocument(doc_path)
     odt_parser = ODTParser(doc)
 
-    list = odt_parser.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    list = odt_parser.get_document_nodes_with_higher_style_data(doc.document.text, consts.DEFAULT_PARAM)
     print(list)
     print(list["0"])

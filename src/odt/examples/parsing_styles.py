@@ -34,10 +34,6 @@ if __name__ == '__main__':
     print(odt_parser.list_parser.get_list_parameter(ast, 'font-size'))
     print("-------------------------------------------\n")
 
-    print("Печать всех узлов документа:")
-    print(odt_parser.node_parser.print_all_document_nodes_with_style_data(doc.document.text, "", doc))
-    print("-------------------------------------------\n")
-
     print("Печать всех стилей документа:")
     print(odt_parser.all_automatic_styles)
     print(odt_parser.all_default_styles)
