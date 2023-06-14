@@ -161,13 +161,14 @@ class Paragraph(StructuralElement):
 
         """
         try:
-            if text[len(text) - 1] == ' ' and re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
-                return text[len(text) - 2]
+            if len(text) > 1 and text[len(text) - 1] != '':
+                if text[len(text) - 1] == ' ' and re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
+                    return text[len(text) - 2]
             if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 1]) is None:
                 return text[len(text) - 1]
             return None
         except IndexError:
-            print("IndexError")
+
             return None
         except TypeError:
             print('TypeError, allowed type is str')

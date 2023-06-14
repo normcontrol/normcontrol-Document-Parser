@@ -3,6 +3,7 @@ from fastapi import APIRouter, Response, HTTPException
 from starlette.requests import Request
 from src.api.schemas import DocumentData
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
+from src.docx.DocxParagraphParser import DocxParagraphParser
 from src.helpers.errors.errors import NotAllowedFormatFileException
 from src.pdf.PDFParser import PDFParser
 from src.odt.elements.ODTDocument import ODTDocument
@@ -30,7 +31,7 @@ async def parse_document(
         pdf_parser = PDFParser(document_data.path)
         lines = pdf_parser.lines
         spaces = pdf_parser.line_spaces
-        tables = pdf_parser.list_of_table
+        tables = pdf_parser.tables
         list_of_picture = pdf_parser.pictures
         '''
         Using the get_elements method, we get a file of the UnifiedDocumentView type, 
@@ -49,6 +50,11 @@ async def parse_document(
         document = parsing_report.create_odt_report(doc)
         return document.create_json()
 
+    def parse_docx():
+        docx = DocxParagraphParser(document_data.path)
+        unified_document_view = docx.get_all_elements()
+        return unified_document_view.create_json()
+
     if request.method == 'POST':
         if document_data.path == '':
             raise HTTPException(status_code=404, detail="Path not found")
@@ -65,7 +71,7 @@ async def parse_document(
                 if document_data.document_type == 'odt':
                     return parse_odt()
                 if document_data.document_type == 'docx':
-                    pass
+                    return parse_docx()
             else:
                 raise NotAllowedFormatFileException
         except NotAllowedFormatFileException as e:
@@ -90,11 +96,11 @@ async def parse_paragraph(
         try:
             if filename and allowed_file(filename):
                 if document_data.document_type == 'pdf':
-                    return PDFParser(document_data.path).paragraph_list
+                    return PDFParser(document_data.path).paragraphs
                 if document_data.document_type == 'odt':
                     pass
                 if document_data.document_type == 'docx':
-                    pass
+                    return DocxParagraphParser(document_data.path).paragraphs
             else:
                 raise NotAllowedFormatFileException
         except NotAllowedFormatFileException as e:
@@ -123,7 +129,7 @@ async def parse_images(
                 if document_data.document_type == 'odt':
                     pass
                 if document_data.document_type == 'docx':
-                    pass
+                    return DocxParagraphParser(document_data.path).pictures
             else:
                 raise NotAllowedFormatFileException
         except NotAllowedFormatFileException as e:
@@ -148,11 +154,11 @@ async def parse_table(
         try:
             if filename and allowed_file(filename):
                 if document_data.document_type == 'pdf':
-                    return PDFParser(document_data.path).list_of_table
+                    return PDFParser(document_data.path).tables
                 if document_data.document_type == 'odt':
                     pass
                 if document_data.document_type == 'docx':
-                    pass
+                    return DocxParagraphParser(document_data.path).tables
             else:
                 raise NotAllowedFormatFileException
         except NotAllowedFormatFileException as e:
@@ -179,9 +185,9 @@ async def parse_list(
                 if document_data.document_type == 'pdf':
                     return 'In progress'
                 if document_data.document_type == 'odt':
-                    pass
+                    return 'In progress'
                 if document_data.document_type == 'docx':
-                    pass
+                    return 'In progress'
             else:
                 raise NotAllowedFormatFileException
         except NotAllowedFormatFileException as e:

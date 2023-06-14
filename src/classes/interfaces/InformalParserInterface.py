@@ -13,22 +13,6 @@ class InformalParserInterface(ABC):
     """
         Description: The class is an interface of a standard text document parser.
 
-        Attributes:
-        ----------
-            _document: UnifiedDocumentView
-                The attribute represents a unified document view that contains all structural elements
-                    and their attributes
-            _pictures: list[Frame]
-                The attribute represents list of image that contains in document
-            _tables: list[Table]
-                The attribute represents list of table that contains in document
-            _paragraphs: list[Paragraph]
-                The attribute represents list of paragraphs that contains in document
-            _lists: list[List]
-                The attribute represents list of enumeration that contains in document
-            _formulas: list[Formula]
-                The attribute represents list of formulas that contains in document
-
         Methods:
         ----------
             load_data_source(self, path: str):
@@ -46,13 +30,6 @@ class InformalParserInterface(ABC):
             __extract_lists(self) -> list[StructuralElement]
                 The method extracts and returns a list of all the list in the document:
         """
-
-    _document: UnifiedDocumentView
-    _pictures: list[Frame]
-    _tables: list[Table]
-    _paragraphs: list[Paragraph]
-    _lists: list[List]
-    _formulas: list[Formula]
 
     def load_data_source(self, path: str):
         pass
@@ -80,3 +57,4 @@ class InformalParserInterface(ABC):
     @abstractmethod
     def extract_lists(self) -> list[StructuralElement]:
         pass
+

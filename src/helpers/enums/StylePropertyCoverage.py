@@ -3,7 +3,7 @@ from enum import Enum
 
 
 @enum.unique
-class StylePropertyCoverage(Enum):
+class StylePropertyCoverage(str, Enum):
     """
     Describes whether the property is applied to the entire element,
     only to part of it, or not applied at all

@@ -1,6 +1,6 @@
 import unittest
 
-from src.PDF.PDFParser import PDFParser
+from src.pdf.PDFParser import PDFParser
 from src.classes.Frame import Frame
 from src.classes.Image import Image
 from src.classes.Paragraph import Paragraph
