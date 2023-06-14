@@ -1,7 +1,8 @@
+import enum
 from enum import Enum
 
-
-class AlignmentEnum(Enum):
+@enum.unique
+class AlignmentEnum(str, Enum):
     LEFT = 'left'
     RIGHT = 'right'
     CENTER = 'center'

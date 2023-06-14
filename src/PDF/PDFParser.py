@@ -1,7 +1,7 @@
 import re
-from abc import ABC
 import pdfplumber
 from pdfplumber import PDF
+from tabula.io import read_pdf
 
 from src.classes.Formula import Formula
 from src.classes.Frame import Frame
@@ -12,13 +12,13 @@ from src.classes.TableCell import TableCell
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.Paragraph import Paragraph
 from src.classes.interfaces.InformalParserInterface import InformalParserInterface
-from src.classes.superclass.StructuralElement import StructuralElement
+from src.classes.superclass.Parser import DefaultParser
 from src.helpers.errors.errors import EmptyPathException
 from src.pdf.pdfclasses.Line import Line
 from src.pdf.pdfclasses.PdfParagraph import PdfParagraph
 
 
-class PDFParser(InformalParserInterface, ABC):
+class PDFParser(InformalParserInterface, DefaultParser):
     """
     Description: The class is a parser that extracts structural elements of text documents in PDF format
 
@@ -96,14 +96,14 @@ class PDFParser(InformalParserInterface, ABC):
                 raise EmptyPathException('Path is empty')
             self._path = path
             self.__pdf = self.load_data_source(path)
-            self._document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
-                                                 time=self.__pdf.metadata.get('CreationDate'),
-                                                 page_count=len(self.__pdf.pages))
-            self._pictures = self.__extract_pictures()
-            self._lines = self.__extract_lines()
-            self._line_spaces = self.extract_spaces(self._lines)
-            self._tables = self.__extract_tables()
-            self._paragraphs = self.__extract_paragraphs(self.lines, self.line_spaces, self.tables)
+            self.document = UnifiedDocumentView(owner=self.__pdf.metadata.get('Author'),
+                                                time=self.__pdf.metadata.get('CreationDate'),
+                                                page_count=len(self.__pdf.pages))
+            self.pictures = self.extract_pictures()
+            self.lines = self.extract_lines()
+            self.line_spaces = self.extract_spaces(self._lines)
+            self.tables = self.extract_tables()
+            self.paragraphs = self.extract_paragraphs(self.lines, self.line_spaces, self.tables)
 
         except EmptyPathException as e:
             print(e)
@@ -125,44 +125,12 @@ class PDFParser(InformalParserInterface, ABC):
         self._line_spaces = value
 
     @property
-    def pictures(self):
-        return self._pictures
-
-    @pictures.setter
-    def pictures(self, value: list[Frame]):
-        self._pictures = value
-
-    @property
-    def document(self):
-        return self._document
-
-    @document.setter
-    def document(self, document: UnifiedDocumentView):
-        self._document = document
-
-    @property
     def lines(self):
         return self._lines
 
     @lines.setter
     def lines(self, lines: list[Line]):
         self._lines = lines
-
-    @property
-    def tables(self):
-        return self._tables
-
-    @tables.setter
-    def tables(self, tables: list[Table]):
-        self._tables = tables
-
-    @property
-    def paragraphs(self):
-        return self._paragraphs
-
-    @paragraphs.setter
-    def paragraphs(self, value: list[Paragraph]):
-        self._paragraphs = value
 
     def load_data_source(self, path: str) -> PDF:
         """
@@ -189,7 +157,7 @@ class PDFParser(InformalParserInterface, ABC):
 
         """
 
-        from tabula import read_pdf
+
         list_of_table = []
         for page in self.__pdf.pages:
             # Extracting tables and tabular text
@@ -201,13 +169,16 @@ class PDFParser(InformalParserInterface, ABC):
             if len(tables_check) == len(tables):
                 tables_text = page.extract_tables()
                 for number_of_table, table in enumerate(tables):
-                    list_of_table.append(Table(_inner_text=tables_text[number_of_table],
-                                               _master_page_number=table.page.page_number,
-                                               _width=table.bbox[2] - table.bbox[0],
-                                               _bbox=table.bbox, _page_bbox=table.page.bbox,
-                                               _cells=[TableCell()]))
-                    # _text = [item for sublist in tables_text[0] for item in sublist][i])
-                    # for i in range(len(table.cells))])
+                    if len(table.cells) == len([item for sublist in tables_text[number_of_table] for item in sublist]):
+                        list_of_table.append(Table(_inner_text=tables_text[number_of_table],
+                                                   _master_page_number=table.page.page_number,
+                                                   _width=table.bbox[2] - table.bbox[0],
+                                                   _bbox=table.bbox, _page_bbox=table.page.bbox,
+                                                   _cells=[
+                                                       TableCell(_text=[item for sublist in tables_text[number_of_table]
+                                                                        for item in sublist][i]) for i in
+                                                       range(len(table.cells))]
+                                                   ))
         return list_of_table
 
     def extract_lines(self) -> list[Line]:
@@ -345,7 +316,7 @@ class PDFParser(InformalParserInterface, ABC):
             pdf_paragraph.full_italics = False
         else:
             for font in pdf_paragraph.font_name:
-                pdf_paragraph.full_italics = True if 'Italics' in font else  False
+                pdf_paragraph.full_italics = True if 'Italics' in font else False
                 pdf_paragraph.full_bold = True if 'Bold' in font else False
         pdf_paragraph.no_change_font_name = no_change_font_name
         pdf_paragraph.no_change_text_size = no_change_text_size
@@ -375,7 +346,8 @@ class PDFParser(InformalParserInterface, ABC):
                 List of all structural elements in the document
 
         """
-
+        if len(self.document.content) != 0:
+            return self.document.content
         i = 1
         paragraph_id = 1
         removed_tables = []
@@ -521,7 +493,7 @@ class PDFParser(InformalParserInterface, ABC):
                                                            pdf_paragraph.lines[0].y0)
         else:
             for i in range(len(pdf_paragraph.lines)):
-                if pdf_paragraph.lines[i].number_of_page != pdf_paragraph.lines[0].number_of_page and\
+                if pdf_paragraph.lines[i].number_of_page != pdf_paragraph.lines[0].number_of_page and \
                         len(pdf_paragraph.lines) != 1:
                     bbox[pdf_paragraph.lines[i].number_of_page] = (pdf_paragraph.lines[i].x0, pdf_paragraph.lines[i].y1,
                                                                    pdf_paragraph.lines[0].x1,
@@ -533,8 +505,7 @@ class PDFParser(InformalParserInterface, ABC):
         if len(bbox.keys()) == 0:
             bbox[pdf_paragraph.lines[0].number_of_page] = (pdf_paragraph.lines[1].x0, pdf_paragraph.lines[0].y1,
                                                            pdf_paragraph.lines[0].x1,
-                                                           pdf_paragraph.lines[len(pdf_paragraph.lines)-1].y0)
-
+                                                           pdf_paragraph.lines[len(pdf_paragraph.lines) - 1].y0)
 
         paragraph = Paragraph(_text=text, _indent=round(pt_to_sm(pdf_paragraph.indent) - 3, 2),
                               _font_name=pdf_paragraph.font_name, _text_size=pdf_paragraph.text_size,

@@ -10,7 +10,7 @@ for dir_path, dir_names, file_names in walk('.\\documents'):
         pdf_parser = PDFParser(path=dir_path + '\\' + filename)
         lines = pdf_parser.lines
         spaces = pdf_parser.line_spaces
-        tables = pdf_parser.list_of_table
+        tables = pdf_parser.tables
         list_of_picture = pdf_parser.pictures
         '''
         Using the get_elements method, we get a file of the UnifiedDocumentView type, 

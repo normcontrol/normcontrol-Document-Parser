@@ -3,6 +3,7 @@ import json
 import csv
 from bestconfig import Config
 from .Paragraph import Paragraph
+from .superclass.StructuralElement import StructuralElement
 from ..helpers.errors.errors import DocumentEmptyContentException
 
 
@@ -40,7 +41,7 @@ class UnifiedDocumentView:
         self._page_count = page_count
         self._content = {}
 
-    def add_content(self, element_id: int, element: object):
+    def add_content(self, element_id: int, element: StructuralElement):
         """
 
         Adds a paragraph to the content list
