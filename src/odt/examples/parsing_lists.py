@@ -1,16 +1,13 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
-from src.odt.elements.StylesContainer import StylesContainer
 from src.helpers.odt import consts
 
 if __name__ == '__main__':
-    doc_path = "documents/dipbac.odt"
+    doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt"
     doc = ODTDocument(doc_path)
-    odt_parser = ODTParser()
-    styles_container = StylesContainer(doc)
+    odt_parser = ODTParser(doc)
 
-    styles_container.build_dict()
-    all_doc_info = styles_container.get_nodes_with_style_full7(doc.document.text, consts.DEFAULT_PARAM)
+    all_doc_info = odt_parser.get_document_nodes_with_higher_style_data(doc.document.text, consts.DEFAULT_PARAM)
     print(list)
     print(list["0"])
 
@@ -47,7 +44,6 @@ if __name__ == '__main__':
     print(odt_parser.list_parser.get_list_parameter(ast, 'num-letter-sync'))
 
     ast = odt_parser.regular_style_parser.get_regular_style_object(doc, 'WW_CharLFO17LVL9')
-    #print(odt_parser.list_parser.get_list_parameter(ast, 'font-size'))
     print("-------------------------------------------\n")
 
     auto_pars = odt_parser.paragraph_parser.paragraphs_helper(all_doc_info)

@@ -2,9 +2,9 @@ from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
 
 if __name__ == '__main__':
-    doc_path = "documents/listsimages.odt"
+    doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt"
     doc = ODTDocument(doc_path)
-    odt_parser = ODTParser()
+    odt_parser = ODTParser(doc)
 
     print("Получение стилей image & frame:\n")
     print(odt_parser.image_parser.get_image_styles(doc))

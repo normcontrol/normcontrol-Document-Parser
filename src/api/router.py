@@ -1,13 +1,13 @@
 from bestconfig import Config
-from fastapi import APIRouter, Response, HTTPException
+from fastapi import APIRouter, HTTPException
 from starlette.requests import Request
 from src.api.schemas import DocumentData
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.docx.DocxParagraphParser import DocxParagraphParser
 from src.helpers.errors.errors import NotAllowedFormatFileException
 from src.pdf.PDFParser import PDFParser
+from src.odt.ODTParser import ODTParser
 from src.odt.elements.ODTDocument import ODTDocument
-from src.odt.elements.ParsingReport import ParsingReport
 
 parser_router = APIRouter(prefix="", tags=["parser"])
 
@@ -46,9 +46,8 @@ async def parse_document(
 
     def parse_odt():
         doc = ODTDocument(document_data.path)
-        parsing_report = ParsingReport(doc)
-        document = parsing_report.create_odt_report(doc)
-        return document.create_json()
+        odt_parser = ODTParser(doc)
+        return odt_parser.get_all_elements().create_json()
 
     def parse_docx():
         docx = DocxParagraphParser(document_data.path)

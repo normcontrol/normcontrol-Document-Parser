@@ -1,11 +1,10 @@
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
-from src.odt.elements.StylesContainer import StylesContainer
 
 if __name__ == '__main__':
-    doc_path = "documents/listsimages.odt"
+    doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt"
     doc = ODTDocument(doc_path)
-    odt_parser = ODTParser()
+    odt_parser = ODTParser(doc)
 
     print("Получение текста и автоматических стилей:\n")
     print(odt_parser.automatic_style_parser.get_automatic_styles(doc))
@@ -35,12 +34,7 @@ if __name__ == '__main__':
     print(odt_parser.list_parser.get_list_parameter(ast, 'font-size'))
     print("-------------------------------------------\n")
 
-    print("Печать всех узлов документа:")
-    print(odt_parser.node_parser.print_all_document_nodes_with_style_data(doc.document.text, "", doc))
-    print("-------------------------------------------\n")
-
     print("Печать всех стилей документа:")
-    styles_container = StylesContainer(doc)
-    print(styles_container.all_automatic_styles)
-    print(styles_container.all_default_styles)
-    print(styles_container.all_regular_styles)
+    print(odt_parser.all_automatic_styles)
+    print(odt_parser.all_default_styles)
+    print(odt_parser.all_regular_styles)

@@ -7,35 +7,31 @@ from src.classes.TableCell import TableCell
 
 class TestODTTable(unittest.TestCase):
     def setUp(self) -> None:
-        self.doc_path = "documents/tabl1.odt"
+        self.doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/tabl1.odt"
         self.doc = ODTDocument(self.doc_path)
-        self.odt_parser = ODTParser()
+        self.odt_parser = ODTParser(self.doc)
 
     def test_get_table_styles(self):
         tables_styles = self.odt_parser.table_parser.get_table_styles(self.doc)
         self.assertEqual(len(tables_styles), 3)
-        self.assertEqual(tables_styles[0], Table(_table_name='Обычный', _table_family=None,
-                                          _table_master_page_name=None, _table_properties_width=None,
-                                          _table_properties_margin_left=None, _table_properties_align=None,
-                                          _table_cells=[], _table_columns=[], _table_rows=[]))
+        self.assertEqual(tables_styles[0], Table(_indent=None, _line_spacing=None, _alignment=None, _mrgrg=None,
+                                                 _mrglf=None, _mrgtop=None, _mrgbtm=None, _page_breake_before=None,
+                                                 _keep_lines_together=None, _keep_with_next=None, _outline_level=None,
+                                                 _bbox=None, _inner_text=None, _master_page_number=None, _family=None,
+                                                 _width=None, _page_bbox=None, _cells=[], _rows=[]))
 
     def test_get_automatic_table_styles(self):
         tables_styles = self.odt_parser.table_parser.get_automatic_table_styles(self.doc)
         self.assertEqual(len(tables_styles), 117)
-        self.assertEqual(tables_styles[5], Table(_table_name='Table1', _table_family='table',
-                                                 _table_master_page_name='MP0', _table_properties_width=6.8437,
-                                                 _table_properties_margin_left=0.0, _table_properties_align='right',
-                                                 _table_cells=[], _table_columns=[], _table_rows=[]))
-        self.assertEqual(tables_styles[6], TableRow(_row_name='TableRow7', _row_family='table-row',
-                                                    _row_properties_min_row_height=0.6729,
-                                                    _row_properties_use_optimal_row_height=False))
-        self.assertEqual(tables_styles[7], TableCell(_cell_name='TableCell8', _cell_family='table-cell',
-                                                     _cell_properties_border=0.0069,
-                                                     _cell_properties_writing_mode='lr-tb',
-                                                     _cell_properties_padding_top=0.0,
-                                                     _cell_properties_padding_left=0.0,
-                                                     _cell_properties_padding_bottom=0.0,
-                                                     _cell_properties_padding_right=0.0))
+        self.assertEqual(tables_styles[5], Table(_indent=None, _line_spacing=None, _alignment=None, _mrgrg=None,
+                                                 _mrglf=None, _mrgtop=None, _mrgbtm=None, _page_breake_before=None,
+                                                 _keep_lines_together=None, _keep_with_next=None, _outline_level=None,
+                                                 _bbox=None, _inner_text=None, _master_page_number=None, _family=None,
+                                                 _width=None, _page_bbox=None, _cells=[], _rows=[]))
+        self.assertEqual(tables_styles[6], TableRow(_name=None, _family=None, _properties_min_height=None))
+        self.assertEqual(tables_styles[7], TableCell(_name=None, _family=None, _border=None, _writing_mode=None,
+                                                     _padding_top=None, _padding_left=None, _padding_bottom=None,
+                                                     _padding_right=None, _text=None))
 
     def test_get_table_parameter(self):
         ast = self.odt_parser.automatic_style_parser.get_automatic_style_object_by_name(self.doc, 'Table1')
