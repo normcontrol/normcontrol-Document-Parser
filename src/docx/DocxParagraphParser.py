@@ -198,7 +198,6 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
             _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
             _keep_lines_together=paragraph.paragraph_format.keep_together,
             _keep_with_next=paragraph.paragraph_format.keep_with_next,
-            _outline_level=paragraph.outline_level,
             _no_change_fontname=self._is_change_font_name(paragraph),
             _no_change_text_size=self._is_change_text_size(paragraph),
         )
@@ -252,7 +251,7 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
             if font_size is not None and font_size.pt not in fonts_sizes:
                 fonts_sizes.append(font_size.pt)
         if len(fonts_sizes) == 0 and p_font_style is not None:
-            return p_font_style
+            return [p_font_style]
         return fonts_sizes
 
     def _get_font_style_color(self, paragraph: ParagraphType) -> str:
@@ -293,7 +292,7 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                 if attr_value not in attrs_values:
                     attrs_values.append(attr_value)
         if attr is not None:
-            if attr not in attrs_values:
+            if len(attrs_values) == 0:
                 attrs_values.append(attr)
         else:
             style = self.styles[getattr(paragraph.style, style_attr_name)]

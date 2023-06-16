@@ -342,3 +342,19 @@ class Paragraph(StructuralElement):
     @bbox.setter
     def bbox(self, bbox):
         self._bbox = bbox
+
+    @property
+    def no_change_fontname(self):
+        return self._no_change_fontname
+
+    @no_change_fontname.setter
+    def no_change_fontname(self, no_change_fontname):
+        self._no_change_fontname = no_change_fontname
+
+    @property
+    def no_change_text_size(self):
+        return self._no_change_text_size
+
+    @no_change_text_size.setter
+    def no_change_text_size(self, no_change_text_size):
+        self._no_change_text_size = no_change_text_size
