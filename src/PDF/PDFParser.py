@@ -157,28 +157,23 @@ class PDFParser(InformalParserInterface, DefaultParser):
 
         """
 
-
         list_of_table = []
         for page in self.__pdf.pages:
-            # Extracting tables and tabular text
-            tables_check = read_pdf(
-                self.path,
-                pages=str(page.page_number), encoding='ansi', stream=True, multiple_tables=True)
-
+            # Extracting tables and tabular text in document
             tables = page.find_tables()
-            if len(tables_check) == len(tables):
-                tables_text = page.extract_tables()
-                for number_of_table, table in enumerate(tables):
-                    if len(table.cells) == len([item for sublist in tables_text[number_of_table] for item in sublist]):
-                        list_of_table.append(Table(_inner_text=tables_text[number_of_table],
-                                                   _master_page_number=table.page.page_number,
-                                                   _width=table.bbox[2] - table.bbox[0],
-                                                   _bbox=table.bbox, _page_bbox=table.page.bbox,
-                                                   _cells=[
-                                                       TableCell(_text=[item for sublist in tables_text[number_of_table]
-                                                                        for item in sublist][i]) for i in
-                                                       range(len(table.cells))]
-                                                   ))
+            tables_text = page.extract_tables()
+            for number_of_table, table in enumerate(tables):
+                if len([cell for row in table.rows for cell in row.cells]) == len(
+                        [item for sublist in tables_text[number_of_table] for item in sublist]):
+                    list_of_table.append(Table(_inner_text=tables_text[number_of_table],
+                                               _master_page_number=table.page.page_number,
+                                               _width=table.bbox[2] - table.bbox[0],
+                                               _bbox=table.bbox, _page_bbox=table.page.bbox,
+                                               _cells=[
+                                                   TableCell(_text=[item for sublist in tables_text[number_of_table]
+                                                                    for item in sublist][i]) for i in
+                                                   range(len([cell for row in table.rows for cell in row.cells]))]
+                                               ))
         return list_of_table
 
     def extract_lines(self) -> list[Line]:
