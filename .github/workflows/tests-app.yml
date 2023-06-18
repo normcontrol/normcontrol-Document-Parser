@@ -27,6 +27,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
     - name: Test docx
-      run: pytest tests/docx/test*
+      run: |
+          pytest tests/docx/test*
+          pytest tests/pdf/Test*
     - name: Codecov
       uses: codecov/codecov-action@v3.1.3
