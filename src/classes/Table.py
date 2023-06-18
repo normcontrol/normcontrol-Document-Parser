@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import List, Any
 from src.classes.TableCell import TableCell
