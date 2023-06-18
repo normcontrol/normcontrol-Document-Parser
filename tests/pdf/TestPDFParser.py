@@ -4,7 +4,7 @@ from src.pdf.PDFParser import PDFParser
 
 
 class TestPDFParser(unittest.TestCase):
-    path = 'documents\\Отчёт по практике для парсинга.pdf'
+    path = 'documents/Отчёт по практике для парсинга.pdf'
     pdf_parser = PDFParser(path=os.path.join(os.path.dirname(__file__), path))
     pdf_parser.get_all_elements(pdf_parser.lines, pdf_parser.line_spaces, pdf_parser.tables, pdf_parser.pictures)
 
