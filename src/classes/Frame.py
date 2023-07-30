@@ -9,27 +9,36 @@ class Frame(StructuralElement):
     Description: Frame class for ODT document.
 
     Attributes:
-        _style_name - attribute specifies the style of current frame,
-        _name - attribute specifies the name of current frame,
-        _anchor_type - attribute specifies how a frame is bound to a text document,
-        _width - attribute specifies the width of the frame,
-        _height - attribute specifies the height of the frame,
-        _rel_width - attribute specifies height of a drawing object as a relative value within a frame,
-        _rel_height - attribute specifies the width of a drawing object as a relative value within a frame.
-        _bbox - attribute specifies x0, y0, x1, y1 position of frame in page
-        _image - attribute specifies all image in frame
-        _page_number - attribute specifies number of page, witch contains this frame
+    ----------
+        _style_name: str
+            attribute specifies the style of current frame,
+        _anchor_type: str
+            attribute specifies how a frame is bound to a text document,
+        _width: float
+            attribute specifies the width of the frame,
+        _height: float
+            attribute specifies the height of the frame,
+        _rel_width: str
+            attribute specifies height of a drawing object as a relative value within a frame,
+        _rel_height: str
+            attribute specifies the width of a drawing object as a relative value within a frame.
+        _bbox: tuple
+            attribute specifies x0, y0, x1, y1 position of frame in page
+        _image: Image
+            attribute specifies all image in frame
+        _page_number: int
+            attribute specifies number of page, witch contains this frame
     """
 
     _style_name: str = None
     _anchor_type: str = None
-    _bbox: tuple[int | float, int | float, int | float, int | float] = None
     _width: float = None
     _height: float = None
     _rel_width: str = None
     _rel_height: str = None
     _image: Image = None
     _page_number: int = None
+    _bbox: tuple[int | float, int | float, int | float, int | float] = None
 
 
     @property

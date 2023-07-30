@@ -229,3 +229,21 @@ class AutomaticStyleParser:
             return parser_regular_styles.get_parameter_from_regular_style(doc, default, style_name, param_name,
                                                                           property_type)
         return self.has_automatic_style_parameter(doc, style, param_name, default, property_type)
+
+    def automatic_style_dict(self, doc: ODTDocument, attrs: dict):
+        styles = {}
+        for ast in doc.document.automaticstyles.childNodes:
+            name = ast.getAttribute('name')
+            style = {}
+            for attr in attrs:
+                style[attr] = None
+
+            styles[name] = style
+
+            for k in ast.attributes.keys():
+                style[k[1]] = ast.attributes[k]
+            for n in ast.childNodes:
+                for k in n.attributes.keys():
+                    if k[1] in attrs:
+                        style[k[1]] = n.attributes[k]
+        return styles

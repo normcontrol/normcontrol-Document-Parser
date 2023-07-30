@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
     - name: Test docx
-      run:  pytest tests/docx/test*
+      run: pytest tests/docx/test*
     - name: Test pdf
       run: pytest tests/pdf/Test*
     - name: Codecov

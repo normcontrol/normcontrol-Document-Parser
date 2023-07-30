@@ -4,9 +4,9 @@ from src.odt.elements.ODTDocument import ODTDocument
 
 class TestODTAutomaticStyle(unittest.TestCase):
     def setUp(self) -> None:
-        self.doc_path = "documents/dipbac.odt"
+        self.doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/dipbac.odt"
         self.doc = ODTDocument(self.doc_path)
-        self.odt_parser = ODTParser()
+        self.odt_parser = ODTParser(self.doc)
 
     def test_get_automatic_styles(self):
         automatic_styles = self.odt_parser.automatic_style_parser.get_automatic_styles(self.doc)

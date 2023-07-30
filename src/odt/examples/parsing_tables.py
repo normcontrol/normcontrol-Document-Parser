@@ -1,10 +1,11 @@
+from src.helpers.odt import consts
 from src.odt.elements.ODTDocument import ODTDocument
 from src.odt.ODTParser import ODTParser
 
 if __name__ == '__main__':
-    doc_path = "documents/tabl1.odt"
+    doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/tabl1.odt"
     doc = ODTDocument(doc_path)
-    odt_parser = ODTParser()
+    odt_parser = ODTParser(doc)
 
     print("Получение текста и автоматических стилей:\n")
     print(odt_parser.automatic_style_parser.get_automatic_styles(doc))
@@ -42,3 +43,7 @@ if __name__ == '__main__':
     ast = odt_parser.automatic_style_parser.get_automatic_style_object_by_name(doc, 'TableColumn6')
     print(odt_parser.table_parser.get_table_column_parameter(ast, 'column-width'))
     print("-------------------------------------------\n")
+
+    all_doc_info = odt_parser.get_document_nodes_with_higher_style_data(doc.document.text, consts.DEFAULT_PARAM)
+    auto_pars = odt_parser.paragraph_parser.paragraphs_helper(all_doc_info)
+    print(auto_pars)

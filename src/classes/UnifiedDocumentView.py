@@ -3,6 +3,7 @@ import json
 import csv
 from bestconfig import Config
 from .Paragraph import Paragraph
+from .superclass.StructuralElement import StructuralElement
 from ..helpers.errors.errors import DocumentEmptyContentException
 
 
@@ -34,12 +35,13 @@ class UnifiedDocumentView:
     """
     __config = Config("settings.ini")
 
-    def __init__(self, owner: str, time: str):
+    def __init__(self, owner: str, time: str, page_count: int):
         self._owner = owner
         self._time = time
+        self._page_count = page_count
         self._content = {}
 
-    def add_content(self, element_id: int, element: object):
+    def add_content(self, element_id: int, element: StructuralElement):
         """
 
         Adds a paragraph to the content list
@@ -67,7 +69,7 @@ class UnifiedDocumentView:
             if len(self.content) < 1:
                 raise DocumentEmptyContentException
             content = {}
-            json_text = {'owner': self.owner, 'time': self.time}
+            json_text = {'owner': self.owner, 'time': self.time, 'page_count': self.page_count}
             for key, values in self.content.items():
                 temp = {'element_class': type(values).__name__}
                 for attribute_name, value in dataclasses.asdict(values).items():
@@ -132,3 +134,11 @@ class UnifiedDocumentView:
     @content.setter
     def content(self, content: dict):
         self._content = content
+
+    @property
+    def page_count(self):
+        return self._page_count
+
+    @page_count.setter
+    def page_count(self, page_count: int):
+        self._page_count = page_count
