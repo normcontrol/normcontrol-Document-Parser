@@ -12,3 +12,4 @@ for dir_path, dir_names, file_names in os.walk('.\\documents'):
         list_of_table = docx.extract_tables()
         unified_document_view = docx.get_all_elements()
         json = unified_document_view.create_json()
+        print('')
