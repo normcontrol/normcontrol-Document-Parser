@@ -395,13 +395,6 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                     attr = getattr(num_style.abstract_style.numbering_styles[paragraph.list_level], attr_name)
             else:
                 attr = self.get_attrib_from_base_font_style(paragraph.style, attr_name)
-
-            # style = self.__get_style_in_hierarchy(paragraph)
-            # while style:
-            #     p_format_attr = getattr(style.paragraph_format, attr_name)
-            #     if p_format_attr is not None:
-            #         return p_format_attr
-            #     style = style.base_style
         return attr
 
     @staticmethod
