@@ -1,6 +1,17 @@
+from docx.shared import Pt
+
+
 class DefaultFontStyle:
-    font_name: str
-    font_size: float
-    def __init__(self, font_name: str, font_size: float = None):
-        self.font_name = font_name
-        self.font_size = font_size
+    name: str
+    size: Pt
+    color: tuple
+    minorHAnsi: str
+    majorHAnsi: str
+
+    def __init__(self, name: str, size: Pt = None, color: tuple = (0, 0, 0), minorHAnsi: str = None,
+                 majorHAnsi: str = None):
+        self.name = name
+        self.size = size
+        self.color = color
+        self.minorHAnsi = minorHAnsi
+        self.majorHAnsi = majorHAnsi

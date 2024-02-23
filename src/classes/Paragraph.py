@@ -79,7 +79,7 @@ class Paragraph(StructuralElement):
     _underlining: bool = None
     _sub_text: bool = None
     _super_text: bool = None
-    _color_text: str = None
+    _color_text: list[str] = None
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
     _font_name: list[str] = field(default_factory=list)

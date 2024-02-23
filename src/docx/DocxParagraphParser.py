@@ -28,16 +28,20 @@ functions:
             The method extracts and returns a list of all the list in the document:
 """
 import re
+import logging
 from typing import Union
 import docx.text.paragraph
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.opc.oxml import serialize_for_reading
+from docx.oxml import parse_xml
 from docx.shared import Length
 from docx.styles.style import BaseStyle
 from docx.text.paragraph import Paragraph as ParagraphType
 from lxml import etree
 from src.classes.Frame import Frame
 from src.classes.Image import Image
+from src.classes.List import List
 from src.classes.Paragraph import Paragraph
 from src.classes.Table import Table
 from src.classes.TableCell import TableCell
@@ -52,7 +56,7 @@ from src.helpers.enums.AlignmentEnum import AlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 
 
-class DocxParagraphParser(InformalParserInterface, DefaultParser):
+class DocxParagraphParser():
     """
     Class extract paragraph and attributes from DOCX files
 
@@ -169,10 +173,9 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         self.pictures = self.extract_pictures()
         self.paragraphs = self.extract_paragraphs()
         self.document = UnifiedDocumentView(self.origin_document.core_properties.author,
-                                                    str(self.origin_document.core_properties.created),
-                                                    None)
+                                            str(self.origin_document.core_properties.created),
+                                            None)
         self.get_all_elements()
-
 
     def get_standart_paragraph(self, paragraph: ParagraphType):
         """
@@ -181,38 +184,70 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         :param paragraph: docx.Paragraph
         :return : Paragraph object
         """
-
-        standart_paragraph = Paragraph(
-            _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-            _text=paragraph.text,
-            _indent=round(self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"), 2),
-            _font_name=self._get_font_style_for_attr(paragraph, "name"),
-            _text_size=self._get_font_size(paragraph),
-            _alignment=self._get_paragraph_justification_type(
-                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) if self._get_paragraph_justification_type(
-                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) is not None else 'Unknown',
-            _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
-            _mrglf=round(
-                self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
-                self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
-                if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
-                else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
-                , 2),
-            _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-            _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-            _bold=self._is_style_append(paragraph, "bold"),
-            _italics=self._is_style_append(paragraph, "italic"),
-            _underlining=self._is_style_append(paragraph, "underline"),
-            _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
-            _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
-            _color_text=self._get_font_style_color(paragraph),
-            _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
-            _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
-            _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
-            _no_change_fontname=self._is_change_font_name(paragraph),
-            _no_change_text_size=self._is_change_text_size(paragraph),
-            _outline_level=paragraph.outline_level
-        )
+        if paragraph.list_level is not None:
+            standart_paragraph = List(
+                _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+                _text=paragraph.text,
+                _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
+                _font_name=self._get_font_style_for_attr(paragraph, "name"),
+                _text_size=[value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
+                _alignment=self._get_paragraph_justification_type(
+                    self._get_paragraph_format_in_hierarchy(paragraph,
+                                                            'alignment')) if self._get_paragraph_justification_type(
+                    self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) is not None else 'Unknown',
+                _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+                _mrglf=round(
+                    self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
+                    self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
+                    if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
+                    else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
+                    , 2),
+                _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+                _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+                _bold=self._is_style_append(paragraph, "bold"),
+                _italics=self._is_style_append(paragraph, "italic"),
+                _underlining=self._is_style_append(paragraph, "underline"),
+                _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+                _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+                _color_text=[rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
+                _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
+                _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
+                _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
+                _outline_level=paragraph.outline_level
+            )
+        else:
+            standart_paragraph = Paragraph(
+                _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+                _text=paragraph.text,
+                _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
+                _font_name=self._get_font_style_for_attr(paragraph, "name"),
+                _text_size=[value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
+                _alignment=self._get_paragraph_justification_type(
+                    self._get_paragraph_format_in_hierarchy(paragraph,
+                                                            'alignment')) if self._get_paragraph_justification_type(
+                    self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) is not None else 'Unknown',
+                _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+                _mrglf=round(
+                    self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
+                    self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
+                    if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
+                    else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
+                    , 2),
+                _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+                _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+                _bold=self._is_style_append(paragraph, "bold"),
+                _italics=self._is_style_append(paragraph, "italic"),
+                _underlining=self._is_style_append(paragraph, "underline"),
+                _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+                _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+                _color_text=[rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
+                _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
+                _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
+                _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
+                _outline_level=paragraph.outline_level
+            )
+            standart_paragraph.no_change_fontname = self._is_change_font_name(standart_paragraph)
+            standart_paragraph.no_change_text_size = self._is_change_text_size(standart_paragraph)
         if standart_paragraph.first_key == '':
             if paragraph.list_level is not None:
                 standart_paragraph.first_key = 'listLevel1'
@@ -245,53 +280,70 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
 
         return Frame(_width=image.width, _height=image.height, _anchor_type=image.type, _image=Image())
 
+    # def _get_font_size(self, paragraph: ParagraphType):
+    #     """
+    #     Get font size from paragraph
+    #     because sometime paragraph.style.font.size.pt in not correct
+    #
+    #     :param paragraph: paragraph: docx.Paragraph
+    #     :return fonts_sizes: list of font sizes
+    #     """
+    #     style = paragraph.style
+    #     p_font_style = self.get_attrib_from_base_style(style, 'font', 'size')
+    #     fonts_sizes = []
+    #     for run in paragraph.runs:
+    #         font_size = run.font.size
+    #         if font_size is None:
+    #             font_size = self.get_attrib_from_base_style(run.style, 'font', 'size')
+    #         if font_size is not None:
+    #             if font_size.pt not in fonts_sizes:
+    #                 fonts_sizes.append(font_size.pt)
+    #     if len(fonts_sizes) == 0 and p_font_style is not None:
+    #         fonts_sizes = [p_font_style.pt]
+    #     if len(fonts_sizes) == 0:
+    #         fonts_sizes = [self.origin_document.default_font_style.font_size]
+    #     return fonts_sizes
 
-    def _get_font_size(self, paragraph: ParagraphType):
-        """
-        Get font size from paragraph
-        because sometime paragraph.style.font.size.pt in not correct
-
-        :param paragraph: paragraph: docx.Paragraph
-        :return fonts_sizes: list of font sizes
-        """
-        style = paragraph.style
-        p_font_style = self.get_attrib_from_base_font_style(style, 'size')
-        fonts_sizes = []
-        for run in paragraph.runs:
-            font_size = run.font.size
-            if font_size is None:
-                font_size = self.get_attrib_from_base_font_style(run.style, 'size')
-            if font_size is not None:
-                if font_size.pt not in fonts_sizes:
-                    fonts_sizes.append(font_size.pt)
-        if len(fonts_sizes) == 0 and p_font_style is not None:
-            fonts_sizes = [p_font_style.pt]
-        if len (fonts_sizes) == 0:
-            fonts_sizes = [self.origin_document.default_font_style.font_size]
-        return fonts_sizes
-
-    def _get_font_style_color(self, paragraph: ParagraphType) -> str:
+    def _get_font_style_color(self, paragraph: ParagraphType) -> list[str]:
         """
         Function get all colors of paragraph in hex
 
         :param paragraph: docx.Paragraph
         :return: most use hex code color
         """
+        attrs_values = []
+        attr = getattr(paragraph.style.font, 'color', None)
+        if getattr(attr, 'rgb', None) is None:
+            attr = self.get_attrib_from_base_style(paragraph.style, 'font', 'color')
 
-        values = []
         for run in paragraph.runs:
-            value = {"count": len(run.text), "color": "#000"}
-            if run.font.color.rgb is not None:
-                value["color"] = rgb_to_hex(run.font.color.rgb)
+            run_attrs = getattr(run.font, 'color', None)
+            if getattr(run_attrs, 'rgb', None) is None:
+                run_attrs = self.get_attrib_from_base_style(run.font, 'font', 'color')
+            if getattr(run_attrs, 'rgb', None) is not None and getattr(run_attrs, 'rgb', None) not in attrs_values:
+                attrs_values.append(run_attrs.rgb)
+
+        if len(attrs_values) == 0:
+            if getattr(attr, 'rgb', None) is not None:
+                attrs_values.append(attr.rgb)
             else:
-                style = self.styles[paragraph.style.name]
-                if style.font.color.rgb is not None:
-                    value["color"] = rgb_to_hex(style.font.color.rgb)
-            values.append(value)
+                attrs_values.append(getattr(self.origin_document.default_font_style, 'color', None))
+        return attrs_values
 
-        return self.__find_most_common_attribute(values, "color")
+        # values = []
+        # for run in paragraph.runs:
+        #     value = {"count": len(run.text), "color": "#000"}
+        #     if run.font.color.rgb is not None:
+        #         value["color"] = rgb_to_hex(run.font.color.rgb)
+        #     else:
+        #         style = self.styles[paragraph.style.name]
+        #         if style.font.color.rgb is not None:
+        #             value["color"] = rgb_to_hex(style.font.color.rgb)
+        #     values.append(value)
+        #
+        # return self.__find_most_common_attribute(values, "color")
 
-    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list[str]:
+    def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
         Find style.font style_attr_name in any parent or child elements
 
@@ -301,32 +353,37 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         """
 
         attrs_values = []
-        attr = getattr(paragraph.style.font, style_attr_name)
+        attr = getattr(paragraph.style.font, style_attr_name, None)
+        if attr is None:
+            attr = self.get_attrib_from_base_style(paragraph.style, 'font', style_attr_name, )
+
         for run in paragraph.runs:
-            attr_value = getattr(run.font, style_attr_name)
-            if attr_value is not None:
-                if attr_value not in attrs_values:
-                    attrs_values.append(attr_value)
-        if attr is not None:
-            if len(attrs_values) == 0:
-                attrs_values.append(attr)
-        else:
-            style = self.styles[getattr(paragraph.style, style_attr_name)]
-            # if font.name is None try find in parents
-            if style.font is not None:
-                while getattr(style.font, style_attr_name) is None:
-                    if style.base_style is not None:
-                        style = style.base_style
-                    else:
-                        if len(attrs_values) == 0:
-                            attrs_values.append(self.origin_document.default_font_style.font_name)
-                        return attrs_values
+            run_attrs = getattr(run.font, style_attr_name, None)
+
+            if run_attrs is None and style_attr_name == 'name':
+                rPr = run.font.element.rPr
+                if rPr is not None:
+                    rFonts = rPr.rFonts
+                    if rFonts is not None:
+                        if f'{{{self.ns["w"]}}}asciiTheme' in rFonts.keys():
+                            if 'minorHAnsi' in rFonts.values():
+                                run_attrs = self.origin_document.default_font_style.minorHAnsi
+                            if 'majorHAnsi' in rFonts.values():
+                                run_attrs = self.origin_document.default_font_style.majorHAnsi
+            if run_attrs is None:
+                run_attrs = self.get_attrib_from_base_style(run.font, 'font', style_attr_name)
+            if run_attrs is not None:
+                if run_attrs not in attrs_values:
+                    attrs_values.append(run_attrs)
             else:
-                if len(attrs_values) == 0:
-                    attrs_values.append(self.origin_document.default_font_style.font_name)
-                return attrs_values
-            if getattr(style.font, style_attr_name) not in attrs_values:
-                attrs_values.append(getattr(style.font, style_attr_name))
+                if run_attrs is None:
+                    if attr is not None:
+                        attrs_values.append(attr)
+                    else:
+                        attrs_values.append(getattr(self.origin_document.default_font_style, style_attr_name, None))
+
+
+
         return attrs_values
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
@@ -387,15 +444,20 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         """
         attr = getattr(paragraph.paragraph_format, attr_name)
         if attr is None:
-            if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in ['indent', 'left_mrg', 'right_mrg']:
-                num_style = self.origin_document.numbering_styles.num[paragraph.num_id]
+            if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in ['first_line_indent',
+                                                                                                   'left_indent',
+                                                                                                   'right_indent']:
+                num_style = self.origin_document.numbering_styles.num[int(paragraph.num_id)]
                 if int(paragraph.list_level) in num_style.override_numbering_styles.keys():
-                    attr = getattr(num_style.override_numbering_styles[paragraph.list_level], attr_name)
+                    attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name)
                 else:
-                    attr = getattr(num_style.abstract_style.numbering_styles[paragraph.list_level], attr_name)
+                    attr = getattr(num_style.abstract_style.numbering_styles[int(paragraph.list_level)], attr_name)
             else:
-                attr = self.get_attrib_from_base_font_style(paragraph.style, attr_name)
+                attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
         return attr
+
+    def _get_font_attribute_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
+        pass
 
     @staticmethod
     def _is_style_append(paragraph: ParagraphType, style_name: str) -> bool:
@@ -424,7 +486,7 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         return style_property_coverage
 
     @staticmethod
-    def _is_change_font_name(paragraph: ParagraphType) -> bool:
+    def _is_change_font_name(paragraph: Paragraph) -> bool:
         """
         Checks if the font and style names has changed within the same paragraph
 
@@ -435,43 +497,45 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
         :param paragraph:docx.Document.Paragraph
         :return: True | False
         """
-        fonts = set()
-        styles = set()
+        if len(paragraph.font_name) > 1:
+            return True
+        else:
+            return False
 
-        for run in paragraph.runs:
-            # find font name and style name in element
-            # because sometime we can't get attr in style.font.name in run object
-            string_xml = etree.tostring(run.element).decode('utf-8')
-            cs_match = re.search(r'cs="([^"]+)"', string_xml)
-            ascii_theme = re.search(r'w:asciiTheme="([^"]+)"', string_xml)
-            if cs_match:
-                cs_value = cs_match.group(1)
-            # if style:font empty get asciiTheme like nameFont
-            elif ascii_theme:
-                cs_value = ascii_theme.group(1)
-            else:
-                cs_value = paragraph.style.font.name
-            fonts.add(cs_value)
-            if run.style.name:
-                styles.add(run.style.name)
-
-        return len(fonts) != 1 or len(styles) != 1
+        # fonts = set()
+        # styles = set()
+        #
+        # for run in paragraph.runs:
+        #     # find font name and style name in element
+        #     # because sometime we can't get attr in style.font.name in run object
+        #     string_xml = etree.tostring(run.element).decode('utf-8')
+        #     cs_match = re.search(r'cs="([^"]+)"', string_xml)
+        #     ascii_theme = re.search(r'w:asciiTheme="([^"]+)"', string_xml)
+        #     if cs_match:
+        #         cs_value = cs_match.group(1)
+        #     # if style:font empty get asciiTheme like nameFont
+        #     elif ascii_theme:
+        #         cs_value = ascii_theme.group(1)
+        #     else:
+        #         cs_value = paragraph.style.font.name
+        #     fonts.add(cs_value)
+        #     if run.style.name:
+        #         styles.add(run.style.name)
+        #
+        # return len(fonts) != 1 or len(styles) != 1
 
     @staticmethod
-    def _is_change_text_size(paragraph: ParagraphType) -> bool:
+    def _is_change_text_size(paragraph: Paragraph) -> bool:
         """
         Checks if the font size has changed within the same paragraph
 
         :param paragraph:
         :return: True | False
         """
-        paragraph_font_size = paragraph.style.font.size
-        is_changed = False
-        for run in paragraph.runs:
-            if run.font.name != paragraph_font_size and run.font.size is not None:
-                is_changed = True
-                break
-        return is_changed
+        if len(paragraph.text_size) > 1:
+            return True
+        else:
+            return False
 
     @staticmethod
     def _get_paragraph_justification_type(alignment: int) -> Union[str, None]:
@@ -593,7 +657,8 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                         list_of_element_with_attr.append(self.get_standart_paragraph(paragraph))
                         break
             if element['type'] == 'table':
-                list_of_element_with_attr.append(self.get_standart_table(self.origin_document.tables[element['id']-1]))
+                list_of_element_with_attr.append(
+                    self.get_standart_table(self.origin_document.tables[element['id'] - 1]))
         return list_of_element_with_attr
 
     def __get_xml_consecutive_content(self):
@@ -636,7 +701,13 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
 
         paragraphs = []
         for paragraph in self.origin_document.paragraphs:
-            style = paragraph.style
+            # if paragraph.paragraph_format.element.pPr is not None:
+            #     paragraph.list_level = paragraph.paragraph_format.element.pPr.numPr.ilvl.val
+            #     paragraph.num_id = paragraph.paragraph_format.element.pPr.numPr.numId.val
+            for key, value in paragraph.paragraph_format.element.attrib.items():
+                if 'paraId' in key:
+                    paragraph.id = value
+
             numprs = paragraph.paragraph_format.element.findall('.//w:numPr', self.ns)
             if len(numprs) > 0:
                 for key, value in numprs[0].findall('.//w:ilvl', self.ns)[0].attrib.items():
@@ -657,6 +728,7 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                         paragraph.outline_level = value
                         break
             else:
+                style = paragraph.style
                 outline_level = style.element.findall('.//w:outlineLvl', self.ns)
                 while len(outline_level) < 1:
                     if style.base_style is not None:
@@ -670,31 +742,81 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                             break
                 else:
                     paragraph.outline_level = None
-            for key, value in paragraph.paragraph_format.element.attrib.items():
-                if 'paraId' in key:
-                    paragraph.id = value
+
             paragraphs.append(paragraph)
         return paragraphs
 
     def get_default_font_style(self):
         for fonts in self.origin_document.styles.element.xpath("./w:docDefaults/w:rPrDefault/w:rPr"):
-            self.origin_document.default_font_style = DefaultFontStyle(fonts.rFonts.ascii, fonts.sz.val.pt if fonts.sz.val else None)
+            self.origin_document.default_font_style = DefaultFontStyle(name=fonts.rFonts.ascii,
+                                                                       size=fonts.sz.val if fonts.sz.val else None,
+                                                                       color=fonts.color.rgb if fonts.color is not None else (
+                                                                           0, 0, 0))
+            for part in self.origin_document.part.package.parts:
+                if part.partname.startswith("/word/theme/"):
+                    theme = parse_xml(part.blob)
+                    for minor_font in theme.xpath("//a:minorFont", namespaces=theme.nsmap):
+                        for typeface in minor_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
+                            self.origin_document.default_font_style.minorHAnsi = typeface
+
+                    for major_font in theme.xpath("//a:majorFont", namespaces=theme.nsmap):
+                        for typeface in major_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
+                            self.origin_document.default_font_style.majorHAnsi = typeface
+
+
+
 
     @staticmethod
-    def get_attrib_from_base_font_style(style, attrib_name):
-        p_font_style = None
+    def get_attrib_from_base_style(style, tag_name, attrib_name):
+        p_font_attr = None
         while style is not None:
-            if getattr(style.font, attrib_name, None) is not None:
-                p_font_style = getattr(style.font, attrib_name, None)
+            tag = getattr(style, tag_name, None)
+            if tag is None:
+                break
+                logging.debug(f'No tag found for {tag_name}')
+            if getattr(tag, attrib_name, None) is not None:
+                p_font_attr = getattr(tag, attrib_name, None)
                 break
             else:
                 if style.base_style is not None:
                     style = style.base_style
                 else:
                     break
-        return p_font_style
+        return p_font_attr
 
     def get_base_numbering_style(self):
+        def check_for_exists_and_return(key, element):
+            if key in element.attrib.keys():
+                return element.attrib[key]
+
+        def get_NumLvlStyle(element):
+            ilvl = int(element.attrib[f'{{{self.ns["w"]}}}ilvl'])
+            start = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
+                                                element.xpath("w:start", namespaces=self.ns)[
+                                                    0]) if len(
+                element.xpath("w:start", namespaces=self.ns)) > 0 else None
+
+            num_fmt = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
+                                                  element.xpath("w:numFmt", namespaces=self.ns)[
+                                                      0]) if len(
+                element.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
+            lvl_text = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
+                                                   element.xpath("w:lvlText", namespaces=self.ns)[
+                                                       0]) if len(
+                element.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
+            lvl_jc = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
+                                                 element.xpath("w:lvlJc", namespaces=self.ns)[
+                                                     0]) if len(
+                element.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
+            ppr = element.xpath("w:pPr", namespaces=self.ns)[0]
+            left_mrg = ppr.ind_left
+            right_mrg = ppr.ind_right
+            indent = ppr.first_line_indent
+            return NumLvlStyle(ilvl, left_mrg,
+                               right_mrg, indent,
+                               start, num_fmt,
+                               lvl_text, lvl_jc)
+
         abstracts = {}
         for abstract_num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:abstractNum"):
             if f'{{{self.ns["w"]}}}abstractNumId' in abstract_num.attrib.keys():
@@ -702,15 +824,7 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                 numbering_styles = []
                 for num_level in abstract_num.xpath("w:lvl", namespaces=self.ns):
                     if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                        ilvl = int(num_level.attrib[f'{{{self.ns["w"]}}}ilvl'])
-
-                        # Необходимо дополнить чтобы выделялись и остальные свойства
-
-                        ppr = num_level.xpath("w:pPr", namespaces=self.ns)[0]
-                        left_mrg = ppr.ind_left
-                        right_mrg = ppr.ind_right
-                        indent = ppr.first_line_indent
-                        numbering_styles.append(NumLvlStyle(ilvl, left_mrg, right_mrg, indent))
+                        numbering_styles.append(get_NumLvlStyle(num_level))
                     else:
                         raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
                 abstracts[abstract_num_id] = AbstractNum(abstract_num_id, numbering_styles)
@@ -726,17 +840,9 @@ class DocxParagraphParser(InformalParserInterface, DefaultParser):
                 ilvl = ovverride.attrib[f'{{{self.ns["w"]}}}ilvl']
                 for num_level in num.xpath("w:lvl", namespaces=self.ns):
                     if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                        lvl = num_level.attrib[f'{{{self.ns["w"]}}}ilvl']
-                        # Необходимо дополнить чтобы выделялись и остальные свойства
-                        ppr = num_level.xpath("w:pPr", namespaces=self.ns)[0]
-                        left_mrg = ppr.ind_left
-                        right_mrg = ppr.ind_right
-                        indent = ppr.first_line_indent
-                        numbering_styles[ilvl] = NumLvlStyle(lvl, left_mrg, right_mrg, indent)
+                        numbering_styles[ilvl] = get_NumLvlStyle(num_level)
                     else:
                         raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
-            nums[num_id] = NumberingStyle(num_id,abstract_style, numbering_styles)
+            nums[num_id] = NumberingStyle(num_id, abstract_style, numbering_styles)
 
         self.origin_document.numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
-
-
