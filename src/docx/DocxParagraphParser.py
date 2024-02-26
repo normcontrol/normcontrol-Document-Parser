@@ -479,13 +479,6 @@ class DocxParagraphParser():
             else:
                 return True
         return False
-        # if
-        # style_property_coverage = None
-        # undesired_subsets = [{True, False}, {True, None}, {False, None}]
-        # if len(styles) == 1:
-        #     style_property_coverage = True if styles[0] else False
-        # elif any(subset.issubset(styles) for subset in undesired_subsets):
-        #     style_property_coverage = True
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
@@ -503,28 +496,6 @@ class DocxParagraphParser():
             return True
         else:
             return False
-
-        # fonts = set()
-        # styles = set()
-        #
-        # for run in paragraph.runs:
-        #     # find font name and style name in element
-        #     # because sometime we can't get attr in style.font.name in run object
-        #     string_xml = etree.tostring(run.element).decode('utf-8')
-        #     cs_match = re.search(r'cs="([^"]+)"', string_xml)
-        #     ascii_theme = re.search(r'w:asciiTheme="([^"]+)"', string_xml)
-        #     if cs_match:
-        #         cs_value = cs_match.group(1)
-        #     # if style:font empty get asciiTheme like nameFont
-        #     elif ascii_theme:
-        #         cs_value = ascii_theme.group(1)
-        #     else:
-        #         cs_value = paragraph.style.font.name
-        #     fonts.add(cs_value)
-        #     if run.style.name:
-        #         styles.add(run.style.name)
-        #
-        # return len(fonts) != 1 or len(styles) != 1
 
     @staticmethod
     def _is_change_text_size(paragraph: Paragraph) -> bool:
@@ -555,30 +526,6 @@ class DocxParagraphParser():
         if alignment is None:
             return None
         return alignments[alignment].value if alignment < len(alignments) else None
-
-    @staticmethod
-    def __find_most_common_attribute(values: list, attr: str, count_field: str = "count") -> str:
-        """
-        This function is used in determining the name of the font or color,
-        if there are several of them in one paragraph.
-        Since the Paragraph class expects a single value,
-        the font name or color that occurs most often in the paragraph is returned.
-
-        @param values: [{"name_attr": "name", "count": 11}]
-        @param attr: "name_attr" name
-        @param count_field: "count" name
-        @return: more used attr
-        """
-        sum_repeat = {}
-        for item in values:
-            if item[attr] in sum_repeat:
-                sum_repeat[item[attr]] += item[count_field]
-            else:
-                sum_repeat[item[attr]] = item[count_field]
-        if len(sum_repeat) < 1:
-            return None
-        sum_repeat['max'] = max(sum_repeat, key=lambda k: sum_repeat[k])
-        return sum_repeat['max']
 
     def extract_tables(self) -> list[StructuralElement]:
         """
@@ -703,9 +650,6 @@ class DocxParagraphParser():
 
         paragraphs = []
         for paragraph in self.origin_document.paragraphs:
-            # if paragraph.paragraph_format.element.pPr is not None:
-            #     paragraph.list_level = paragraph.paragraph_format.element.pPr.numPr.ilvl.val
-            #     paragraph.num_id = paragraph.paragraph_format.element.pPr.numPr.numId.val
             for key, value in paragraph.paragraph_format.element.attrib.items():
                 if 'paraId' in key:
                     paragraph.id = value
