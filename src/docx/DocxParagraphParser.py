@@ -186,6 +186,7 @@ class DocxParagraphParser():
         """
         if paragraph.list_level is not None:
             standart_paragraph = List(
+                level=paragraph.list_level,
                 _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
                 _text=paragraph.text,
                 _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
@@ -213,7 +214,7 @@ class DocxParagraphParser():
                 _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
                 _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
                 _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
-                _outline_level=paragraph.outline_level
+                _outline_level=paragraph.outline_level,
             )
         else:
             standart_paragraph = Paragraph(
@@ -330,19 +331,6 @@ class DocxParagraphParser():
                 attrs_values.append(getattr(self.origin_document.default_font_style, 'color', None))
         return attrs_values
 
-        # values = []
-        # for run in paragraph.runs:
-        #     value = {"count": len(run.text), "color": "#000"}
-        #     if run.font.color.rgb is not None:
-        #         value["color"] = rgb_to_hex(run.font.color.rgb)
-        #     else:
-        #         style = self.styles[paragraph.style.name]
-        #         if style.font.color.rgb is not None:
-        #             value["color"] = rgb_to_hex(style.font.color.rgb)
-        #     values.append(value)
-        #
-        # return self.__find_most_common_attribute(values, "color")
-
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
         Find style.font style_attr_name in any parent or child elements
@@ -359,7 +347,6 @@ class DocxParagraphParser():
 
         for run in paragraph.runs:
             run_attrs = getattr(run.font, style_attr_name, None)
-
             if run_attrs is None and style_attr_name == 'name':
                 rPr = run.font.element.rPr
                 if rPr is not None:
@@ -371,7 +358,7 @@ class DocxParagraphParser():
                             if 'majorHAnsi' in rFonts.values():
                                 run_attrs = self.origin_document.default_font_style.majorHAnsi
             if run_attrs is None:
-                run_attrs = self.get_attrib_from_base_style(run.font, 'font', style_attr_name)
+                run_attrs = self.get_attrib_from_base_style(run.style, 'font', style_attr_name)
             if run_attrs is not None:
                 if run_attrs not in attrs_values:
                     attrs_values.append(run_attrs)
@@ -380,7 +367,8 @@ class DocxParagraphParser():
                     if attr is not None:
                         attrs_values.append(attr)
                     else:
-                        attrs_values.append(getattr(self.origin_document.default_font_style, style_attr_name, None))
+                        if getattr(self.origin_document.default_font_style, style_attr_name, None) not in attrs_values:
+                            attrs_values.append(getattr(self.origin_document.default_font_style, style_attr_name, None))
 
 
 
@@ -434,6 +422,8 @@ class DocxParagraphParser():
         for run in paragraph.runs:
             if getattr(run.font, style_attr_name) is True:
                 return True
+            elif DocxParagraphParser.get_attrib_from_base_style(run.style, 'font', style_attr_name) is True:
+                return True
         return False
 
     def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
@@ -456,11 +446,8 @@ class DocxParagraphParser():
                 attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
         return attr
 
-    def _get_font_attribute_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
-        pass
-
     @staticmethod
-    def _is_style_append(paragraph: ParagraphType, style_name: str) -> bool:
+    def _is_style_append(paragraph: ParagraphType, attr_name: str) -> bool:
         """
         Checks if the text is bold | italic | underline
         This is a function that uses the `docx` package.
@@ -470,20 +457,28 @@ class DocxParagraphParser():
         :param paragraph: docx.Document.Paragraph
         :return : StylePropertyCoverage
         """
-        styles = set()
-        for run in paragraph.runs:
-            styles.add(getattr(run.font, style_name))
 
-        styles = list(styles)
-        style_property_coverage = None
-        # style_property_coverage = StylePropertyCoverage.UNKNOWN
-        undesired_subsets = [{True, False}, {True, None}, {False, None}]
-        if len(styles) == 1:
-            style_property_coverage = True if styles[0] else False
-        elif any(subset.issubset(styles) for subset in undesired_subsets):
-            # style_property_coverage = StylePropertyCoverage.PARTLY
-            style_property_coverage = True
-        return style_property_coverage
+        attrs = set()
+        style = paragraph.style
+        attr = getattr(style.font, attr_name)
+        if attr is None:
+            attr = DocxParagraphParser.get_attrib_from_base_style(style, 'font', attr_name)
+
+        for run in paragraph.runs:
+            run_attrs = getattr(run.font, attr_name)
+            if run_attrs is None:
+                run_attrs = DocxParagraphParser.get_attrib_from_base_style(run.style, 'font', attr_name)
+            if run_attrs is not None:
+                attrs.add(run_attrs)
+        if len(attrs) == 0:
+            if attr is not None:
+                return attr
+        else:
+            if len(attrs) == 1:
+                return list(attrs)[0]
+            else:
+                return True
+        return False
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
@@ -497,32 +492,10 @@ class DocxParagraphParser():
         :param paragraph:docx.Document.Paragraph
         :return: True | False
         """
-        if len(paragraph.font_name) > 1:
+        if len(paragraph.font_name) <= 1:
             return True
         else:
             return False
-
-        # fonts = set()
-        # styles = set()
-        #
-        # for run in paragraph.runs:
-        #     # find font name and style name in element
-        #     # because sometime we can't get attr in style.font.name in run object
-        #     string_xml = etree.tostring(run.element).decode('utf-8')
-        #     cs_match = re.search(r'cs="([^"]+)"', string_xml)
-        #     ascii_theme = re.search(r'w:asciiTheme="([^"]+)"', string_xml)
-        #     if cs_match:
-        #         cs_value = cs_match.group(1)
-        #     # if style:font empty get asciiTheme like nameFont
-        #     elif ascii_theme:
-        #         cs_value = ascii_theme.group(1)
-        #     else:
-        #         cs_value = paragraph.style.font.name
-        #     fonts.add(cs_value)
-        #     if run.style.name:
-        #         styles.add(run.style.name)
-        #
-        # return len(fonts) != 1 or len(styles) != 1
 
     @staticmethod
     def _is_change_text_size(paragraph: Paragraph) -> bool:
@@ -532,7 +505,7 @@ class DocxParagraphParser():
         :param paragraph:
         :return: True | False
         """
-        if len(paragraph.text_size) > 1:
+        if len(paragraph.text_size) <= 1:
             return True
         else:
             return False
@@ -553,30 +526,6 @@ class DocxParagraphParser():
         if alignment is None:
             return None
         return alignments[alignment].value if alignment < len(alignments) else None
-
-    @staticmethod
-    def __find_most_common_attribute(values: list, attr: str, count_field: str = "count") -> str:
-        """
-        This function is used in determining the name of the font or color,
-        if there are several of them in one paragraph.
-        Since the Paragraph class expects a single value,
-        the font name or color that occurs most often in the paragraph is returned.
-
-        @param values: [{"name_attr": "name", "count": 11}]
-        @param attr: "name_attr" name
-        @param count_field: "count" name
-        @return: more used attr
-        """
-        sum_repeat = {}
-        for item in values:
-            if item[attr] in sum_repeat:
-                sum_repeat[item[attr]] += item[count_field]
-            else:
-                sum_repeat[item[attr]] = item[count_field]
-        if len(sum_repeat) < 1:
-            return None
-        sum_repeat['max'] = max(sum_repeat, key=lambda k: sum_repeat[k])
-        return sum_repeat['max']
 
     def extract_tables(self) -> list[StructuralElement]:
         """
@@ -701,9 +650,6 @@ class DocxParagraphParser():
 
         paragraphs = []
         for paragraph in self.origin_document.paragraphs:
-            # if paragraph.paragraph_format.element.pPr is not None:
-            #     paragraph.list_level = paragraph.paragraph_format.element.pPr.numPr.ilvl.val
-            #     paragraph.num_id = paragraph.paragraph_format.element.pPr.numPr.numId.val
             for key, value in paragraph.paragraph_format.element.attrib.items():
                 if 'paraId' in key:
                     paragraph.id = value
