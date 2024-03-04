@@ -35,7 +35,7 @@ class UnifiedDocumentView:
     """
     __config = Config("settings.ini")
 
-    def __init__(self, owner: str, time: str, page_count: int):
+    def __init__(self, owner: str, time: str, page_count: int = None):
         self._owner = owner
         self._time = time
         self._page_count = page_count

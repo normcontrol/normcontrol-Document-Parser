@@ -54,6 +54,7 @@ from src.classes.word.Numbering import NumLvlStyle, AbstractNum, NumberingStyle,
 from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
+from src.helpers.utils import check_for_key_and_return_value
 
 
 class DocxParagraphParser():
@@ -165,87 +166,60 @@ class DocxParagraphParser():
         self.origin_document = Document(path)
         self.ns = self.origin_document.element.nsmap
         self.get_default_font_style()
-        self.get_base_numbering_style()
+        self.get_base_numbering_styles()
         self.xml_paragraphs = self.__add_xml_attr_to_paragraph()
 
         self.styles = self.origin_document.styles
-        self.tables = self.extract_tables()
-        self.pictures = self.extract_pictures()
-        self.paragraphs = self.extract_paragraphs()
+        # self.tables = self.extract_tables()
+        # self.pictures = self.extract_pictures()
+        # self.paragraphs = self.extract_paragraphs()
         self.document = UnifiedDocumentView(self.origin_document.core_properties.author,
-                                            str(self.origin_document.core_properties.created),
-                                            None)
+                                            str(self.origin_document.core_properties.created))
         self.get_all_elements()
 
     def get_standart_paragraph(self, paragraph: ParagraphType):
         """
         Make paragraph in standard format
 
-        :param paragraph: docx.Paragraph
+        :param paragraph: docx.ParagraphType
         :return : Paragraph object
         """
+        common_attributes = {
+            "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            "_text": paragraph.text,
+            "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
+            "_font_name": self._get_font_style_for_attr(paragraph, "name"),
+            "_text_size": [value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
+            "_alignment": self._get_paragraph_justification_type(
+                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
+            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+            "_mrglf": round(
+                self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
+                self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
+                if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
+                else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
+                , 2),
+            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
+            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+            "_bold": self._is_style_append(paragraph, "bold"),
+            "_italics": self._is_style_append(paragraph, "italic"),
+            "_underlining": self._is_style_append(paragraph, "underline"),
+            "_sub_text": self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
+            "_super_text": self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
+            "_color_text": [rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
+            "_page_breake_before": self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
+            "_keep_lines_together": self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
+            "_keep_with_next": self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
+            "_outline_level": paragraph.outline_level
+        }
         if paragraph.list_level is not None:
             standart_paragraph = List(
                 level=paragraph.list_level,
-                _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-                _text=paragraph.text,
-                _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent"),
-                _font_name=self._get_font_style_for_attr(paragraph, "name"),
-                _text_size=[value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
-                _alignment=self._get_paragraph_justification_type(
-                    self._get_paragraph_format_in_hierarchy(paragraph,
-                                                            'alignment')) if self._get_paragraph_justification_type(
-                    self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) is not None else 'Unknown',
-                _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
-                _mrglf=round(
-                    self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
-                    self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
-                    if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
-                    else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
-                    , 2),
-                _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-                _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-                _bold=self._is_style_append(paragraph, "bold"),
-                _italics=self._is_style_append(paragraph, "italic"),
-                _underlining=self._is_style_append(paragraph, "underline"),
-                _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
-                _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
-                _color_text=[rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
-                _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
-                _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
-                _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
-                _outline_level=paragraph.outline_level,
+                **common_attributes
             )
         else:
             standart_paragraph = Paragraph(
-                _line_spacing=self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-                _text=paragraph.text,
-                _indent=self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
-                _font_name=self._get_font_style_for_attr(paragraph, "name"),
-                _text_size=[value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
-                _alignment=self._get_paragraph_justification_type(
-                    self._get_paragraph_format_in_hierarchy(paragraph,
-                                                            'alignment')) if self._get_paragraph_justification_type(
-                    self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')) is not None else 'Unknown',
-                _mrgrg=round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
-                _mrglf=round(
-                    self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
-                    self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
-                    if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
-                    else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
-                    , 2),
-                _mrgtop=round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-                _mrgbtm=round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
-                _bold=self._is_style_append(paragraph, "bold"),
-                _italics=self._is_style_append(paragraph, "italic"),
-                _underlining=self._is_style_append(paragraph, "underline"),
-                _sub_text=self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
-                _super_text=self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
-                _color_text=[rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
-                _page_breake_before=self._get_paragraph_format_style_for_attr(paragraph, "page_break_before", "bool"),
-                _keep_lines_together=self._get_paragraph_format_style_for_attr(paragraph, "keep_together", "bool"),
-                _keep_with_next=self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next", "bool"),
-                _outline_level=paragraph.outline_level
+                **common_attributes
             )
             standart_paragraph.no_change_fontname = self._is_change_font_name(standart_paragraph)
             standart_paragraph.no_change_text_size = self._is_change_text_size(standart_paragraph)
@@ -280,30 +254,6 @@ class DocxParagraphParser():
         """
 
         return Frame(_width=image.width, _height=image.height, _anchor_type=image.type, _image=Image())
-
-    # def _get_font_size(self, paragraph: ParagraphType):
-    #     """
-    #     Get font size from paragraph
-    #     because sometime paragraph.style.font.size.pt in not correct
-    #
-    #     :param paragraph: paragraph: docx.Paragraph
-    #     :return fonts_sizes: list of font sizes
-    #     """
-    #     style = paragraph.style
-    #     p_font_style = self.get_attrib_from_base_style(style, 'font', 'size')
-    #     fonts_sizes = []
-    #     for run in paragraph.runs:
-    #         font_size = run.font.size
-    #         if font_size is None:
-    #             font_size = self.get_attrib_from_base_style(run.style, 'font', 'size')
-    #         if font_size is not None:
-    #             if font_size.pt not in fonts_sizes:
-    #                 fonts_sizes.append(font_size.pt)
-    #     if len(fonts_sizes) == 0 and p_font_style is not None:
-    #         fonts_sizes = [p_font_style.pt]
-    #     if len(fonts_sizes) == 0:
-    #         fonts_sizes = [self.origin_document.default_font_style.font_size]
-    #     return fonts_sizes
 
     def _get_font_style_color(self, paragraph: ParagraphType) -> list[str]:
         """
@@ -370,8 +320,6 @@ class DocxParagraphParser():
                         if getattr(self.origin_document.default_font_style, style_attr_name, None) not in attrs_values:
                             attrs_values.append(getattr(self.origin_document.default_font_style, style_attr_name, None))
 
-
-
         return attrs_values
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
@@ -433,10 +381,9 @@ class DocxParagraphParser():
         :return: value attribute
         """
         attr = getattr(paragraph.paragraph_format, attr_name)
+        number_attrs = ['first_line_indent', 'left_indent', 'right_indent']
         if attr is None:
-            if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in ['first_line_indent',
-                                                                                                   'left_indent',
-                                                                                                   'right_indent']:
+            if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in number_attrs:
                 num_style = self.origin_document.numbering_styles.num[int(paragraph.num_id)]
                 if int(paragraph.list_level) in num_style.override_numbering_styles.keys():
                     attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name)
@@ -511,21 +458,26 @@ class DocxParagraphParser():
             return False
 
     @staticmethod
-    def _get_paragraph_justification_type(alignment: int) -> Union[str, None]:
+    def _get_paragraph_justification_type(alignment: int) -> Union[AlignmentEnum, None]:
         """
         Get paragraph justification type by key
 
         :return WD_PARAGRAPH_ALIGNMENT | None
         """
-        alignments = [
-            AlignmentEnum.LEFT,
-            AlignmentEnum.CENTER,
-            AlignmentEnum.RIGHT,
-            AlignmentEnum.JUSTIFY
-        ]
+        alignments = {
+            0: AlignmentEnum.LEFT,
+            1: AlignmentEnum.CENTER,
+            2: AlignmentEnum.RIGHT,
+            3: AlignmentEnum.JUSTIFY,
+            4: AlignmentEnum.DISTRIBUTE,
+            5: AlignmentEnum.JUSTIFY,
+            6: AlignmentEnum.JUSTIFY,
+            7: AlignmentEnum.JUSTIFY,
+            8: AlignmentEnum.JUSTIFY
+        }
         if alignment is None:
-            return None
-        return alignments[alignment].value if alignment < len(alignments) else None
+            return AlignmentEnum.LEFT
+        return alignments[alignment]
 
     def extract_tables(self) -> list[StructuralElement]:
         """
@@ -695,9 +647,8 @@ class DocxParagraphParser():
     def get_default_font_style(self):
         for fonts in self.origin_document.styles.element.xpath("./w:docDefaults/w:rPrDefault/w:rPr"):
             self.origin_document.default_font_style = DefaultFontStyle(name=fonts.rFonts.ascii,
-                                                                       size=fonts.sz.val if fonts.sz.val else None,
-                                                                       color=fonts.color.rgb if fonts.color is not None else (
-                                                                           0, 0, 0))
+                                                                       size=getattr(fonts.sz, 'val', None),
+                                                                       color=getattr(fonts.color, 'rgb', (0, 0, 0)))
             for part in self.origin_document.part.package.parts:
                 if part.partname.startswith("/word/theme/"):
                     theme = parse_xml(part.blob)
@@ -709,9 +660,6 @@ class DocxParagraphParser():
                         for typeface in major_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
                             self.origin_document.default_font_style.majorHAnsi = typeface
 
-
-
-
     @staticmethod
     def get_attrib_from_base_style(style, tag_name, attrib_name):
         p_font_attr = None
@@ -719,7 +667,6 @@ class DocxParagraphParser():
             tag = getattr(style, tag_name, None)
             if tag is None:
                 break
-                logging.debug(f'No tag found for {tag_name}')
             if getattr(tag, attrib_name, None) is not None:
                 p_font_attr = getattr(tag, attrib_name, None)
                 break
@@ -730,31 +677,26 @@ class DocxParagraphParser():
                     break
         return p_font_attr
 
-    def get_base_numbering_style(self):
-        def check_for_exists_and_return(key, element):
-            if key in element.attrib.keys():
-                return element.attrib[key]
+    def get_base_numbering_styles(self):
 
-        def get_NumLvlStyle(element):
-            ilvl = int(element.attrib[f'{{{self.ns["w"]}}}ilvl'])
-            start = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
-                                                element.xpath("w:start", namespaces=self.ns)[
-                                                    0]) if len(
-                element.xpath("w:start", namespaces=self.ns)) > 0 else None
+        def get_numlvlstyle(abstract_style):
+            value_string = f'{{{self.ns["w"]}}}val'
+            ilvl = int(abstract_style.attrib[f'{{{self.ns["w"]}}}ilvl'])
+            start = check_for_key_and_return_value(value_string, abstract_style.xpath("w:start", namespaces=self.ns)[
+                0].attrib) if len(
+                abstract_style.xpath("w:start", namespaces=self.ns)) > 0 else None
 
-            num_fmt = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
-                                                  element.xpath("w:numFmt", namespaces=self.ns)[
-                                                      0]) if len(
-                element.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
-            lvl_text = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
-                                                   element.xpath("w:lvlText", namespaces=self.ns)[
-                                                       0]) if len(
-                element.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
-            lvl_jc = check_for_exists_and_return(f'{{{self.ns["w"]}}}val',
-                                                 element.xpath("w:lvlJc", namespaces=self.ns)[
-                                                     0]) if len(
-                element.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
-            ppr = element.xpath("w:pPr", namespaces=self.ns)[0]
+            num_fmt = check_for_key_and_return_value(value_string, abstract_style.xpath("w:numFmt", namespaces=self.ns)[
+                0].attrib) if len(
+                abstract_style.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
+            lvl_text = check_for_key_and_return_value(value_string,
+                                                      abstract_style.xpath("w:lvlText", namespaces=self.ns)[
+                                                          0].attrib) if len(
+                abstract_style.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
+            lvl_jc = check_for_key_and_return_value(value_string, abstract_style.xpath("w:lvlJc", namespaces=self.ns)[
+                0].attrib) if len(
+                abstract_style.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
+            ppr = abstract_style.xpath("w:pPr", namespaces=self.ns)[0]
             left_mrg = ppr.ind_left
             right_mrg = ppr.ind_right
             indent = ppr.first_line_indent
@@ -763,32 +705,40 @@ class DocxParagraphParser():
                                start, num_fmt,
                                lvl_text, lvl_jc)
 
-        abstracts = {}
-        for abstract_num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:abstractNum"):
-            if f'{{{self.ns["w"]}}}abstractNumId' in abstract_num.attrib.keys():
-                abstract_num_id = int(abstract_num.attrib[f'{{{self.ns["w"]}}}abstractNumId'])
-                numbering_styles = []
-                for num_level in abstract_num.xpath("w:lvl", namespaces=self.ns):
-                    if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                        numbering_styles.append(get_NumLvlStyle(num_level))
-                    else:
-                        raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
-                abstracts[abstract_num_id] = AbstractNum(abstract_num_id, numbering_styles)
-            else:
-                raise Exception('Ошибка в абстрактном стиле перечисление : не имеет id')
+        def get_abstacts_num():
+            abstracts = {}
+            for abstract_num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:abstractNum"):
+                if f'{{{self.ns["w"]}}}abstractNumId' in abstract_num.attrib.keys():
+                    abstract_num_id = int(abstract_num.attrib[f'{{{self.ns["w"]}}}abstractNumId'])
+                    numbering_styles = []
+                    for num_level in abstract_num.xpath("w:lvl", namespaces=self.ns):
+                        if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
+                            numbering_styles.append(get_numlvlstyle(num_level))
+                        else:
+                            raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
+                    abstracts[abstract_num_id] = AbstractNum(abstract_num_id, numbering_styles)
+                else:
+                    raise Exception('Ошибка в абстрактном стиле перечисление : не имеет id')
+            return abstracts
 
-        nums = {}
-        for num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:num"):
-            num_id = num.numId
-            abstract_style = abstracts[num.abstractNumId.val]
-            numbering_styles = {}
-            for ovverride in num.xpath("w:lvlOverride/w:lvl"):
-                ilvl = ovverride.attrib[f'{{{self.ns["w"]}}}ilvl']
-                for num_level in num.xpath("w:lvl", namespaces=self.ns):
-                    if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                        numbering_styles[ilvl] = get_NumLvlStyle(num_level)
-                    else:
-                        raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
-            nums[num_id] = NumberingStyle(num_id, abstract_style, numbering_styles)
+        def get_num_styles(abstracts: dict[int, AbstractNum]):
+            nums = {}
+            for num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:num"):
+                num_id = num.numId
+                abstract_style = abstracts[num.abstractNumId.val]
+                numbering_styles = {}
+                for ovverride in num.xpath("w:lvlOverride/w:lvl"):
+                    ilvl = ovverride.attrib[f'{{{self.ns["w"]}}}ilvl']
+                    for num_level in num.xpath("w:lvl", namespaces=self.ns):
+                        if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
+                            numbering_styles[ilvl] = get_numlvlstyle(num_level)
+                        else:
+                            raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
+                nums[num_id] = NumberingStyle(num_id, abstract_style, numbering_styles)
+            return nums
 
-        self.origin_document.numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
+        abstracts = get_abstacts_num()
+        nums = get_num_styles(abstracts)
+        numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
+        self.origin_document.numbering_styles = numbering_styles
+        return numbering_styles
