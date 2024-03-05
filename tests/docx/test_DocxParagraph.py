@@ -7,9 +7,8 @@ from docx import Document
 from src.docx.DocxParagraphParser import DocxParagraphParser
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-
-
+import docx
+from docx.text.paragraph import Paragraph
 
 class TestDocxParagraph(unittest.TestCase):
     def test_super_sub_text(self):

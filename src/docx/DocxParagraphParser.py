@@ -53,11 +53,10 @@ from src.classes.word.DefaultFontStyle import DefaultFontStyle
 from src.classes.word.Numbering import NumLvlStyle, AbstractNum, NumberingStyle, NumeringStyles
 from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
-from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.helpers.utils import check_for_key_and_return_value
 
 
-class DocxParagraphParser():
+class DocxParagraphParser(DefaultParser):
     """
     Class extract paragraph and attributes from DOCX files
 
@@ -170,12 +169,10 @@ class DocxParagraphParser():
         self.xml_paragraphs = self.__add_xml_attr_to_paragraph()
 
         self.styles = self.origin_document.styles
-        # self.tables = self.extract_tables()
-        # self.pictures = self.extract_pictures()
-        # self.paragraphs = self.extract_paragraphs()
-        self.document = UnifiedDocumentView(self.origin_document.core_properties.author,
-                                            str(self.origin_document.core_properties.created))
-        self.get_all_elements()
+        self.tables = self.extract_tables()
+        self.pictures = self.extract_pictures()
+        self.paragraphs = self.extract_paragraphs()
+        self.document = self.get_all_elements()
 
     def get_standart_paragraph(self, paragraph: ParagraphType):
         """
@@ -184,6 +181,8 @@ class DocxParagraphParser():
         :param paragraph: docx.ParagraphType
         :return : Paragraph object
         """
+        PRECISION = 2
+
         common_attributes = {
             "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
             "_text": paragraph.text,
@@ -192,15 +191,15 @@ class DocxParagraphParser():
             "_text_size": [value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
             "_alignment": self._get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
-            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), 2),
+            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), PRECISION),
             "_mrglf": round(
                 self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
                 self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
                 if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
                 else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
-                , 2),
-            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), 2),
-            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), 2),
+                , PRECISION),
+            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), PRECISION),
+            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), PRECISION),
             "_bold": self._is_style_append(paragraph, "bold"),
             "_italics": self._is_style_append(paragraph, "italic"),
             "_underlining": self._is_style_append(paragraph, "underline"),
@@ -262,7 +261,7 @@ class DocxParagraphParser():
         :param paragraph: docx.Paragraph
         :return: most use hex code color
         """
-        attrs_values = []
+        attrs_values = set()
         attr = getattr(paragraph.style.font, 'color', None)
         if getattr(attr, 'rgb', None) is None:
             attr = self.get_attrib_from_base_style(paragraph.style, 'font', 'color')
@@ -271,15 +270,15 @@ class DocxParagraphParser():
             run_attrs = getattr(run.font, 'color', None)
             if getattr(run_attrs, 'rgb', None) is None:
                 run_attrs = self.get_attrib_from_base_style(run.font, 'font', 'color')
-            if getattr(run_attrs, 'rgb', None) is not None and getattr(run_attrs, 'rgb', None) not in attrs_values:
-                attrs_values.append(run_attrs.rgb)
+            if getattr(run_attrs, 'rgb', None) is not None:
+                attrs_values.add(run_attrs.rgb)
 
         if len(attrs_values) == 0:
             if getattr(attr, 'rgb', None) is not None:
-                attrs_values.append(attr.rgb)
+                attrs_values.add(attr.rgb)
             else:
-                attrs_values.append(getattr(self.origin_document.default_font_style, 'color', None))
-        return attrs_values
+                attrs_values.add(getattr(self.origin_document.default_font_style, 'color', None))
+        return list(attrs_values)
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
         """
@@ -517,13 +516,13 @@ class DocxParagraphParser():
 
         :return: document: UnifiedDocumentView
         """
-        if len(self.document.content) != 0:
-            return self.document
+        document = UnifiedDocumentView(self.origin_document.core_properties.author,
+                            str(self.origin_document.core_properties.created))
         list_of_consecutive_elements = self.__get_xml_consecutive_content()
         list_of_consecutive_elements = self.__get_all_xml_elements(list_of_consecutive_elements)
         for i, element in enumerate(list_of_consecutive_elements):
-            self.document.add_content(i, element)
-        return self.document
+            document.add_content(i, element)
+        return document
 
     def extract_paragraphs(self) -> list[StructuralElement]:
         """
@@ -679,24 +678,24 @@ class DocxParagraphParser():
 
     def get_base_numbering_styles(self):
 
-        def get_numlvlstyle(abstract_style):
+        def get_numlvlstyle(num_lvl):
             value_string = f'{{{self.ns["w"]}}}val'
-            ilvl = int(abstract_style.attrib[f'{{{self.ns["w"]}}}ilvl'])
-            start = check_for_key_and_return_value(value_string, abstract_style.xpath("w:start", namespaces=self.ns)[
+            ilvl = int(num_lvl.attrib[f'{{{self.ns["w"]}}}ilvl'])
+            start = check_for_key_and_return_value(value_string, num_lvl.xpath("w:start", namespaces=self.ns)[
                 0].attrib) if len(
-                abstract_style.xpath("w:start", namespaces=self.ns)) > 0 else None
+                num_lvl.xpath("w:start", namespaces=self.ns)) > 0 else None
 
-            num_fmt = check_for_key_and_return_value(value_string, abstract_style.xpath("w:numFmt", namespaces=self.ns)[
+            num_fmt = check_for_key_and_return_value(value_string, num_lvl.xpath("w:numFmt", namespaces=self.ns)[
                 0].attrib) if len(
-                abstract_style.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
+                num_lvl.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
             lvl_text = check_for_key_and_return_value(value_string,
-                                                      abstract_style.xpath("w:lvlText", namespaces=self.ns)[
+                                                      num_lvl.xpath("w:lvlText", namespaces=self.ns)[
                                                           0].attrib) if len(
-                abstract_style.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
-            lvl_jc = check_for_key_and_return_value(value_string, abstract_style.xpath("w:lvlJc", namespaces=self.ns)[
+                num_lvl.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
+            lvl_jc = check_for_key_and_return_value(value_string, num_lvl.xpath("w:lvlJc", namespaces=self.ns)[
                 0].attrib) if len(
-                abstract_style.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
-            ppr = abstract_style.xpath("w:pPr", namespaces=self.ns)[0]
+                num_lvl.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
+            ppr = num_lvl.xpath("w:pPr", namespaces=self.ns)[0]
             left_mrg = ppr.ind_left
             right_mrg = ppr.ind_right
             indent = ppr.first_line_indent
