@@ -200,9 +200,9 @@ class DocxParagraphParser(DefaultParser):
                 , PRECISION),
             "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), PRECISION),
             "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), PRECISION),
-            "_bold": self._is_style_append(paragraph, "bold"),
-            "_italics": self._is_style_append(paragraph, "italic"),
-            "_underlining": self._is_style_append(paragraph, "underline"),
+            "_bold": True if True in self._get_font_style_for_attr(paragraph, "bold") else False,
+            "_italics": True if True in self._get_font_style_for_attr(paragraph, "italic") else False,
+            "_underlining": True if True in self._get_font_style_for_attr(paragraph, "underline") else False,
             "_sub_text": self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
             "_super_text": self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
             "_color_text": [rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
@@ -289,10 +289,10 @@ class DocxParagraphParser(DefaultParser):
         :return attrs_values: list of fonts
         """
 
-        attrs_values = []
+        attrs_values = set()
         attr = getattr(paragraph.style.font, style_attr_name, None)
         if attr is None:
-            attr = self.get_attrib_from_base_style(paragraph.style, 'font', style_attr_name, )
+            attr = self.get_attrib_from_base_style(paragraph.style, 'font', style_attr_name)
 
         for run in paragraph.runs:
             run_attrs = getattr(run.font, style_attr_name, None)
@@ -309,17 +309,14 @@ class DocxParagraphParser(DefaultParser):
             if run_attrs is None:
                 run_attrs = self.get_attrib_from_base_style(run.style, 'font', style_attr_name)
             if run_attrs is not None:
-                if run_attrs not in attrs_values:
-                    attrs_values.append(run_attrs)
+                attrs_values.add(run_attrs)
             else:
-                if run_attrs is None:
-                    if attr is not None:
-                        attrs_values.append(attr)
-                    else:
-                        if getattr(self.origin_document.default_font_style, style_attr_name, None) not in attrs_values:
-                            attrs_values.append(getattr(self.origin_document.default_font_style, style_attr_name, None))
+                if attr is not None:
+                    attrs_values.add(attr)
+                else:
+                    attrs_values.add(getattr(self.origin_document.default_font_style, style_attr_name, None))
 
-        return attrs_values
+        return list(attrs_values)
 
     def _get_paragraph_format_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str,
                                              format_return: str = "cm") -> Union[int, float, bool]:
@@ -348,18 +345,6 @@ class DocxParagraphParser(DefaultParser):
             return True
         return attr if isinstance(attr, float) else getattr(attr, format_return)
 
-    def __get_style_in_hierarchy(self, paragraph) -> BaseStyle:
-        """
-        Find style in hierarchy
-
-        :param paragraph: docx.Paragraph
-        :return: BaseStyle
-        """
-        style = paragraph.style
-        while (style_name := style.name) is None:
-            style = style.base_style
-        return self.styles[style_name]
-
     @staticmethod
     def _get_run_font_style_in_hierarchy(paragraph: docx.text.paragraph.Paragraph,
                                          style_attr_name: str) -> bool:
@@ -367,10 +352,11 @@ class DocxParagraphParser(DefaultParser):
         Find docx.text.run.Font attributes
         """
         for run in paragraph.runs:
-            if getattr(run.font, style_attr_name) is True:
-                return True
-            elif DocxParagraphParser.get_attrib_from_base_style(run.style, 'font', style_attr_name) is True:
-                return True
+            attr = getattr(run.font, style_attr_name)
+            if attr is None:
+                attr = DocxParagraphParser.get_attrib_from_base_style(run.style, 'font', style_attr_name)
+            if attr:
+                return attr
         return False
 
     def _get_paragraph_format_in_hierarchy(self, paragraph: docx.text.paragraph.Paragraph, attr_name: str):
@@ -391,40 +377,6 @@ class DocxParagraphParser(DefaultParser):
             else:
                 attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
         return attr
-
-    @staticmethod
-    def _is_style_append(paragraph: ParagraphType, attr_name: str) -> bool:
-        """
-        Checks if the text is bold | italic | underline
-        This is a function that uses the `docx` package.
-        This is a function that uses the `StylePropertyCoverage` class.
-
-        :param style_name: str "bold" | "italic" | "underline"
-        :param paragraph: docx.Document.Paragraph
-        :return : StylePropertyCoverage
-        """
-
-        attrs = set()
-        style = paragraph.style
-        attr = getattr(style.font, attr_name)
-        if attr is None:
-            attr = DocxParagraphParser.get_attrib_from_base_style(style, 'font', attr_name)
-
-        for run in paragraph.runs:
-            run_attrs = getattr(run.font, attr_name)
-            if run_attrs is None:
-                run_attrs = DocxParagraphParser.get_attrib_from_base_style(run.style, 'font', attr_name)
-            if run_attrs is not None:
-                attrs.add(run_attrs)
-        if len(attrs) == 0:
-            if attr is not None:
-                return attr
-        else:
-            if len(attrs) == 1:
-                return list(attrs)[0]
-            else:
-                return True
-        return False
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
