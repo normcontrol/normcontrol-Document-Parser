@@ -8,7 +8,7 @@ class DefaultFontStyle:
     minorHAnsi: str
     majorHAnsi: str
 
-    def __init__(self, name: str, size: Pt = None, color: tuple = (0, 0, 0), minorHAnsi: str = None,
+    def __init__(self, name: str= None, size: Pt = None, color: tuple = (0, 0, 0), minorHAnsi: str = None,
                  majorHAnsi: str = None):
         self.name = name
         self.size = size

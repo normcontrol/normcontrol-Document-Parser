@@ -11,8 +11,36 @@ import docx
 from docx.text.paragraph import Paragraph
 
 class TestDocxParagraph(unittest.TestCase):
+
+    def test_font_name(self):
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/font_change.docx")
+        docx = DocxParagraphParser(path)
+        self.assertEqual(set(docx.paragraphs[0].font_name), {'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[1].font_name),
+                         {'Abadi MT Condensed Light', 'Courier New', 'Times New Roman', 'Calibri Light'})
+        self.assertEqual(set(docx.paragraphs[2].font_name), {'Calibri', 'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[3].font_name), {'Courier New', 'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[4].font_name), {'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[5].font_name), {'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[6].font_name), {'Courier New', 'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[7].font_name), {'Times New Roman'})
+        self.assertEqual(set(docx.paragraphs[8].font_name), {'Calibri Light'})
+        self.assertEqual(set(docx.paragraphs[9].font_name), {'Calibri', 'Abadi'})
+
+    def test_font_size(self):
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/font_change.docx")
+        docx = DocxParagraphParser(path)
+        self.assertEqual(set(docx.paragraphs[0].text_size), {14.0})
+        self.assertEqual(set(docx.paragraphs[1].text_size),
+                         {14.0})
+        self.assertEqual(set(docx.paragraphs[2].text_size), {14.0})
+        self.assertEqual(set(docx.paragraphs[3].text_size), {14.0})
+        self.assertEqual(set(docx.paragraphs[4].text_size), {14.0, 18.0})
+        self.assertEqual(set(docx.paragraphs[5].text_size), {14.0, 16.0})
+        self.assertEqual(set(docx.paragraphs[6].text_size), {14.0})
+
     def test_super_sub_text(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/super_sub.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/super_sub.docx")
         docx = DocxParagraphParser(path)
 
         paragraph = docx.paragraphs[0]
@@ -32,29 +60,29 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.super_text, False)
 
     def test_color(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/color.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/color.docx")
         docx = DocxParagraphParser(path)
 
         paragraph = docx.paragraphs[0]
-        self.assertEqual(paragraph.color_text, '#000')
+        self.assertEqual(paragraph.color_text, ['#000000'])
 
         paragraph = docx.paragraphs[1]
-        self.assertEqual(paragraph.color_text, '#00b0f0')
+        self.assertEqual(paragraph.color_text, ['#00b0f0'])
 
         paragraph = docx.paragraphs[2]
-        self.assertEqual(paragraph.color_text, '#c45911')
+        self.assertEqual(paragraph.color_text, ['#c45911'])
 
         paragraph = docx.paragraphs[3]
-        self.assertEqual(paragraph.color_text, '#2e74b5')
+        self.assertEqual(paragraph.color_text, ['#2e74b5'])
 
         paragraph = docx.paragraphs[4]
-        self.assertEqual(paragraph.color_text, '#c45911')
+        self.assertEqual(set(paragraph.color_text), {'#c45911', '#000000', '#00b050'})
 
         paragraph = docx.paragraphs[5]
-        self.assertEqual(paragraph.color_text, '#000')
+        self.assertEqual(set(paragraph.color_text), {'#5b9bd5', '#000000', '#00b050'})
 
     def test_alignment(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/alignment.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/alignment.docx")
         docx = DocxParagraphParser(path)
 
         paragraph = docx.paragraphs[0]
@@ -69,8 +97,8 @@ class TestDocxParagraph(unittest.TestCase):
         paragraph = docx.paragraphs[3]
         self.assertEqual(paragraph.alignment, AlignmentEnum.JUSTIFY)
 
-    def test_indent(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/indent.docx")
+    def test_margin(self):
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/indent.docx")
         docx = DocxParagraphParser(path)
 
         paragraph = docx.paragraphs[0]
@@ -122,7 +150,7 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(paragraph.mrgbtm, 1)
 
     def test_is_bold_text(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/bold.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/bold.docx")
         docx = DocxParagraphParser(path)
         # Not bold text
         self.assertEqual(docx.paragraphs[0].bold, StylePropertyCoverage.NO)
@@ -142,7 +170,7 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(docx.paragraphs[7].bold, StylePropertyCoverage.NO)
 
     def test_is_italic_text(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/italic.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/italic.docx")
         docx = DocxParagraphParser(path)
         # Not italics text
         self.assertEqual(docx.paragraphs[0].italics, StylePropertyCoverage.NO)
@@ -162,7 +190,7 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(docx.paragraphs[7].italics, StylePropertyCoverage.NO)
 
     def test_is_underline_text(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/underline.docx")
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/underline.docx")
         docx = DocxParagraphParser(path)
         # Not bold text
         self.assertEqual(docx.paragraphs[0].underlining, StylePropertyCoverage.NO)
@@ -186,204 +214,25 @@ class TestDocxParagraph(unittest.TestCase):
         self.assertEqual(docx.paragraphs[7].underlining, StylePropertyCoverage.NO)
 
     def test_is_change_font(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/font_change.docx")
-        document = Document(path)
+        path = os.path.join(os.path.dirname(__file__), "documents/elements/font_change.docx")
         docx = DocxParagraphParser(path)
         # Not change font
-        self.assertEqual(docx.paragraphs[0].no_change_fontname, False)
+        self.assertEqual(docx.paragraphs[0].no_change_fontname, True)
         # Change second and third word in different font
-        self.assertEqual(docx.paragraphs[1].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[1].no_change_fontname, False)
         # Change second word
-        self.assertEqual(docx.paragraphs[2].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[2].no_change_fontname, False)
         # Change last symbol
-        self.assertEqual(docx.paragraphs[3].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[3].no_change_fontname, False)
         # Change size last word
-        self.assertEqual(docx.paragraphs[4].no_change_fontname, False)
+        self.assertEqual(docx.paragraphs[4].no_change_fontname, True)
         # Use style for last word
         self.assertEqual(docx.paragraphs[5].no_change_fontname, True)
         # Change one letter in middle
-        self.assertEqual(docx.paragraphs[6].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[6].no_change_fontname, False)
+        self.assertEqual(docx.paragraphs[7].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[8].no_change_fontname, True)
+        self.assertEqual(docx.paragraphs[9].no_change_fontname, False)
 
-    def test_standard_paragraph(self):
-        path = os.path.join(os.path.dirname(__file__), "documents/paragraph.docx")
-        docx = DocxParagraphParser(path)
-
-        # TODO: private methods:  nochange_font_name, nochange_text_size, alignment
-
-        paragraph = docx.paragraphs[0]
-        self.assertEqual(paragraph.text,
-                         "Параграф с очищенным форматом на две строки две. Да точно две и в нем два предложения.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[1]
-        self.assertEqual(paragraph.text,
-                         "Второй параграф выделен жирным весь.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.FULL)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[2]
-        self.assertEqual(paragraph.text,
-                         "Третий выделен курсивом.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.FULL)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[3]
-        self.assertEqual(paragraph.text,
-                         "Четвертый заголовок уровня 1.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [16])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[4]
-        self.assertEqual(paragraph.text,
-                         "Пятый цвет текста зеленый.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph._font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[5]
-        self.assertEqual(paragraph.text,
-                         "Шестой имеет фон.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[6]
-        self.assertEqual(paragraph.text,
-                         "Седьмой 	использует табы.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[7]
-        self.assertEqual(paragraph.text,
-                         "Отступ у этого абзаца 2")
-        self.assertIn(paragraph.indent, [56.75, 56.7])
-        self.assertEqual(paragraph.line_spacing, 1.5)
-        self.assertEqual(paragraph.font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[8]
-        self.assertEqual(paragraph.text,
-                         "А у это текста будет 1 строчный интервал — вот как-то так и он на две строки.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph.line_spacing, 1)
-        self.assertEqual(paragraph._font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [14])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[9]
-        self.assertEqual(paragraph.text,
-                         "Шрифт изменен на 18.")
-        self.assertIn(paragraph.indent, [35.45, 35.4])
-        self.assertEqual(paragraph._line_spacing, 1.5)
-        self.assertEqual(paragraph._font_name, ["Times New Roman"])
-        self.assertEqual(paragraph.text_size, [18])
-        self.assertEqual(paragraph.mrgrg, 0)
-        self.assertEqual(paragraph.mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.keep_lines_together, None)
-        self.assertEqual(paragraph.keep_with_next, None)
-        self.assertEqual(paragraph.outline_level, None)
-
-        paragraph = docx.paragraphs[10]
-        self.assertEqual(paragraph.text,
-                         "Кастомный шрифт")
-        self.assertEqual(paragraph.indent, 0)
-        self.assertEqual(paragraph._line_spacing, 1.5)
-        self.assertEqual(paragraph._font_name,['Courier New'])
-        self.assertEqual(paragraph._text_size, [14])
-        self.assertEqual(paragraph._mrgrg, 0)
-        self.assertEqual(paragraph._mrglf, 0)
-        self.assertEqual(paragraph.bold, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.italics, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph.underlining, StylePropertyCoverage.NO)
-        self.assertEqual(paragraph._keep_lines_together, None)
-        self.assertEqual(paragraph._keep_with_next, None)
-        self.assertEqual(paragraph._outline_level, None)
         if __name__ == 'main':
             unittest.main()
