@@ -32,13 +32,10 @@ import logging
 from typing import Union
 import docx.text.paragraph
 from docx import Document
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.opc.oxml import serialize_for_reading
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
 from docx.oxml import parse_xml
-from docx.shared import Length
-from docx.styles.style import BaseStyle
+from docx.shared import Pt
 from docx.text.paragraph import Paragraph as ParagraphType
-from lxml import etree
 from src.classes.Frame import Frame
 from src.classes.Image import Image
 from src.classes.List import List
@@ -46,14 +43,16 @@ from src.classes.Paragraph import Paragraph
 from src.classes.Table import Table
 from src.classes.TableCell import TableCell
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
-from src.classes.interfaces.InformalParserInterface import InformalParserInterface
 from src.classes.superclass.Parser import DefaultParser
 from src.classes.superclass.StructuralElement import StructuralElement
 from src.classes.word.DefaultFontStyle import DefaultFontStyle
+from src.classes.word.DefaultFormatStyle import DefaultFormatStyle
 from src.classes.word.Numbering import NumLvlStyle, AbstractNum, NumberingStyle, NumeringStyles
+from src.docx.exceptions import *
 from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
-from src.helpers.utils import check_for_key_and_return_value
+from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
+from src.helpers.utils import check_for_key_and_return_value, check_for_none, get_line_spacing
 
 
 class DocxParagraphParser(DefaultParser):
@@ -161,13 +160,14 @@ class DocxParagraphParser(DefaultParser):
 
         :param path: Path to DOCX document
         """
+        logging.basicConfig(level=logging.INFO)
         self.path_to_document = path
         self.origin_document = Document(path)
         self.ns = self.origin_document.element.nsmap
         self.get_default_font_style()
+        self.get_default_format_style()
         self.get_base_numbering_styles()
-        self.xml_paragraphs = self.__add_xml_attr_to_paragraph()
-
+        self.xml_paragraphs = self.__add_xml_attr_to_paragraph(self.origin_document.paragraphs, self.ns)
         self.styles = self.origin_document.styles
         self.tables = self.extract_tables()
         self.pictures = self.extract_pictures()
@@ -188,7 +188,7 @@ class DocxParagraphParser(DefaultParser):
             "_text": paragraph.text,
             "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
             "_font_name": self._get_font_style_for_attr(paragraph, "name"),
-            "_text_size": [value.pt for value in self._get_font_style_for_attr(paragraph, 'size')],
+            "_text_size": [value.pt if value is not None else None for value in self._get_font_style_for_attr(paragraph, 'size')],
             "_alignment": self._get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
             "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), PRECISION),
@@ -200,9 +200,9 @@ class DocxParagraphParser(DefaultParser):
                 , PRECISION),
             "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"), PRECISION),
             "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"), PRECISION),
-            "_bold": True if True in self._get_font_style_for_attr(paragraph, "bold") else False,
-            "_italics": True if True in self._get_font_style_for_attr(paragraph, "italic") else False,
-            "_underlining": True if True in self._get_font_style_for_attr(paragraph, "underline") else False,
+            "_bold": self.check_property_coverage(self._get_font_style_for_attr(paragraph, "bold")),
+            "_italics": self.check_property_coverage(self._get_font_style_for_attr(paragraph, "italic")),
+            "_underlining": self.check_property_coverage(self._get_font_style_for_attr(paragraph, "underline")),
             "_sub_text": self._get_run_font_style_in_hierarchy(paragraph, "subscript"),
             "_super_text": self._get_run_font_style_in_hierarchy(paragraph, "superscript"),
             "_color_text": [rgb_to_hex(value) for value in self._get_font_style_color(paragraph)],
@@ -230,6 +230,20 @@ class DocxParagraphParser(DefaultParser):
             if paragraph.outline_level in ['1', '2', '3', '4', '5']:
                 standart_paragraph.first_key = 'TitleLevel23'
         return standart_paragraph
+
+    @staticmethod
+    def check_property_coverage(attr: list):
+        if len(attr) > 1:
+            return StylePropertyCoverage.PARTLY
+        elif len(attr) == 0:
+            return StylePropertyCoverage.UNKNOWN
+        else:
+            match attr[0]:
+                case True:
+                    return StylePropertyCoverage.FULL
+                case False | None:
+                    return StylePropertyCoverage.NO
+        return StylePropertyCoverage.UNKNOWN
 
     @staticmethod
     def get_standart_table(table):
@@ -272,12 +286,11 @@ class DocxParagraphParser(DefaultParser):
                 run_attrs = self.get_attrib_from_base_style(run.font, 'font', 'color')
             if getattr(run_attrs, 'rgb', None) is not None:
                 attrs_values.add(run_attrs.rgb)
-
-        if len(attrs_values) == 0:
-            if getattr(attr, 'rgb', None) is not None:
-                attrs_values.add(attr.rgb)
             else:
-                attrs_values.add(getattr(self.origin_document.default_font_style, 'color', None))
+                if getattr(attr, 'rgb', None) is not None:
+                    attrs_values.add(attr.rgb)
+                else:
+                    attrs_values.add(getattr(self.origin_document.default_font_style, 'color', None))
         return list(attrs_values)
 
     def _get_font_style_for_attr(self, paragraph: docx.text.paragraph.Paragraph, style_attr_name: str) -> list:
@@ -365,18 +378,24 @@ class DocxParagraphParser(DefaultParser):
 
         :return: value attribute
         """
-        attr = getattr(paragraph.paragraph_format, attr_name)
-        number_attrs = ['first_line_indent', 'left_indent', 'right_indent']
-        if attr is None:
-            if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in number_attrs:
-                num_style = self.origin_document.numbering_styles.num[int(paragraph.num_id)]
-                if int(paragraph.list_level) in num_style.override_numbering_styles.keys():
-                    attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name)
+        try:
+            attr = getattr(paragraph.paragraph_format, attr_name)
+            number_attrs = ['first_line_indent', 'left_indent', 'right_indent']
+            if attr is None:
+                if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in number_attrs:
+                    num_style = self.origin_document.numbering_styles.num[int(paragraph.num_id)]
+                    if int(paragraph.list_level) in num_style.override_numbering_styles.keys():
+                        attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name)
+                    else:
+                        attr = getattr(num_style.abstract_style.numbering_styles[int(paragraph.list_level)], attr_name)
                 else:
-                    attr = getattr(num_style.abstract_style.numbering_styles[int(paragraph.list_level)], attr_name)
-            else:
-                attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
-        return attr
+                    attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
+            if attr is None:
+                attr = getattr(self.origin_document.default_format_style, attr_name)
+            return attr
+        except Exception as e:
+            print(e)
+            raise e
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
@@ -415,20 +434,24 @@ class DocxParagraphParser(DefaultParser):
 
         :return WD_PARAGRAPH_ALIGNMENT | None
         """
-        alignments = {
-            0: AlignmentEnum.LEFT,
-            1: AlignmentEnum.CENTER,
-            2: AlignmentEnum.RIGHT,
-            3: AlignmentEnum.JUSTIFY,
-            4: AlignmentEnum.DISTRIBUTE,
-            5: AlignmentEnum.JUSTIFY,
-            6: AlignmentEnum.JUSTIFY,
-            7: AlignmentEnum.JUSTIFY,
-            8: AlignmentEnum.JUSTIFY
-        }
-        if alignment is None:
-            return AlignmentEnum.LEFT
-        return alignments[alignment]
+        try:
+            alignments = {
+                0: AlignmentEnum.LEFT,
+                1: AlignmentEnum.CENTER,
+                2: AlignmentEnum.RIGHT,
+                3: AlignmentEnum.JUSTIFY,
+                4: AlignmentEnum.DISTRIBUTE,
+                5: AlignmentEnum.JUSTIFY,
+                6: AlignmentEnum.JUSTIFY,
+                7: AlignmentEnum.JUSTIFY,
+                8: AlignmentEnum.JUSTIFY
+            }
+            if alignment is None:
+                return AlignmentEnum.LEFT
+            return alignments[alignment]
+        except Exception as e:
+            print(e)
+            raise e
 
     def extract_tables(self) -> list[StructuralElement]:
         """
@@ -469,7 +492,7 @@ class DocxParagraphParser(DefaultParser):
         :return: document: UnifiedDocumentView
         """
         document = UnifiedDocumentView(self.origin_document.core_properties.author,
-                            str(self.origin_document.core_properties.created))
+                                       str(self.origin_document.core_properties.created))
         list_of_consecutive_elements = self.__get_xml_consecutive_content()
         list_of_consecutive_elements = self.__get_all_xml_elements(list_of_consecutive_elements)
         for i, element in enumerate(list_of_consecutive_elements):
@@ -544,72 +567,129 @@ class DocxParagraphParser(DefaultParser):
                 i += 1
         return list_of_consecutive_elements
 
-    def __add_xml_attr_to_paragraph(self):
+    @staticmethod
+    def __add_xml_attr_to_paragraph(paragraphs, ns):
+
+        def get_paragraph_id(paragraph):
+            for key, value in paragraph.paragraph_format.element.attrib.items():
+                if 'paraId' in key:
+                    return value
+            return None
+
+        def get_ilvl(numprs, ns):
+            for key, value in numprs.findall('.//w:ilvl', ns)[0].attrib.items():
+                if 'val' in key:
+                    return value
+            return None
+
+        def get_numId(numprs, ns):
+            for key, value in numprs.findall('.//w:numId', ns)[0].attrib.items():
+                if 'val' in key:
+                    return value
+            return None
+
+        def get_outline_lvl(outline):
+            for key, value in outline.attrib.items():
+                if 'val' in key:
+                    return value
+            return None
+
+        def get_outline_lvl_in_style(paragraph, ns):
+            outline = paragraph.paragraph_format.element.findall('.//w:outlineLvl', ns)
+            if len(outline) > 0:
+                return get_outline_lvl(outline[0])
+            else:
+                style = paragraph.style
+                outline = style.element.findall('.//w:outlineLvl', ns)
+                while len(outline) < 1:
+                    if style.base_style is not None:
+                        outline = style.base_style.element.findall('.//w:outlineLvl', ns)
+                        style = style.base_style
+                    else:
+                        break
+                if len(outline) > 0:
+                    return get_outline_lvl(outline[0])
+                else:
+                    return None
+
         """
         Selects additional paragraph attributes from xml
 
         :return paragraphs: list[docx.Paragraph]
         """
-
-        paragraphs = []
-        for paragraph in self.origin_document.paragraphs:
-            for key, value in paragraph.paragraph_format.element.attrib.items():
-                if 'paraId' in key:
-                    paragraph.id = value
-
-            numprs = paragraph.paragraph_format.element.findall('.//w:numPr', self.ns)
+        xml_paragraphs = []
+        for num, paragraph in enumerate(paragraphs):
+            paragraph.id = get_paragraph_id(paragraph)
+            numprs = paragraph.paragraph_format.element.findall('.//w:numPr', ns)
             if len(numprs) > 0:
-                for key, value in numprs[0].findall('.//w:ilvl', self.ns)[0].attrib.items():
-                    if 'val' in key:
-                        paragraph.list_level = value
-                        break
-                for key, value in numprs[0].findall('.//w:numId', self.ns)[0].attrib.items():
-                    if 'val' in key:
-                        paragraph.num_id = value
-                        break
+                paragraph.list_level = get_ilvl(numprs[0], ns)
+                paragraph.num_id = get_numId(numprs[0], ns)
             else:
                 paragraph.list_level = None
                 paragraph.num_id = None
-            outline_level = paragraph.paragraph_format.element.findall('.//w:outlineLvl', self.ns)
-            if len(outline_level) > 0:
-                for key, value in outline_level[0].attrib.items():
-                    if 'val' in key:
-                        paragraph.outline_level = value
-                        break
-            else:
-                style = paragraph.style
-                outline_level = style.element.findall('.//w:outlineLvl', self.ns)
-                while len(outline_level) < 1:
-                    if style.base_style is not None:
-                        outline_level = style.base_style.element.findall('.//w:outlineLvl', self.ns)
-                    else:
-                        break
-                if len(outline_level) > 0:
-                    for key, value in outline_level[0].attrib.items():
-                        if 'val' in key:
-                            paragraph.outline_level = value
-                            break
-                else:
-                    paragraph.outline_level = None
-
-            paragraphs.append(paragraph)
-        return paragraphs
+            paragraph.outline_level = get_outline_lvl_in_style(paragraph, ns)
+            xml_paragraphs.append(paragraph)
+        logging.info("Special attributes was added to paragraph")
+        return xml_paragraphs
 
     def get_default_font_style(self):
-        for fonts in self.origin_document.styles.element.xpath("./w:docDefaults/w:rPrDefault/w:rPr"):
-            self.origin_document.default_font_style = DefaultFontStyle(name=fonts.rFonts.ascii,
-                                                                       size=getattr(fonts.sz, 'val', None),
-                                                                       color=getattr(fonts.color, 'rgb', (0, 0, 0)))
-            for part in self.origin_document.part.package.parts:
-                if part.partname.startswith("/word/theme/"):
-                    theme = parse_xml(part.blob)
-                    for minor_font in theme.xpath("//a:minorFont", namespaces=theme.nsmap):
-                        for typeface in minor_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
-                            self.origin_document.default_font_style.minorHAnsi = typeface
+        try:
+            def get_theme_font_style(document_part):
+                THEME_PATH = "/word/theme/"
+                minorHAnsi = None
+                majorHAnsi = None
+                for part in document_part:
+                    if part.partname.startswith(THEME_PATH):
+                        theme = parse_xml(part.blob)
+                        for minor_font in theme.xpath("//a:minorFont", namespaces=theme.nsmap):
+                            for typeface in minor_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
+                                minorHAnsi = typeface
 
-                    for major_font in theme.xpath("//a:majorFont", namespaces=theme.nsmap):
-                        for typeface in major_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
-                            self.origin_document.default_font_style.majorHAnsi = typeface
+                        for major_font in theme.xpath("//a:majorFont", namespaces=theme.nsmap):
+                            for typeface in major_font.xpath("./a:latin/@typeface", namespaces=theme.nsmap):
+                                majorHAnsi = typeface
+                        return minorHAnsi, majorHAnsi
+
+            default_font_style = self.origin_document.styles.element.xpath("./w:docDefaults/w:rPrDefault/w:rPr")
+            if default_font_style:
+                default_font_style = default_font_style[0]
+                self.origin_document.default_font_style = DefaultFontStyle(name=default_font_style.rFonts.ascii,
+                                                                           size=getattr(default_font_style.sz, 'val',
+                                                                                        None),
+                                                                           color=getattr(default_font_style.color,
+                                                                                         'rgb', (0, 0, 0)))
+                minorHAnsi, majorHAnsi = get_theme_font_style(self.origin_document.part.package.parts)
+                self.origin_document.default_font_style.minorHAnsi = minorHAnsi
+                self.origin_document.default_font_style.majorHAnsi = majorHAnsi
+                logging.info("Default font styles were extracted full")
+            else:
+                self.origin_document.default_font_style = DefaultFontStyle()
+                logging.info("Default font styles were extracted empty")
+        except Exception as e:
+            logging.error(f'Error occurred while getting default font style: {str(e)}')
+            self.origin_document.default_font_style = DefaultFontStyle()
+
+    def get_default_format_style(self):
+        try:
+            default_format_style = self.origin_document.styles.element.xpath("./w:docDefaults/w:pPrDefault/w:pPr")
+            if default_format_style:
+                d = default_format_style[0]
+                self.origin_document.default_format_style = DefaultFormatStyle(d.jc_val if d.jc_val is not None else WD_PARAGRAPH_ALIGNMENT.LEFT,
+                                                                               get_line_spacing(d.spacing_line,
+                                                                                                d.spacing_lineRule),
+                                                                               getattr(d.ind_left, 'cm', None),
+                                                                               getattr(d.ind_right, 'cm', None),
+                                                                               getattr(d.spacing_after, 'pt', None),
+                                                                               getattr(d.spacing_before, 'pt', None),
+                                                                               d.keepLines, d.keepNext,
+                                                                               d.pageBreakBefore,
+                                                                               getattr(d.first_line_indent, 'cm', None))
+                logging.info("Default format styles were extracted")
+            else:
+                self.origin_document.default_format_style = DefaultFormatStyle()
+                logging.info("Default format styles were extracted empty")
+        except Exception as e:
+            logging.error(e)
 
     @staticmethod
     def get_attrib_from_base_style(style, tag_name, attrib_name):
@@ -647,10 +727,15 @@ class DocxParagraphParser(DefaultParser):
             lvl_jc = check_for_key_and_return_value(value_string, num_lvl.xpath("w:lvlJc", namespaces=self.ns)[
                 0].attrib) if len(
                 num_lvl.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
-            ppr = num_lvl.xpath("w:pPr", namespaces=self.ns)[0]
-            left_mrg = ppr.ind_left
-            right_mrg = ppr.ind_right
-            indent = ppr.first_line_indent
+            if len(num_lvl.xpath("w:pPr", namespaces=self.ns)) > 0:
+                ppr = num_lvl.xpath("w:pPr", namespaces=self.ns)[0]
+                left_mrg = ppr.ind_left
+                right_mrg = ppr.ind_right
+                indent = ppr.first_line_indent
+            else:
+                left_mrg = None
+                right_mrg = None
+                indent = None
             return NumLvlStyle(ilvl, left_mrg,
                                right_mrg, indent,
                                start, num_fmt,
@@ -678,18 +763,108 @@ class DocxParagraphParser(DefaultParser):
                 num_id = num.numId
                 abstract_style = abstracts[num.abstractNumId.val]
                 numbering_styles = {}
-                for ovverride in num.xpath("w:lvlOverride/w:lvl"):
-                    ilvl = ovverride.attrib[f'{{{self.ns["w"]}}}ilvl']
-                    for num_level in num.xpath("w:lvl", namespaces=self.ns):
+                for ovverride in num.lvlOverride_lst:
+                    ilvl = ovverride.ilvl
+                    for num_level in ovverride.xpath("w:lvl"):
                         if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
                             numbering_styles[ilvl] = get_numlvlstyle(num_level)
                         else:
-                            raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
+                            raise StyleException('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
                 nums[num_id] = NumberingStyle(num_id, abstract_style, numbering_styles)
             return nums
 
-        abstracts = get_abstacts_num()
-        nums = get_num_styles(abstracts)
-        numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
+        try:
+            abstracts = get_abstacts_num()
+            nums = get_num_styles(abstracts)
+            numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
+        except NotImplementedError as e:
+            numbering_styles = NumeringStyles(None, None)
+            print(e)
         self.origin_document.numbering_styles = numbering_styles
+        logging.info("Numbering styles were extracted")
         return numbering_styles
+
+
+@staticmethod
+def get_paragraphs_split_outline(paragraphs: list[StructuralElement]):
+    def get_tree(array):
+        temp = {
+            'children': []
+        }
+        out = min(level[0] for level in array)
+        outs = []
+        for outline in array:
+            if outline[0] in [out, -1]:
+                if 'main' in temp.keys():
+                    if len(temp['children']) > 0:
+                        temp['children'] = get_tree(temp['children'])
+                    outs.append(temp)
+                temp = {
+                    'main': (outline[0], outline[1]),
+                    'children': []
+                }
+                if outline[0] == -1:
+                    out = 0
+                    continue
+            else:
+                temp['children'].append((outline[0], outline[1]))
+        if len(temp['children']) > 0:
+            temp['children'] = get_tree(temp['children'])
+        outs.append(temp)
+        return outs
+
+    list_of_outline_paragraph = []
+    list_of_paragraph = []
+    outline_lvl = None
+    for paragraph in paragraphs:
+        if paragraph.outline_level is not None:
+            if len(list_of_paragraph) > 0:
+                list_of_outline_paragraph.append(
+                    (int(outline_lvl) if outline_lvl is not None else -1, list_of_paragraph))
+            list_of_paragraph = []
+            outline_lvl = paragraph.outline_level
+        list_of_paragraph.append(paragraph)
+
+    split_paragraphs = get_tree(list_of_outline_paragraph)
+    return split_paragraphs
+
+
+@staticmethod
+def get_json_split_paragraphs(split_paragraphs: list) -> str:
+    def get_main(sections):
+        json_dict = {}
+        level = 0
+        for section in sections:
+            section_main_temp = {}
+            import dataclasses
+            # para_lvl = 0
+            try:
+                paragraphs = []
+                for paragraph in section['main'][1]:
+                    para_temp = {}
+
+                    # for attribute_name, value in dataclasses.asdict(paragraph).items():
+                    # para_temp[attribute_name[1::]] = value
+                    paragraphs.append(paragraph.text)
+                section_main_temp['section_text'] = [paragraphs[0]]
+                if len(paragraphs) > 1:
+                    section_main_temp['main'] = paragraphs[1::]
+                    # para_lvl += 1
+                children = section['children']
+                if len(children) > 0:
+                    section_main_temp['children'] = get_main(children)
+                else:
+                    json_dict[level] = section_main_temp
+                    level += 1
+                    continue
+                json_dict[level] = section_main_temp
+                level += 1
+            except Exception as e:
+                print(e)
+                raise e
+        return json_dict
+
+    json_dict = get_main(split_paragraphs)
+    import json
+    json_text = json.loads(json.dumps(json_dict))
+    return json_text

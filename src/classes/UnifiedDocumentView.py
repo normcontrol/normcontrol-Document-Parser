@@ -82,7 +82,7 @@ class UnifiedDocumentView:
             print(e)
             raise
 
-    def write_CSV(self, path: str = 'pdftocsv.csv', **kwargs):
+    def write_CSV(self, path: str = 'csvfile.csv', **kwargs):
 
         """
 
@@ -102,9 +102,14 @@ class UnifiedDocumentView:
             output_attributes = ["text", "count_of_sp_sbl", "count_sbl", "uppercase", "lowercase", "font_name",
                                  "last_sbl", "first_key", "indent", "line_spacing", "text_size"]
         try:
-            with open(path, 'w', newline='', encoding="utf-8") as csvfile:
+            import os.path
+
+            from pathlib import Path
+            new_file = False if os.path.exists(Path(os.path.abspath(os.curdir),path)) else True
+            with open(path, 'a', newline='', encoding="utf-8") as csvfile:
                 filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-                filewriter.writerow(output_attributes)
+                if new_file:
+                    filewriter.writerow(output_attributes)
                 for key, value in self.content.items():
                     if isinstance(value, Paragraph):
                         filewriter.writerow([value.__getattribute__('_' + attribute) for attribute in output_attributes])
