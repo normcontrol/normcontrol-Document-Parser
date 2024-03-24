@@ -30,6 +30,11 @@ class List(Paragraph):
     _style_char: str = None
     _style_name: str = None
 
+    def __init__(self, level, **kwargs):
+        super().__init__(**kwargs)
+        self.level = level
+
+
     @property
     def type(self):
         return self._type

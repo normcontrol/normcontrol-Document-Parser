@@ -52,7 +52,8 @@ async def parse_document(
     def parse_docx():
         docx = DocxParagraphParser(document_data.path)
         unified_document_view = docx.get_all_elements()
-        return unified_document_view.create_json()
+        data = unified_document_view.create_json()
+        return data
 
     if request.method == 'POST':
         if document_data.path == '':

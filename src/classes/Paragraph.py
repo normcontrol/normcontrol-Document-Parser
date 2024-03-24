@@ -79,7 +79,7 @@ class Paragraph(StructuralElement):
     _underlining: bool = None
     _sub_text: bool = None
     _super_text: bool = None
-    _color_text: str = None
+    _color_text: list[str] = None
     _no_change_fontname: bool = None
     _no_change_text_size: bool = None
     _font_name: list[str] = field(default_factory=list)
@@ -162,13 +162,12 @@ class Paragraph(StructuralElement):
         """
         try:
             if len(text) > 1 and text[len(text) - 1] != '':
-                if text[len(text) - 1] == ' ' and re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 2]) is None:
+                if text[len(text) - 1] == ' ' and not re.match(r'[.,;:!?]', text[len(text) - 2]) is None:
                     return text[len(text) - 2]
-            if re.match(r'[A-Za-zА-Яа-я0-9()]', text[len(text) - 1]) is None:
+            if not re.match(r'[.,;:!?]', text[len(text) - 2]) is None:
                 return text[len(text) - 1]
             return None
         except IndexError:
-
             return None
         except TypeError:
             print('TypeError, allowed type is str')
