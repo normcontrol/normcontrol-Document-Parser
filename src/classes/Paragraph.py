@@ -162,10 +162,10 @@ class Paragraph(StructuralElement):
         """
         try:
             if len(text) > 1 and text[len(text) - 1] != '':
-                if text[len(text) - 1] == ' ' and not re.match(r'[.,;:!?]', text[len(text) - 2]) is None:
-                    return text[len(text) - 2]
-            if not re.match(r'[.,;:!?]', text[len(text) - 2]) is None:
-                return text[len(text) - 1]
+                if  re.match(r'[.,;:!?]', text[len(text) - 1]) is not None:
+                    return text[len(text) - 1]
+            if re.match(r'[.,;:!?]', text[len(text) - 2]) is not None:
+                return text[len(text) - 2]
             return None
         except IndexError:
             return None

@@ -188,7 +188,8 @@ class DocxParagraphParser(DefaultParser):
             "_text": paragraph.text,
             "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
             "_font_name": self._get_font_style_for_attr(paragraph, "name"),
-            "_text_size": [value.pt if value is not None else None for value in self._get_font_style_for_attr(paragraph, 'size')],
+            "_text_size": [value.pt if value is not None else None for value in
+                           self._get_font_style_for_attr(paragraph, 'size')],
             "_alignment": self._get_paragraph_justification_type(
                 self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
             "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"), PRECISION),
@@ -395,7 +396,6 @@ class DocxParagraphParser(DefaultParser):
             return attr
         except Exception as e:
             print(e)
-            raise e
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
@@ -674,16 +674,17 @@ class DocxParagraphParser(DefaultParser):
             default_format_style = self.origin_document.styles.element.xpath("./w:docDefaults/w:pPrDefault/w:pPr")
             if default_format_style:
                 d = default_format_style[0]
-                self.origin_document.default_format_style = DefaultFormatStyle(d.jc_val if d.jc_val is not None else WD_PARAGRAPH_ALIGNMENT.LEFT,
-                                                                               get_line_spacing(d.spacing_line,
-                                                                                                d.spacing_lineRule),
-                                                                               getattr(d.ind_left, 'cm', None),
-                                                                               getattr(d.ind_right, 'cm', None),
-                                                                               getattr(d.spacing_after, 'pt', None),
-                                                                               getattr(d.spacing_before, 'pt', None),
-                                                                               d.keepLines, d.keepNext,
-                                                                               d.pageBreakBefore,
-                                                                               getattr(d.first_line_indent, 'cm', None))
+                self.origin_document.default_format_style = DefaultFormatStyle(
+                    d.jc_val if d.jc_val is not None else WD_PARAGRAPH_ALIGNMENT.LEFT,
+                    get_line_spacing(d.spacing_line,
+                                     d.spacing_lineRule),
+                    getattr(d.ind_left, 'cm', None),
+                    getattr(d.ind_right, 'cm', None),
+                    getattr(d.spacing_after, 'pt', None),
+                    getattr(d.spacing_before, 'pt', None),
+                    d.keepLines, d.keepNext,
+                    d.pageBreakBefore,
+                    getattr(d.first_line_indent, 'cm', None))
                 logging.info("Default format styles were extracted")
             else:
                 self.origin_document.default_format_style = DefaultFormatStyle()
@@ -708,53 +709,108 @@ class DocxParagraphParser(DefaultParser):
                     break
         return p_font_attr
 
+    @staticmethod
+    def get_numlvlstyle(num_lvl, ns):
+        value_string = f'{{{ns["w"]}}}val'
+        ilvl = int(num_lvl.attrib[f'{{{ns["w"]}}}ilvl'])
+        start = check_for_key_and_return_value(value_string, num_lvl.xpath("w:start", namespaces=ns)[
+            0].attrib) if len(
+            num_lvl.xpath("w:start", namespaces=ns)) > 0 else None
+
+        num_fmt = check_for_key_and_return_value(value_string, num_lvl.xpath("w:numFmt", namespaces=ns)[
+            0].attrib) if len(
+            num_lvl.xpath("w:numFmt", namespaces=ns)) > 0 else None
+        lvl_text = check_for_key_and_return_value(value_string,
+                                                  num_lvl.xpath("w:lvlText", namespaces=ns)[
+                                                      0].attrib) if len(
+            num_lvl.xpath("w:lvlText", namespaces=ns)) > 0 else None
+        lvl_jc = check_for_key_and_return_value(value_string, num_lvl.xpath("w:lvlJc", namespaces=ns)[
+            0].attrib) if len(
+            num_lvl.xpath("w:lvlJc", namespaces=ns)) > 0 else None
+        if len(num_lvl.xpath("w:pPr", namespaces=ns)) > 0:
+            ppr = num_lvl.xpath("w:pPr", namespaces=ns)[0]
+            left_mrg = ppr.ind_left
+            right_mrg = ppr.ind_right
+            indent = ppr.first_line_indent
+        else:
+            left_mrg = None
+            right_mrg = None
+            indent = None
+        return NumLvlStyle(ilvl, left_mrg,
+                           right_mrg, indent,
+                           start, num_fmt,
+                           lvl_text, lvl_jc)
+
+    @staticmethod
+    def get_abstract_num_by_id(document, id, ns):
+        for abstract_num in document.part.numbering_part.element.xpath("/w:numbering/w:abstractNum"):
+            abstract_num_id = check_for_key_and_return_value(f'{{{ns["w"]}}}abstractNumId',
+                                                             abstract_num.attrib)
+            if abstract_num_id is not None:
+                if int(abstract_num_id) == id:
+                    abstract_num_id = int(abstract_num_id)
+                    num_level_list = abstract_num.xpath("w:lvl", namespaces=ns)
+                    if len(num_level_list) > 0:
+                        numbering_styles = []
+                        for num_level in num_level_list:
+                            if f'{{{ns["w"]}}}ilvl' in num_level.attrib.keys():
+                                numbering_styles.append(DocxParagraphParser.get_numlvlstyle(num_level, ns))
+                            else:
+                                raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
+                        return AbstractNum(abstract_num_id, numbering_styles)
+                    else:
+                        num_style_links = abstract_num.xpath("w:numStyleLink", namespaces=ns)
+                        if len(num_style_links) > 0:
+                            num_style_link = check_for_key_and_return_value(f'{{{ns["w"]}}}val',
+                                                                            num_style_links[0].attrib)
+                            for style in document.styles.element.style_lst:
+                                if style.styleId == num_style_link:
+                                    num_id_link = style.pPr.numPr.numId.val
+                                    return DocxParagraphParser.get_abstract_style_by_num_id(
+                                        document, num_id_link, ns)
+            else:
+                raise Exception('Ошибка в абстрактном стиле перечисление : не имеет id')
+        return AbstractNum(None, None)
+
+    @staticmethod
+    def get_abstract_style_by_num_id(document, id, ns):
+        for num_style in document.part.numbering_part.element.xpath("/w:numbering/w:num"):
+            if num_style.numId == id:
+                return DocxParagraphParser.get_abstract_num_by_id(document, num_style.abstractNumId.val, ns)
+        return None
+
     def get_base_numbering_styles(self):
 
-        def get_numlvlstyle(num_lvl):
-            value_string = f'{{{self.ns["w"]}}}val'
-            ilvl = int(num_lvl.attrib[f'{{{self.ns["w"]}}}ilvl'])
-            start = check_for_key_and_return_value(value_string, num_lvl.xpath("w:start", namespaces=self.ns)[
-                0].attrib) if len(
-                num_lvl.xpath("w:start", namespaces=self.ns)) > 0 else None
-
-            num_fmt = check_for_key_and_return_value(value_string, num_lvl.xpath("w:numFmt", namespaces=self.ns)[
-                0].attrib) if len(
-                num_lvl.xpath("w:numFmt", namespaces=self.ns)) > 0 else None
-            lvl_text = check_for_key_and_return_value(value_string,
-                                                      num_lvl.xpath("w:lvlText", namespaces=self.ns)[
-                                                          0].attrib) if len(
-                num_lvl.xpath("w:lvlText", namespaces=self.ns)) > 0 else None
-            lvl_jc = check_for_key_and_return_value(value_string, num_lvl.xpath("w:lvlJc", namespaces=self.ns)[
-                0].attrib) if len(
-                num_lvl.xpath("w:lvlJc", namespaces=self.ns)) > 0 else None
-            if len(num_lvl.xpath("w:pPr", namespaces=self.ns)) > 0:
-                ppr = num_lvl.xpath("w:pPr", namespaces=self.ns)[0]
-                left_mrg = ppr.ind_left
-                right_mrg = ppr.ind_right
-                indent = ppr.first_line_indent
-            else:
-                left_mrg = None
-                right_mrg = None
-                indent = None
-            return NumLvlStyle(ilvl, left_mrg,
-                               right_mrg, indent,
-                               start, num_fmt,
-                               lvl_text, lvl_jc)
-
-        def get_abstacts_num():
+        def get_abstacts_nums():
             abstracts = {}
             for abstract_num in self.origin_document.part.numbering_part.element.xpath("/w:numbering/w:abstractNum"):
-                if f'{{{self.ns["w"]}}}abstractNumId' in abstract_num.attrib.keys():
-                    abstract_num_id = int(abstract_num.attrib[f'{{{self.ns["w"]}}}abstractNumId'])
-                    numbering_styles = []
-                    for num_level in abstract_num.xpath("w:lvl", namespaces=self.ns):
-                        if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                            numbering_styles.append(get_numlvlstyle(num_level))
-                        else:
-                            raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
-                    abstracts[abstract_num_id] = AbstractNum(abstract_num_id, numbering_styles)
+                abstract_num_id = check_for_key_and_return_value(f'{{{self.ns["w"]}}}abstractNumId',
+                                                                 abstract_num.attrib)
+                if abstract_num_id is not None:
+                    abstract_num_id = int(abstract_num_id)
                 else:
                     raise Exception('Ошибка в абстрактном стиле перечисление : не имеет id')
+
+                num_level_list = abstract_num.xpath("w:lvl", namespaces=self.ns)
+                if len(num_level_list) > 0:
+                    numbering_styles = []
+                    for num_level in num_level_list:
+                        if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
+                            numbering_styles.append(self.get_numlvlstyle(num_level, self.ns))
+                        else:
+                            raise Exception('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
+                        abstracts[abstract_num_id] = AbstractNum(abstract_num_id, numbering_styles)
+                else:
+                    num_style_links = abstract_num.xpath("w:numStyleLink", namespaces=self.ns)
+                    if len(num_style_links) > 0:
+                        num_style_link = check_for_key_and_return_value(f'{{{self.ns["w"]}}}val',
+                                                                        num_style_links[0].attrib)
+                        for style in self.origin_document.styles.element.style_lst:
+                            if style.styleId == num_style_link:
+                                num_id_link = style.pPr.numPr.numId.val
+                                abstracts[abstract_num_id] = DocxParagraphParser.get_abstract_style_by_num_id(
+                                    self.origin_document, num_id_link, self.ns)
+
             return abstracts
 
         def get_num_styles(abstracts: dict[int, AbstractNum]):
@@ -767,19 +823,21 @@ class DocxParagraphParser(DefaultParser):
                     ilvl = ovverride.ilvl
                     for num_level in ovverride.xpath("w:lvl"):
                         if f'{{{self.ns["w"]}}}ilvl' in num_level.attrib.keys():
-                            numbering_styles[ilvl] = get_numlvlstyle(num_level)
+                            numbering_styles[ilvl] = self.get_numlvlstyle(num_level, self.ns)
                         else:
                             raise StyleException('Ошибка в стиле уровня перечисления : не имеет ilvl значения')
                 nums[num_id] = NumberingStyle(num_id, abstract_style, numbering_styles)
             return nums
 
         try:
-            abstracts = get_abstacts_num()
+            abstracts = get_abstacts_nums()
             nums = get_num_styles(abstracts)
             numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
         except NotImplementedError as e:
             numbering_styles = NumeringStyles(None, None)
             print(e)
+        except Exception as e:
+            raise e
         self.origin_document.numbering_styles = numbering_styles
         logging.info("Numbering styles were extracted")
         return numbering_styles
