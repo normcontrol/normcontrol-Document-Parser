@@ -29,8 +29,11 @@ functions:
 """
 import re
 import logging
-from typing import Union
+import zipfile
+import xml.etree.ElementTree as ET
 import docx.text.paragraph
+from typing import Union
+from xml.etree.ElementTree import Element
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
 from docx.oxml import parse_xml
@@ -171,6 +174,7 @@ class DocxParagraphParser(DefaultParser):
         self.styles = self.origin_document.styles
         self.tables = self.extract_tables()
         self.pictures = self.extract_pictures()
+        self.formulas = self.extract_formulas()
         self.paragraphs = self.extract_paragraphs()
         self.document = self.get_all_elements()
 
@@ -256,7 +260,7 @@ class DocxParagraphParser(DefaultParser):
         """
 
         return Table(_inner_text=[cell.text for row in table.rows for cell in row.cells],
-                     _cells=[TableCell(_text=cell.text) for row in table.rows for cell in row.cells])
+                     _cells=[[TableCell(_text=cell.text) for cell in row.cells] for row in table.rows])
 
     @staticmethod
     def get_standart_frame(image):
@@ -477,12 +481,20 @@ class DocxParagraphParser(DefaultParser):
             list_of_image.append(self.get_standart_frame(image))
         return list_of_image
 
-    def extract_formulas(self) -> list[StructuralElement]:
+    def extract_formulas(self) -> list[Element]:
         """
         Extracts all formula objects from the document and stores them as a class parameter
         """
-
-        pass
+        with zipfile.ZipFile(self.path_to_document, 'r') as zip_reader:
+            with zip_reader.open('word/document.xml') as document_xml:
+                root = ET.parse(document_xml).getroot()
+                formulas = []
+                w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                m = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+                for para in root.findall(f'.//{{{w}}}p'):
+                    if para.findall(f'.//{{{m}}}oMathPara'):
+                        formulas.append(para)
+                return formulas
 
     def get_all_elements(self) -> UnifiedDocumentView:
         """

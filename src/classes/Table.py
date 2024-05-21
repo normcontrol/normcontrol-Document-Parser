@@ -38,7 +38,7 @@ class Table(StructuralElement):
     _width: float = None
     _bbox: tuple[int | float, int | float, int | float, int | float] = None
     _page_bbox: tuple[int | float, int | float, int | float, int | float] = None
-    _cells: List[TableCell] = field(default_factory=list)
+    _cells: List[List[TableCell]] = field(default_factory=list)
     _rows: List[TableRow] = field(default_factory=list)
 
 
