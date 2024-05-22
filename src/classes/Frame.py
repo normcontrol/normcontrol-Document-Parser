@@ -30,6 +30,7 @@ class Frame(StructuralElement):
             attribute specifies number of page, witch contains this frame
     """
 
+    _rId: str = None
     _style_name: str = None
     _anchor_type: str = None
     _width: float = None
@@ -40,6 +41,14 @@ class Frame(StructuralElement):
     _page_number: int = None
     _bbox: tuple[int | float, int | float, int | float, int | float] = None
 
+
+    @property
+    def rId(self):
+        return self._rId
+
+    @rId.setter
+    def rId(self, value: str):
+        self.rId = value
 
     @property
     def style_name(self):
