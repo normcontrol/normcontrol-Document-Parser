@@ -190,6 +190,7 @@ class DocxParagraphParser(DefaultParser):
         PRECISION = 2
 
         common_attributes = {
+            "_paraId": None,
             "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
             "_text": paragraph.text,
             "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
@@ -297,7 +298,7 @@ class DocxParagraphParser(DefaultParser):
                                                                               "bool"),
             "_keep_with_next": self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next",
                                                                          "bool"),
-            # "_outline_level": paragraph.outline_level, # !!! Paragraph doesn't have outline_lvl
+            # "_outline_level": paragraph.outline_level # !!! Paragraph doesn't have outline_lvl
             "_rId": run.element.xpath('.//a:blip')[0].get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'),
             "_width": float(run.element.xpath('.//wp:extent')[0].get('cx')),
             "_height": float(run.element.xpath('.//wp:extent')[0].get('cy')),

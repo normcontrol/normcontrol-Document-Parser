@@ -31,15 +31,15 @@ class Frame(StructuralElement):
     """
 
     _rId: str = None
-    _style_name: str = None
-    _anchor_type: str = None
+    _style_name: str = None #!
+    _anchor_type: str = None #!
     _width: float = None
     _height: float = None
-    _rel_width: str = None
-    _rel_height: str = None
-    _image: Image = None
-    _page_number: int = None
-    _bbox: tuple[int | float, int | float, int | float, int | float] = None
+    _rel_width: str = None #!
+    _rel_height: str = None #!
+    _image: Image = None #!
+    _page_number: int = None #!
+    _bbox: tuple[int | float, int | float, int | float, int | float] = None #!
 
 
     @property

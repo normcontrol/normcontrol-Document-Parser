@@ -67,6 +67,7 @@ class Paragraph(StructuralElement):
 
     """
 
+    _paraId: str = None
     _text: str = None
     _count_of_sp_sbl: int = field(init=False)
     _count_sbl: int = field(init=False)
@@ -84,6 +85,7 @@ class Paragraph(StructuralElement):
     _no_change_text_size: bool = None
     _font_name: list[str] = field(default_factory=list)
     _text_size: list[float] = field(default_factory=list)
+
 
     def __post_init__(self):
         self.count_of_sp_sbl = Paragraph.get_countn_of_sp_sbl(self.text)
@@ -195,6 +197,14 @@ class Paragraph(StructuralElement):
         if re.match(r'(Рисунок)|(Рис)|(Рис.)', first_key):
             return 'Рисунок'
         return ''
+
+    @property
+    def paraId(self):
+        return self._paraId
+
+    @paraId.setter
+    def paraId(self, value: str):
+        self._paraId = value
 
     @property
     def font_name(self):
