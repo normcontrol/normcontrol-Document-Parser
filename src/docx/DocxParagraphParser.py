@@ -29,6 +29,7 @@ functions:
 """
 import re
 import logging
+import traceback
 from typing import Union
 import docx.text.paragraph
 from docx import Document
@@ -53,6 +54,7 @@ from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.helpers.utils import check_for_key_and_return_value, check_for_none, get_line_spacing
+from xml.etree.ElementTree import ElementTree
 
 
 class DocxParagraphParser(DefaultParser):
@@ -380,22 +382,27 @@ class DocxParagraphParser(DefaultParser):
         :return: value attribute
         """
         try:
-            attr = getattr(paragraph.paragraph_format, attr_name)
+            attr = getattr(paragraph.paragraph_format, attr_name, None)
             number_attrs = ['first_line_indent', 'left_indent', 'right_indent']
             if attr is None:
                 if paragraph.list_level is not None and paragraph.num_id is not None and attr_name in number_attrs:
                     num_style = self.origin_document.numbering_styles.num[int(paragraph.num_id)]
                     if int(paragraph.list_level) in num_style.override_numbering_styles.keys():
-                        attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name)
+                        attr = getattr(num_style.override_numbering_styles[int(paragraph.list_level)], attr_name, None)
                     else:
-                        attr = getattr(num_style.abstract_style.numbering_styles[int(paragraph.list_level)], attr_name)
+                        attr = getattr(num_style.abstract_style.numbering_styles[int(paragraph.list_level)], attr_name, None)
                 else:
                     attr = self.get_attrib_from_base_style(paragraph.style, 'paragraph_format', attr_name)
             if attr is None:
-                attr = getattr(self.origin_document.default_format_style, attr_name)
+                attr = getattr(self.origin_document.default_format_style, attr_name, None)
             return attr
+        except KeyError as ke:
+            # traceback.print_exc()
+            logging.warning(f'Стиля нумерации с таким id ({ke}) не существует')
         except Exception as e:
+            # traceback.print_exc()
             print(e)
+            return None
 
     @staticmethod
     def _is_change_font_name(paragraph: Paragraph) -> bool:
@@ -442,14 +449,15 @@ class DocxParagraphParser(DefaultParser):
                 3: AlignmentEnum.JUSTIFY,
                 4: AlignmentEnum.DISTRIBUTE,
                 5: AlignmentEnum.JUSTIFY,
-                6: AlignmentEnum.JUSTIFY,
                 7: AlignmentEnum.JUSTIFY,
-                8: AlignmentEnum.JUSTIFY
+                8: AlignmentEnum.JUSTIFY,
+                9: AlignmentEnum.JUSTIFY
             }
             if alignment is None:
                 return AlignmentEnum.LEFT
             return alignments[alignment]
         except Exception as e:
+#             traceback.print_exc()
             print(e)
             raise e
 
@@ -542,34 +550,42 @@ class DocxParagraphParser(DefaultParser):
 
         :return list_of_consecutive_elements: dict[int,dict]
         """
-
-        elements = self.origin_document.element.find('.//w:body', self.ns)
-        list_of_consecutive_elements = {}
-        i = 1
-        table_id = 1
-        for element in elements:
-            if element.tag == f'{{{self.ns["w"]}}}p':
-                attrib = {'type': 'paragraph'}
-                for key, value in element.attrib.items():
-                    if 'paraId' in key:
-                        attrib['id'] = value
+        try:
+            elements = self.origin_document.element.find('.//w:body', self.ns)
+            list_of_consecutive_elements = {}
+            i = 1
+            table_id = 1
+            para_id = 1
+            for element in elements:
+                if element.tag == f'{{{self.ns["w"]}}}p':
+                    attrib = {'type': 'paragraph'}
+                    for key, value in element.attrib.items():
+                        if 'paraId' in key:
+                            attrib['id'] = value
+                            break
+                    if 'id' not in attrib.keys():
+                        attrib['id'] = para_id
+                        para_id += 1
+                if element.tag == f'{{{self.ns["w"]}}}tbl':
+                    if len(list_of_consecutive_elements) == 0:
+                        attrib = {'type': 'table', 'prev_id': table_id,
+                                      'id': table_id}
+                    else:
+                        if list_of_consecutive_elements[i - 1]['type'] == 'paragraph':
+                            attrib = {'type': 'table', 'prev_id': list_of_consecutive_elements[i - 1]['id'], 'id': table_id}
+                        else:
+                            attrib = {'type': 'table', 'prev_id': list_of_consecutive_elements[i - 1]['prev_id'],
+                                      'id': table_id}
+                    table_id = + 1
                 list_of_consecutive_elements[i] = attrib
                 i += 1
-            if element.tag == f'{{{self.ns["w"]}}}tbl':
-                if list_of_consecutive_elements[i - 1]['type'] == 'paragraph':
-                    attrib = {'type': 'table', 'prev_id': list_of_consecutive_elements[i - 1]['id'], 'id': table_id}
-                    table_id = + 1
-                else:
-                    attrib = {'type': 'table', 'prev_id': list_of_consecutive_elements[i - 1]['prev_id'],
-                              'id': table_id}
-                    table_id = + 1
-                list_of_consecutive_elements[i] = attrib
-                i += 1
-        return list_of_consecutive_elements
+            return list_of_consecutive_elements
+        except Exception as e:
+#             traceback.print_exc()
+            print(e)
 
     @staticmethod
     def __add_xml_attr_to_paragraph(paragraphs, ns):
-
         def get_paragraph_id(paragraph):
             for key, value in paragraph.paragraph_format.element.attrib.items():
                 if 'paraId' in key:
@@ -577,15 +593,19 @@ class DocxParagraphParser(DefaultParser):
             return None
 
         def get_ilvl(numprs, ns):
-            for key, value in numprs.findall('.//w:ilvl', ns)[0].attrib.items():
-                if 'val' in key:
-                    return value
+            ilvls = numprs.findall('.//w:ilvl', ns)[0]
+            if ilvls > 0:
+                for key, value in ilvls.attrib.items():
+                    if 'val' in key:
+                        return value
             return None
 
         def get_numId(numprs, ns):
-            for key, value in numprs.findall('.//w:numId', ns)[0].attrib.items():
-                if 'val' in key:
-                    return value
+            numIds = numprs.findall('.//w:ilvl', ns)[0]
+            if numIds > 0:
+                for key, value in numIds.attrib.items():
+                    if 'val' in key:
+                        return value
             return None
 
         def get_outline_lvl(outline):
@@ -595,22 +615,27 @@ class DocxParagraphParser(DefaultParser):
             return None
 
         def get_outline_lvl_in_style(paragraph, ns):
-            outline = paragraph.paragraph_format.element.findall('.//w:outlineLvl', ns)
-            if len(outline) > 0:
-                return get_outline_lvl(outline[0])
-            else:
-                style = paragraph.style
-                outline = style.element.findall('.//w:outlineLvl', ns)
-                while len(outline) < 1:
-                    if style.base_style is not None:
-                        outline = style.base_style.element.findall('.//w:outlineLvl', ns)
-                        style = style.base_style
-                    else:
-                        break
+            try:
+                outline = paragraph.paragraph_format.element.findall('.//w:outlineLvl', ns)
                 if len(outline) > 0:
                     return get_outline_lvl(outline[0])
                 else:
-                    return None
+                    style = paragraph.style
+                    outline = style.element.findall('.//w:outlineLvl', ns)
+                    while len(outline) < 1:
+                        if style.base_style is not None:
+                            outline = style.base_style.element.findall('.//w:outlineLvl', ns)
+                            style = style.base_style
+                        else:
+                            break
+                    if len(outline) > 0:
+                        return get_outline_lvl(outline[0])
+                    else:
+                        return None
+            except Exception as e:
+#                 traceback.print_exc()
+                print(e)
+                return None
 
         """
         Selects additional paragraph attributes from xml
@@ -618,12 +643,18 @@ class DocxParagraphParser(DefaultParser):
         :return paragraphs: list[docx.Paragraph]
         """
         xml_paragraphs = []
+        para_id = 1
         for num, paragraph in enumerate(paragraphs):
             paragraph.id = get_paragraph_id(paragraph)
+            if paragraph.id is None:
+                paragraph.id = para_id
+                para_id += 1
             numprs = paragraph.paragraph_format.element.findall('.//w:numPr', ns)
             if len(numprs) > 0:
-                paragraph.list_level = get_ilvl(numprs[0], ns)
-                paragraph.num_id = get_numId(numprs[0], ns)
+                list_level = getattr(numprs[0],'ilvl')
+                paragraph.list_level = list_level.val if list_level is not None else None
+                num_id = getattr(numprs[0],'numId')
+                paragraph.num_id = num_id.val if num_id is not None else None
             else:
                 paragraph.list_level = None
                 paragraph.num_id = None
@@ -664,8 +695,10 @@ class DocxParagraphParser(DefaultParser):
                 logging.info("Default font styles were extracted full")
             else:
                 self.origin_document.default_font_style = DefaultFontStyle()
+#                 traceback.print_exc()
                 logging.info("Default font styles were extracted empty")
         except Exception as e:
+#             traceback.print_exc()
             logging.error(f'Error occurred while getting default font style: {str(e)}')
             self.origin_document.default_font_style = DefaultFontStyle()
 
@@ -690,24 +723,30 @@ class DocxParagraphParser(DefaultParser):
                 self.origin_document.default_format_style = DefaultFormatStyle()
                 logging.info("Default format styles were extracted empty")
         except Exception as e:
+#             traceback.print_exc()
             logging.error(e)
 
     @staticmethod
     def get_attrib_from_base_style(style, tag_name, attrib_name):
-        p_font_attr = None
-        while style is not None:
-            tag = getattr(style, tag_name, None)
-            if tag is None:
-                break
-            if getattr(tag, attrib_name, None) is not None:
-                p_font_attr = getattr(tag, attrib_name, None)
-                break
-            else:
-                if style.base_style is not None:
-                    style = style.base_style
-                else:
+        try:
+            p_font_attr = None
+            while style is not None:
+                tag = getattr(style, tag_name, None)
+                if tag is None:
                     break
-        return p_font_attr
+                if getattr(tag, attrib_name, None) is not None:
+                    p_font_attr = getattr(tag, attrib_name, None)
+                    break
+                else:
+                    if style.base_style is not None:
+                        style = style.base_style
+                    else:
+                        break
+            return p_font_attr
+        except Exception as e:
+            print(e)
+#             traceback.print_exc()
+            return None
 
     @staticmethod
     def get_numlvlstyle(num_lvl, ns):
@@ -729,9 +768,25 @@ class DocxParagraphParser(DefaultParser):
             num_lvl.xpath("w:lvlJc", namespaces=ns)) > 0 else None
         if len(num_lvl.xpath("w:pPr", namespaces=ns)) > 0:
             ppr = num_lvl.xpath("w:pPr", namespaces=ns)[0]
-            left_mrg = ppr.ind_left
-            right_mrg = ppr.ind_right
-            indent = ppr.first_line_indent
+            try:
+                left_mrg = ppr.ind_left
+            except Exception as e:
+#                 traceback.print_exc()
+                print(e)
+                left_mrg = None
+
+            try:
+                right_mrg = ppr.ind_right
+            except Exception as e:
+#                 traceback.print_exc()
+                print(e)
+                right_mrg = None
+            try:
+                indent = ppr.first_line_indent
+            except Exception as e:
+#                 traceback.print_exc()
+                print(e)
+                indent = None
         else:
             left_mrg = None
             right_mrg = None
@@ -833,11 +888,13 @@ class DocxParagraphParser(DefaultParser):
             abstracts = get_abstacts_nums()
             nums = get_num_styles(abstracts)
             numbering_styles = NumeringStyles(num=nums, abstract_num=abstracts)
-        except NotImplementedError as e:
+        except NotImplementedError as ne:
+#             traceback.print_exc()
             numbering_styles = NumeringStyles(None, None)
-            print(e)
+            print(ne)
         except Exception as e:
-            raise e
+#             traceback.print_exc()
+            print(e)
         self.origin_document.numbering_styles = numbering_styles
         logging.info("Numbering styles were extracted")
         return numbering_styles
@@ -918,8 +975,8 @@ def get_json_split_paragraphs(split_paragraphs: list) -> str:
                 json_dict[level] = section_main_temp
                 level += 1
             except Exception as e:
+#                 traceback.print_exc()
                 print(e)
-                raise e
         return json_dict
 
     json_dict = get_main(split_paragraphs)
