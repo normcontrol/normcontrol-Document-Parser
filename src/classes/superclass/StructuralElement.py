@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
+from typing import Union
 
 
 @dataclass(kw_only=True)
@@ -37,7 +38,7 @@ class StructuralElement:
 
     _indent: float = None
     _line_spacing: float = None
-    _alignment: AlignmentEnum = None
+    _alignment: Union[AlignmentEnum, str] = None
     _mrgrg: float = None
     _mrglf: float = None
     _mrgtop: float = None

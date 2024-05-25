@@ -29,8 +29,11 @@ functions:
 """
 import re
 import logging
+import zipfile
 import traceback
-from typing import Union
+import xml.etree.ElementTree as ET
+from typing import Union, Any, Dict
+from xml.etree.ElementTree import Element
 import docx.text.paragraph
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
@@ -52,6 +55,7 @@ from src.classes.word.Numbering import NumLvlStyle, AbstractNum, NumberingStyle,
 from src.docx.exceptions import *
 from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
+from src.helpers.enums.TableAlignmentEnum import TableAlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.helpers.utils import check_for_key_and_return_value, check_for_none, get_line_spacing
 from xml.etree.ElementTree import ElementTree
@@ -256,9 +260,37 @@ class DocxParagraphParser(DefaultParser):
         :param table: docx.Table
         :return : classes.Table
         """
-
         return Table(_inner_text=[cell.text for row in table.rows for cell in row.cells],
-                     _cells=[TableCell(_text=cell.text) for row in table.rows for cell in row.cells])
+                     _cells=[[TableCell(_text=cell.text) for cell in row.cells] for row in table.rows])
+
+    @staticmethod
+    def get_table_attributes(table: Element) -> Dict[str, Any]:
+        ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+
+        # Probably need fix (I'm not sure about tags)
+        indent = table.find('.//w:tblPr//w:tblInd', ns)
+        line_spacing = table.find('.//w:tblPr//w:spacing', ns)
+        alignment = table.find('.//w:tblPr//w:jc', ns)
+        mrgrg = table.find('.//w:tblPr//w:tblCellMar//w:right', ns)
+        mrglf = table.find('.//w:tblPr//w:tblCellMar//w:left', ns)
+        mrgtop = table.find('.//w:tblPr//w:tblCellMar//w:top', ns)
+        mrgbtm = table.find('.//w:tblPr//w:tblCellMar//w:bottom', ns)
+        page_break_before = table.find('.//w:tr//w:tc//w:p//w:r//w:lastRenderedPageBreak', ns)
+        keep_lines_together = table.find('.//w:tblPr//w:keepLines', ns)
+        keep_with_next = table.find('.//w:tblPr//w:keepNext', ns)
+
+        return {
+            '_indent': 0 if indent is None else float(indent.get(f'{{{ns["w"]}}}w')),
+            '_line_spacing': 0 if line_spacing is None else float(line_spacing.get(f'{{{ns["w"]}}}line')),
+            '_alignment': TableAlignmentEnum.LEFT if alignment is None else TableAlignmentEnum[alignment.get(f'{{{ns["w"]}}}val')],
+            '_mrgrg': 0 if mrgrg is None else float(mrgrg.get(f'{{{ns["w"]}}}w')),
+            '_mrglf': 0 if mrglf is None else float(mrglf.get(f'{{{ns["w"]}}}w')),
+            '_mrgtop': 0 if mrgtop is None else float(mrgtop.get(f'{{{ns["w"]}}}w')),
+            '_mrgbtm': 0 if mrgbtm is None else float(mrgbtm.get(f'{{{ns["w"]}}}w')),
+            '_page_breake_before': False if page_break_before is None else True,
+            '_keep_lines_together': False if keep_lines_together is None else True,
+            '_keep_with_next': False if keep_with_next is None else True
+        }
 
     @staticmethod
     def get_standart_frame(image):
@@ -461,17 +493,37 @@ class DocxParagraphParser(DefaultParser):
             print(e)
             raise e
 
-    def extract_tables(self) -> list[StructuralElement]:
+    def extract_tables(self) -> list[Table]:
         """
         Extracts all table objects from the document and stores them as a class parameter
 
         :return list_of_tables: list[StructuralElement]
         """
+        with zipfile.ZipFile(self.path_to_document, 'r') as zr:
+            with zr.open('word/document.xml') as xml_doc:
+                root = ET.parse(xml_doc).getroot()
+                namespaces = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+                elem_tables = root.findall('.//w:tbl', namespaces)
+                extracted_tables = []
+                for elem in elem_tables:
+                    table_data = []
+                    rows = elem.findall('.//w:tr', namespaces)
+                    for row in rows:
+                        row_data = []
+                        for cell in row.findall('.//w:tc', namespaces):
+                            row_data.append(TableCell(
+                                _text=''.join(cell.find('.//w:t', namespaces).itertext())
+                            ))
+                        table_data.append(row_data)
+                    extracted_tables.append(Table(
+                        _cells=table_data,
+                        _inner_text=[cell.text for row in table_data for cell in row],
+                        **self.get_table_attributes(elem)
+                    ))
+                return extracted_tables
 
-        list_of_tables = []
-        for table in self.origin_document.tables:
-            list_of_tables.append(self.get_standart_table(table))
-        return list_of_tables
+
+
 
     def extract_pictures(self) -> list[StructuralElement]:
         """
