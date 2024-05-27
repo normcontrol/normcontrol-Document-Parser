@@ -40,7 +40,9 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
 from docx.oxml import parse_xml
 from docx.shared import Pt
 from docx.text.paragraph import Paragraph as ParagraphType
+from docx.text.run import Run as RunType
 from src.classes.Frame import Frame
+from src.classes.FrameType import FrameType
 from src.classes.Image import Image
 from src.classes.List import List
 from src.classes.Paragraph import Paragraph
@@ -177,6 +179,7 @@ class DocxParagraphParser(DefaultParser):
         self.styles = self.origin_document.styles
         self.tables = self.extract_tables()
         self.pictures = self.extract_pictures()
+        self.formulas = self.extract_formulas()
         self.paragraphs = self.extract_paragraphs()
         self.document = self.get_all_elements()
 
@@ -292,16 +295,43 @@ class DocxParagraphParser(DefaultParser):
             '_keep_with_next': False if keep_with_next is None else True
         }
 
-    @staticmethod
-    def get_standart_frame(image):
-        """
-        Make image in standard format
+    def get_standart_frame(self, paragraph: ParagraphType, run: RunType) -> FrameType:
 
-        :param image: docx.InlineShapes
-        :return : classes.Frame
-        """
+        PRECISION = 2
 
-        return Frame(_width=image.width, _height=image.height, _anchor_type=image.type, _image=Image())
+        attributes = {
+            "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
+            "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            "_alignment": self._get_paragraph_justification_type(
+                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
+            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"),
+                            PRECISION),
+            "_mrglf": round(
+                self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
+                self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
+                if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
+                else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
+                , PRECISION),
+            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"),
+                             PRECISION),
+            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"),
+                             PRECISION),
+            "_page_breake_before": self._get_paragraph_format_style_for_attr(paragraph, "page_break_before",
+                                                                             "bool"),
+            "_keep_lines_together": self._get_paragraph_format_style_for_attr(paragraph, "keep_together",
+                                                                              "bool"),
+            "_keep_with_next": self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next",
+                                                                         "bool"),
+            # "_outline_level": paragraph.outline_level, # !!! Paragraph doesn't have outline_lvl
+            "_rId": run.element.xpath('.//a:blip')[0].get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'),
+            "_width": float(run.element.xpath('.//wp:extent')[0].get('cx')),
+            "_height": float(run.element.xpath('.//wp:extent')[0].get('cy')),
+            "_anchorId": run.element.xpath('.//wp:inline')[0].get('{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}anchorId'),
+            "_image": Image()
+
+        }
+
+        return FrameType(**attributes)
 
     def _get_font_style_color(self, paragraph: ParagraphType) -> list[str]:
         """
@@ -525,24 +555,37 @@ class DocxParagraphParser(DefaultParser):
 
 
 
-    def extract_pictures(self) -> list[StructuralElement]:
+    def extract_pictures(self) -> list[FrameType]:
         """
         extracts all objects drawings from the document and saves them as a class parameter
 
         :return list_of_image: list[StructuralElement]
         """
 
-        list_of_image = []
-        for image in self.origin_document.inline_shapes:
-            list_of_image.append(self.get_standart_frame(image))
-        return list_of_image
+        result = []
+        for para in self.origin_document.paragraphs:
+            if para.runs:
+                for run in para.runs:
+                    if run.element.xpath('.//a:blip'):  # Paragraph contain image
+                        result.append(self.get_standart_frame(para, run))
+        return result
 
-    def extract_formulas(self) -> list[StructuralElement]:
+
+    def extract_formulas(self) -> list[Element]:
         """
         Extracts all formula objects from the document and stores them as a class parameter
         """
 
-        pass
+        with zipfile.ZipFile(self.path_to_document, 'r') as zip_reader:
+            with zip_reader.open('word/document.xml') as document_xml:
+                root = ET.parse(document_xml).getroot()
+                formulas = []
+                w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                m = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+                for para in root.findall(f'.//{{{w}}}p'):
+                    if para.findall(f'.//{{{m}}}oMathPara'):
+                        formulas.append(para)
+                return formulas
 
     def get_all_elements(self) -> UnifiedDocumentView:
         """
