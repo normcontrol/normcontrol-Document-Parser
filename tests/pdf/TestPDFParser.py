@@ -14,7 +14,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(self.pdf_parser.document.content[1].indent, 7.88)
         self.assertEqual(self.pdf_parser.document.content[1].font_name, ['TimesNewRomanPSMT'])
         self.assertEqual(self.pdf_parser.document.content[1].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[1].text, 'Введение ')
+        self.assertEqual(self.pdf_parser.document.content[1].content, 'Введение ')
         self.assertEqual(self.pdf_parser.document.content[1].no_change_fontname, True)
         self.assertEqual(self.pdf_parser.document.content[1].no_change_text_size, True)
         self.assertEqual(self.pdf_parser.document.content[1].bbox, {1: (308.35, 783.20736, 368.62, 769)})
@@ -30,7 +30,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(set(self.pdf_parser.document.content[23].font_name),
                          {'TimesNewRomanPSMT', 'ArialMT', 'SymbolMT'})
         self.assertEqual(self.pdf_parser.document.content[23].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[23].text, '− жесткий диск: HDD 40 Гб в RAID 1. ')
+        self.assertEqual(self.pdf_parser.document.content[23].content, '− жесткий диск: HDD 40 Гб в RAID 1. ')
         self.assertEqual(self.pdf_parser.document.content[23].no_change_fontname, False)
         self.assertEqual(self.pdf_parser.document.content[23].no_change_text_size, True)
         self.assertEqual(self.pdf_parser.document.content[23].bbox, {2: (138.5, 223.54736, 377.02, 210)})
@@ -46,7 +46,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(set(self.pdf_parser.document.content[33].font_name),
                          {'SymbolMT', 'TimesNewRomanPSMT', 'ArialMT'})
         self.assertEqual(self.pdf_parser.document.content[33].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[33].text, '− Nginx: 1.21.6 + ssl_preread, image_filter, '
+        self.assertEqual(self.pdf_parser.document.content[33].content, '− Nginx: 1.21.6 + ssl_preread, image_filter, '
                                                                     'geoip, geoip2, brotli; ')
         self.assertEqual(self.pdf_parser.document.content[33].no_change_fontname, False)
         self.assertEqual(self.pdf_parser.document.content[33].no_change_text_size, True)
@@ -101,7 +101,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(self.pdf_parser.document.content[17].indent, 1.25)
         self.assertEqual(self.pdf_parser.document.content[17].font_name, ['TimesNewRomanPSMT'])
         self.assertEqual(self.pdf_parser.document.content[17].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[17].text, 'Основной причиной этого стало то, что '
+        self.assertEqual(self.pdf_parser.document.content[17].content, 'Основной причиной этого стало то, что '
                                                                     'большинство пользователей MS Word никогда не '
                                                                     'пользовались функцией надстроек, а некоторые '
                                                                     'даже не знают, что это такое. Также оказалось, '
@@ -125,7 +125,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(set(self.pdf_parser.document.content[55].font_name),
                          {'SymbolMT', 'TimesNewRomanPSMT', 'ArialMT'})
         self.assertEqual(self.pdf_parser.document.content[55].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[55].text, '− обезличенные данные для обучения '
+        self.assertEqual(self.pdf_parser.document.content[55].content, '− обезличенные данные для обучения '
                                                                     'классификатора; ')
         self.assertEqual(self.pdf_parser.document.content[55].no_change_fontname, False)
         self.assertEqual(self.pdf_parser.document.content[55].no_change_text_size, True)
@@ -142,7 +142,7 @@ class TestPDFParser(unittest.TestCase):
         self.assertEqual(set(self.pdf_parser.document.content[77].font_name),
                          {'TimesNewRomanPSMT', 'ArialMT'})
         self.assertEqual(self.pdf_parser.document.content[77].text_size, [14])
-        self.assertEqual(self.pdf_parser.document.content[77].text,
+        self.assertEqual(self.pdf_parser.document.content[77].content,
                          '3 Модернизация сервиса автоматизированного нормоконтроля документов ')
         self.assertEqual(self.pdf_parser.document.content[77].no_change_fontname, False)
         self.assertEqual(self.pdf_parser.document.content[77].no_change_text_size, True)

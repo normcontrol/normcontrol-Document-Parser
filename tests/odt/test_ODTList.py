@@ -10,8 +10,8 @@ class TestODTList(unittest.TestCase):
         self.doc_path = "/Users/vladtereshch/PycharmProjects/normcontrol-Document-Parser/src/odt/documents/listsimages.odt"
         self.doc = ODTDocument(self.doc_path)
         self.odt_parser = ODTParser(self.doc)
-        self.all_doc_info = self.odt_parser.get_document_nodes_with_higher_style_data(self.doc.document.text,
-                                                                                 consts.DEFAULT_PARAM)
+        self.all_doc_info = self.odt_parser.get_document_nodes_with_higher_style_data(self.doc.document.content,
+                                                                                      consts.DEFAULT_PARAM)
 
     def test_get_lists_styles(self):
         lists_styles = self.odt_parser.list_parser.get_lists_styles(self.doc, self.all_doc_info)

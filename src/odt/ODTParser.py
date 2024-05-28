@@ -251,7 +251,7 @@ class ODTParser(InformalParserInterface, ABC):
                                                      time=creation_date,
                                                      page_count=page_count)
 
-        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.text, consts.DEFAULT_PARAM)
+        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.content, consts.DEFAULT_PARAM)
         all_paragraphs = self.paragraph_parser.paragraphs_helper(styles_data=all_doc_info)
         all_frames = self.image_parser.get_frame_styles(self.doc)
         all_lists = self.list_parser.get_list_styles_from_automatic_styles(self.doc, all_doc_info)
@@ -276,7 +276,7 @@ class ODTParser(InformalParserInterface, ABC):
         ----------
         Извлекает все параграфы из ODT документа.
         """
-        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.text, consts.DEFAULT_PARAM)
+        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.content, consts.DEFAULT_PARAM)
         return self.paragraph_parser.paragraphs_helper(styles_data=all_doc_info)
 
     def extract_lists(self) -> list[StructuralElement]:
@@ -288,7 +288,7 @@ class ODTParser(InformalParserInterface, ABC):
         ----------
         Извлекает все списки из ODT документа.
         """
-        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.text, consts.DEFAULT_PARAM)
+        all_doc_info = self.get_document_nodes_with_higher_style_data(self.doc.document.content, consts.DEFAULT_PARAM)
         return self.list_parser.get_list_styles_from_automatic_styles(self.doc, all_doc_info)
 
     def build_styles_dicts(self):

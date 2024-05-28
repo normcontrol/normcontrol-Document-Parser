@@ -383,7 +383,7 @@ class PDFParser(InformalParserInterface, DefaultParser):
                         self.document.add_content(paragraph_id, element)
                         paragraph_id += 1
                     else:
-                        check_text = ' '.join(line.text for line in element.lines)
+                        check_text = ' '.join(line.content for line in element.lines)
                         if check_text != '' and check_text != ' ':
                             self.document.add_content(paragraph_id, self.get_standart_paragraph(
                                 self.add_special_paragraph_attribute(element)))
@@ -446,7 +446,7 @@ class PDFParser(InformalParserInterface, DefaultParser):
                 element, removed_tables, list_of_table = PDFParser.delete_dublicates(paragraph, removed_tables,
                                                                                      list_of_table)
                 if element is not None and isinstance(element, PdfParagraph):
-                    check_text = ' '.join(line.text for line in element.lines)
+                    check_text = ' '.join(line.content for line in element.lines)
                     if check_text != '' and check_text != ' ':
                         paragraph_list.append(
                             self.get_standart_paragraph(self.add_special_paragraph_attribute(element)))
@@ -478,7 +478,7 @@ class PDFParser(InformalParserInterface, DefaultParser):
 
         text = ""
         for line in pdf_paragraph.lines:
-            text = text + line.text
+            text = text + line.content
         bbox = {
 
         }

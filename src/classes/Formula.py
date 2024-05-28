@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-
+from xml.etree.ElementTree import Element
 from src.classes.superclass.StructuralElement import StructuralElement
+
 
 @dataclass
 class Formula(StructuralElement):
@@ -9,17 +10,17 @@ class Formula(StructuralElement):
 
     Attributes
     ----------
-        _text:str:
-            attribute specifies the text of formula
+        _content:Element:
+            attribute specifies the xml-content of formula
 
     """
 
-    _text: str = None
+    _content: Element = None
 
     @property
-    def text(self):
-        return self._text
+    def content(self):
+        return self._content
 
-    @text.setter
-    def text(self, text):
-        self._text = text
+    @content.setter
+    def content(self, text):
+        self._content = text

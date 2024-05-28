@@ -32,9 +32,10 @@ import logging
 import zipfile
 import traceback
 import xml.etree.ElementTree as ET
-from typing import Union, Any, Dict
-from xml.etree.ElementTree import Element
 import docx.text.paragraph
+from typing import Union, Any, Dict, Optional
+from typing import List as ListType
+from xml.etree.ElementTree import Element
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_LINE_SPACING
 from docx.oxml import parse_xml
@@ -48,6 +49,7 @@ from src.classes.List import List
 from src.classes.Paragraph import Paragraph
 from src.classes.Table import Table
 from src.classes.TableCell import TableCell
+from src.classes.Formula import Formula
 from src.classes.UnifiedDocumentView import UnifiedDocumentView
 from src.classes.superclass.Parser import DefaultParser
 from src.classes.superclass.StructuralElement import StructuralElement
@@ -57,6 +59,7 @@ from src.classes.word.Numbering import NumLvlStyle, AbstractNum, NumberingStyle,
 from src.docx.exceptions import *
 from src.helpers.colors import rgb_to_hex
 from src.helpers.enums.AlignmentEnum import AlignmentEnum
+from src.helpers.enums.Schemas import schemas
 from src.helpers.enums.TableAlignmentEnum import TableAlignmentEnum
 from src.helpers.enums.StylePropertyCoverage import StylePropertyCoverage
 from src.helpers.utils import check_for_key_and_return_value, check_for_none, get_line_spacing
@@ -255,6 +258,36 @@ class DocxParagraphParser(DefaultParser):
                     return StylePropertyCoverage.NO
         return StylePropertyCoverage.UNKNOWN
 
+    def _get_attributes_of_structural_element(self, paragraph: ParagraphType) -> Dict[str, Any]:
+        PRECISION = 2
+
+        return {
+            "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
+            "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
+            "_alignment": self._get_paragraph_justification_type(
+                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
+            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"),
+                            PRECISION),
+            "_mrglf": round(
+                self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
+                self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
+                if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
+                else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
+                , PRECISION),
+            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"),
+                             PRECISION),
+            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"),
+                             PRECISION),
+            "_page_breake_before": self._get_paragraph_format_style_for_attr(paragraph, "page_break_before",
+                                                                             "bool"),
+            "_keep_lines_together": self._get_paragraph_format_style_for_attr(paragraph, "keep_together",
+                                                                              "bool"),
+            "_keep_with_next": self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next",
+                                                                         "bool"),
+            # "_outline_level": paragraph.outline_level, # !!! Paragraph doesn't have outline_lvl
+        }
+
+
     @staticmethod
     def get_standart_table(table):
         """
@@ -263,8 +296,8 @@ class DocxParagraphParser(DefaultParser):
         :param table: docx.Table
         :return : classes.Table
         """
-        return Table(_inner_text=[cell.text for row in table.rows for cell in row.cells],
-                     _cells=[[TableCell(_text=cell.text) for cell in row.cells] for row in table.rows])
+        return Table(_inner_text=[cell.content for row in table.rows for cell in row.cells],
+                     _cells=[[TableCell(_text=cell.content) for cell in row.cells] for row in table.rows])
 
     @staticmethod
     def get_table_attributes(table: Element) -> Dict[str, Any]:
@@ -300,35 +333,12 @@ class DocxParagraphParser(DefaultParser):
         PRECISION = 2
 
         attributes = {
-            "_indent": self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent", "cm"),
-            "_line_spacing": self._get_paragraph_format_style_for_attr(paragraph, "line_spacing"),
-            "_alignment": self._get_paragraph_justification_type(
-                self._get_paragraph_format_in_hierarchy(paragraph, 'alignment')),
-            "_mrgrg": round(self._get_paragraph_format_style_for_attr(paragraph, "right_indent", "cm"),
-                            PRECISION),
-            "_mrglf": round(
-                self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm") +
-                self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent")
-                if self._get_paragraph_format_style_for_attr(paragraph, "first_line_indent") < 0
-                else self._get_paragraph_format_style_for_attr(paragraph, "left_indent", "cm")
-                , PRECISION),
-            "_mrgtop": round(self._get_paragraph_format_style_for_attr(paragraph, "space_before", "cm"),
-                             PRECISION),
-            "_mrgbtm": round(self._get_paragraph_format_style_for_attr(paragraph, "space_after", "cm"),
-                             PRECISION),
-            "_page_breake_before": self._get_paragraph_format_style_for_attr(paragraph, "page_break_before",
-                                                                             "bool"),
-            "_keep_lines_together": self._get_paragraph_format_style_for_attr(paragraph, "keep_together",
-                                                                              "bool"),
-            "_keep_with_next": self._get_paragraph_format_style_for_attr(paragraph, "keep_with_next",
-                                                                         "bool"),
-            # "_outline_level": paragraph.outline_level, # !!! Paragraph doesn't have outline_lvl
             "_rId": run.element.xpath('.//a:blip')[0].get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'),
             "_width": float(run.element.xpath('.//wp:extent')[0].get('cx')),
             "_height": float(run.element.xpath('.//wp:extent')[0].get('cy')),
             "_anchorId": run.element.xpath('.//wp:inline')[0].get('{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}anchorId'),
-            "_image": Image()
-
+            "_image": Image(),
+            **self._get_attributes_of_structural_element(paragraph)
         }
 
         return FrameType(**attributes)
@@ -571,21 +581,31 @@ class DocxParagraphParser(DefaultParser):
         return result
 
 
-    def extract_formulas(self) -> list[Element]:
+    def extract_formulas(self) -> ListType[Formula]:
         """
         Extracts all formula objects from the document and stores them as a class parameter
         """
 
+        formulas = []
+        for para in self.origin_document.paragraphs:
+            if para._element.find(f'.//{{{schemas.m}}}oMathPara') is not None:
+                formulas.append(Formula(
+                    _content=self.find_element_by_paraId(para._element.attrib[f'{{{schemas.w14}}}paraId']),
+                    **self._get_attributes_of_structural_element(para)
+                ))
+        return formulas
+
+
+
+    def find_element_by_paraId(self, paraId: str) -> Optional[Element]:
         with zipfile.ZipFile(self.path_to_document, 'r') as zip_reader:
             with zip_reader.open('word/document.xml') as document_xml:
                 root = ET.parse(document_xml).getroot()
-                formulas = []
-                w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-                m = "http://schemas.openxmlformats.org/officeDocument/2006/math"
-                for para in root.findall(f'.//{{{w}}}p'):
-                    if para.findall(f'.//{{{m}}}oMathPara'):
-                        formulas.append(para)
-                return formulas
+                for para in root.findall(f'.//{{{schemas.w}}}p'):
+                    if para.attrib.get(f'{{{schemas.w14}}}paraId') == paraId:
+                        return para
+                return None
+
 
     def get_all_elements(self) -> UnifiedDocumentView:
         """
@@ -1055,7 +1075,7 @@ def get_json_split_paragraphs(split_paragraphs: list) -> str:
 
                     # for attribute_name, value in dataclasses.asdict(paragraph).items():
                     # para_temp[attribute_name[1::]] = value
-                    paragraphs.append(paragraph.text)
+                    paragraphs.append(paragraph.content)
                 section_main_temp['section_text'] = [paragraphs[0]]
                 if len(paragraphs) > 1:
                     section_main_temp['main'] = paragraphs[1::]
